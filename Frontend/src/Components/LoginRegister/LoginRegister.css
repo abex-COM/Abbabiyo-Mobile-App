@@ -1,0 +1,139 @@
+/* Base Styles */
+.containerbox {
+    font-family: "Poppins", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Wrapper Styles */
+.wrapper {
+    position: relative;
+    width: 420px;
+    height: 450px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(30px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    transition: height 0.2s ease;
+}
+
+.wrapper.active {
+    height: 620px;
+}
+
+/* Form Box Styles */
+.wrapper .form-box {
+    width: 100%;
+    padding: 40px;
+}
+
+.wrapper .form-box.login {
+    transition: translate 0.18s ease;
+    translate: 0;
+}
+
+.wrapper.active .form-box.login {
+    transition: none;
+    translate: -400px;
+}
+
+.wrapper .form-box.register {
+    position: absolute;
+    transition: none;
+    translate: 400px;
+}
+
+.wrapper.active .form-box.register {
+    transition: translate 0.18s ease;
+    translate: 0;
+}
+
+/* Input Box Styles */
+.input-box {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    margin: 30px 0;
+}
+
+.input-box input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    border: 2px solid rgba(121, 236, 243, 0.1);
+    border-radius: 40px;
+    font-size: 16px;
+    padding: 20px 45px 20px 20px;
+    transition: border-color 0.3s ease, color 0.3s ease;
+}
+.input-box input:hover{
+    transform: scale(1.05);
+}
+.input-box .icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    translate: 0 -50%;
+    font-size: 16px;
+}
+form h1{
+    text-align: center;
+}
+/* Button Styles */
+form button {
+    width: 100%;
+    height: 45px;
+    outline: none;
+    border-radius: 40px;
+    box-shadow: 0 0 10px rgba(233, 255, 254, 0.1);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    transition: background 0.3s ease, color 0.3s ease;
+    margin: 10px 0;
+}
+
+form button:hover{
+    transform: scale(1.05);
+}
+form button.router{
+    border: none;
+    text-decoration: underline;
+    transition: none;
+}
+form button.router:hover{
+    text-decoration: none;
+    transform: scale(1.05);
+    color: #55e5ff;
+}
+/* Theme Toggle */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1000;
+    width: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    border-radius: 50%;
+}
+.theme-toggle:hover{
+    border: 1px solid #e0e0e0;
+    background: #1e2f50;
+}
+form .remember-forgot{
+    display: flex;
+    justify-content: space-between;
+}
