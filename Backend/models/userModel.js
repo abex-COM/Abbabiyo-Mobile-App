@@ -1,21 +1,25 @@
 const mongoose = require("mongoose");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   profilePicture: { type: String, default: "" },
-  role: { type: String, enum: ["farmer", "moderator", "admin"], default: "farmer" },
+  role: {
+    type: String,
+    enum: ["farmer", "moderator", "admin"],
+    default: "farmer",
+  },
   location: {
     region: { type: String, required: [true, "Region required"] },
     zone: { type: String, required: [true, "Zone required"] },
     woreda: { type: String, required: [true, "Woreda required"] },
     coordinates: {
       lat: { type: Number }, // Latitude
-      lon: { type: Number }  // Longitude
-    }
+      lon: { type: Number }, // Longitude
+    },
   },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
 // Hash the password before saving

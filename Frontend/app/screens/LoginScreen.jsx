@@ -1,10 +1,18 @@
-import React from "react";
-import { View, StatusBar, KeyboardAvoidingView, Platform } from "react-native";
+import React, { useEffect, useCallback } from "react";
+import {
+  View,
+  StatusBar,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import MyButton from "../components/MyButton";
 import MyTextInput from "../components/MyTextInput";
 import ErrorText from "../components/ErrorText";
+import axios from "axios";
+import { useUser } from "@/context/userContext";
 
 // Validation Schema using Yup
 const validationSchema = Yup.object().shape({
@@ -15,17 +23,44 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function LoginScreen({ navigation }) {
-  const handleSubmit = (values) => {
-    console.log(values);
-    navigation.replace("bottomNavigator");
-  };
+  const { storeToken, token } = useUser();
+
+  const handleSubmit = useCallback(
+    async (values) => {
+      try {
+        const resp = await axios.post(
+          "http://192.168.234.196:8000/api/users/login",
+          values
+        );
+
+        await storeToken(resp.data.token);
+        navigation.replace("bottomNavigator");
+      } catch (error) {
+        if (error.response) {
+          console.log("Server Error:", error.response.data);
+          alert(error.response.data.message);
+        } else if (error.request) {
+          console.log("No Response:", error.request);
+        } else {
+          console.log("Request Error:", error.message);
+        }
+      }
+    },
+    [storeToken, navigation]
+  );
+
+  useEffect(() => {
+    if (token) {
+      navigation.replace("bottomNavigator");
+    }
+  }, [navigation]); //  Dependency array includes `token` and `navigation`
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
-      <StatusBar backgroundColor="orange" />
+      <StatusBar backgroundColor="#009000" />
       <View
         style={{
           flex: 1,
@@ -46,6 +81,7 @@ export default function LoginScreen({ navigation }) {
             handleChange,
             handleBlur,
             handleSubmit,
+            isSubmitting,
             values,
             errors,
             touched,
@@ -78,9 +114,10 @@ export default function LoginScreen({ navigation }) {
 
               {/* Submit Button */}
               <MyButton
-                onPress={handleSubmit}
+                onPress={handleSubmit} //  No unnecessary re-renders due to `useCallback`
                 title="Submit"
-                className="self-center w-4/5"
+                isSubmitting={isSubmitting}
+                className="self-center h-max w-max"
               />
             </View>
           )}

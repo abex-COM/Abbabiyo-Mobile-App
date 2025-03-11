@@ -8,7 +8,14 @@ import FeedNavigator from "../navigations/BottomNavigation";
 import welcomeScreen from "../screens/welcomeScreen";
 export default function AuthNavigator() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerTintColor: "white",
+        headerStyle: {
+          backgroundColor: "#009000",
+        },
+      }}
+    >
       <Stack.Screen
         name="welcomeScreen"
         component={welcomeScreen}
@@ -17,14 +24,14 @@ export default function AuthNavigator() {
       <Stack.Screen
         name="loginScreen"
         component={LoginScreen}
-        options={{ headerTintColor: "green", headerTitle: "Login" }}
+        options={{ headerTitle: "Login" }}
       />
       <Stack.Screen
         name="signupScreen"
         component={SignupScreen}
-        options={{ headerTintColor: "green", headerTitle: "SignUp" }}
+        options={{ headerTitle: "SignUp" }}
       />
-      
+
       <Stack.Screen
         name="bottomNavigator"
         component={FeedNavigator}

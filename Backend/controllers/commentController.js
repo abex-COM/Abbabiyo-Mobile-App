@@ -1,15 +1,19 @@
 const Comment = require("../models/commentModel");
-const Post = require("../models/Post");
+const Post = require("../models/postModel");
 
-// Create a Comment
+//  Create a Comment
 const createComment = async (req, res) => {
   try {
     const { postId, text } = req.body;
-    const userId = req.user.id; // Assuming user authentication middleware
+    const userId = req.user.id; // Assuming authentication middleware adds `req.user`
+
+    if (!text || !postId) {
+      return res.status(400).json({ success: false, message: "Post ID and text are required" });
+    }
 
     // Check if post exists
-    const postExists = await Post.findById(postId);
-    if (!postExists) {
+    const post = await Post.findById(postId);
+    if (!post) {
       return res.status(404).json({ success: false, message: "Post not found" });
     }
 
@@ -21,29 +25,33 @@ const createComment = async (req, res) => {
 
     res.status(201).json({ success: true, message: "Comment added!", comment: newComment });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
+    console.error("Error creating comment:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
 
-// Get all Comments for a Post
+//  Get all Comments for a Post
 const getCommentsByPost = async (req, res) => {
   try {
     const { postId } = req.params;
 
-    const comments = await Comment.find({ postId }).populate("author", "username profilePicture").sort({ createdAt: -1 });
+    const comments = await Comment.find({ postId })
+      .populate("author", "name profilePicture")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, comments });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
+    console.error("Error fetching comments:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
 
-// Delete a Comment (Only Author or Admin)
+//  Delete a Comment (Only Author or Admin)
 const deleteComment = async (req, res) => {
   try {
     const { commentId } = req.params;
     const userId = req.user.id; // Get logged-in user
-    const userRole = req.user.role; // Role from auth middleware
+    const userRole = req.user.role; // Get user role
 
     const comment = await Comment.findById(commentId);
     if (!comment) {
@@ -55,10 +63,11 @@ const deleteComment = async (req, res) => {
       return res.status(403).json({ success: false, message: "Unauthorized to delete this comment" });
     }
 
-    await Comment.findByIdAndDelete(commentId);
+    await comment.deleteOne(); // More efficient than `findByIdAndDelete`
     res.status(200).json({ success: true, message: "Comment deleted successfully" });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
+    console.error("Error deleting comment:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
 

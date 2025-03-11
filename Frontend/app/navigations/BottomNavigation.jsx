@@ -1,34 +1,49 @@
-import React from "react";
-import { View, Text } from "react-native";
+import React, { useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatScreen from "../screens/ChatScreen";
-import FeedScreen from "../screens/FeedScreen";
+import HomeScreen from "../screens/HomeScreen";
 import PostScreen from "../screens/PostScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import LanguageDropdown from "../components/LanguageSelector";
+import { Text, View } from "react-native";
+import { useUser } from "@/context/userContext";
+import { date } from "yup";
 // Create the Bottom Tab Navigator
 const Tab = createBottomTabNavigator();
 
-export default function FeedNavigator() {
+export default function BottomNavigator() {
+  const { language, setLanguage } = useUser();
+
   return (
     <Tab.Navigator
       screenOptions={{
         tabBarActiveTintColor: "white",
-        headerShown: false,
-        tabBarActiveBackgroundColor: "#101584",
+        tabBarActiveBackgroundColor: "#006400",
         tabBarInactiveTintColor: "white",
 
         tabBarStyle: {
-          backgroundColor: "purple",
+          backgroundColor: "#009000",
         },
       }}
     >
       <Tab.Screen
-        name="Feed"
-        component={FeedScreen}
+        name="Home"
+        component={HomeScreen}
         options={{
+          headerStyle: {
+            backgroundColor: "#f3f4f6",
+            shadowColor: "transparent",
+          },
+
+          headerRight: () => (
+            <View style={{ alignItems: "center", paddingRight: 10 }}>
+              <LanguageDropdown value={language} onChange={setLanguage} />
+            </View>
+          ),
+          headerTitle: "Welcome back, Farmer 🌱",
           tabBarIcon: ({ color, size = 30 }) => (
-            <Ionicons name="newspaper" size={size} color={color} />
+            <MaterialCommunityIcons name="home" size={size} color={color} />
           ),
         }}
       />
@@ -36,8 +51,18 @@ export default function FeedNavigator() {
         name="chat"
         component={ChatScreen}
         options={{
+          headerStyle: {
+            backgroundColor: "#f3f4f6",
+            shadowColor: "transparent",
+          },
+          headerTitle: "Posts",
+          headerRight: () => (
+            <View className="pr-2">
+              <Text> {new Date().toLocaleDateString()}</Text>
+            </View>
+          ),
           tabBarIcon: ({ color, size = 30 }) => (
-            <Ionicons name="chatbubble" size={size} color={color} />
+            <MaterialCommunityIcons name="chat" size={size} color={color} />
           ),
         }}
       />
@@ -46,7 +71,7 @@ export default function FeedNavigator() {
         component={PostScreen}
         options={{
           tabBarIcon: ({ color, size = 30 }) => (
-            <Ionicons name="add-circle" size={size} color={color} />
+            <MaterialCommunityIcons name="plus" size={size} color={color} />
           ),
         }}
       />
@@ -55,7 +80,7 @@ export default function FeedNavigator() {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ color, size = 30 }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <MaterialCommunityIcons name="account" size={size} color={color} />
           ),
         }}
       />

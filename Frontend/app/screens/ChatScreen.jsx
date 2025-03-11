@@ -108,7 +108,7 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1"
     >
-      <View className="p-2 flex-1">
+      <View className="p-2 flex-1 bg-[#f3f4f6]">
         <FlatList
           ref={flatlist}
           className="gap-4"

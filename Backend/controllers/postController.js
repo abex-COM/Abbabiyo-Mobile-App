@@ -1,12 +1,12 @@
 const Post = require("../models/postModel");
 
-// ✅ Create a Post
+//  Create a Post
 exports.createPost = async (req, resp) => {
   try {
-    const { author, text, image } = req.body;
-
-    if (!author || !text) {
-      return resp.status(400).json({ status: "fail", message: "Author and text are required" });
+    const { text, image } = req.body;
+    const author = req.user.id; // Extract author from authenticated user
+    if (!text) {
+      return resp.status(400).json({ status: "fail", message: "Text is required" });
     }
 
     const newPost = new Post({ author, text, image });
@@ -19,7 +19,7 @@ exports.createPost = async (req, resp) => {
   }
 };
 
-// ✅ Get All Posts
+//  Get All Posts
 exports.getAllPosts = async (req, resp) => {
   try {
     const posts = await Post.find().populate("author", "username email").sort({ createdAt: -1 });
@@ -35,8 +35,9 @@ exports.getAllPosts = async (req, resp) => {
   }
 };
 
-// ✅ Get Post by ID
+//  Get Post by ID
 exports.getPostById = async (req, resp) => {
+  console.log(req.params)
   try {
     const { postId } = req.params;
     const post = await Post.findById(postId).populate("author", "username email");
@@ -52,7 +53,7 @@ exports.getPostById = async (req, resp) => {
   }
 };
 
-// ✅ Delete a Post
+//  Delete a Post
 exports.deletePost = async (req, resp) => {
   try {
     const { postId } = req.params;
@@ -68,34 +69,46 @@ exports.deletePost = async (req, resp) => {
     resp.status(500).json({ status: "fail", error: "Internal server error" });
   }
 };
-
-// ✅ Like a Post
-exports.likePost = async (req, resp) => {
+exports.likePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) {
-      return resp.status(400).json({ status: "fail", message: "User ID is required" });
-    }
+    const userId = req.user.id; // Get user ID from authenticated user
 
     const post = await Post.findById(postId);
     if (!post) {
-      return resp.status(404).json({ status: "fail", message: "Post not found" });
+      return res.status(404).json({ success: false, message: "Post not found" });
     }
 
-    // Check if the user already liked the post
-    const isLiked = post.likes.includes(userId);
-    if (isLiked) {
+    const hasLiked = post.likes.includes(userId);
+    if (hasLiked) {
+      // Unlike: Remove userId from likes array
       post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
+      // Like: Add userId to likes array
       post.likes.push(userId);
     }
 
     await post.save();
-    resp.status(200).json({ status: "success", message: isLiked ? "Post unliked" : "Post liked", post });
+    res.status(200).json({ success: true, message: hasLiked ? "Post unliked" : "Post liked", post });
+  } catch (error) {
+    console.error("Error liking/unliking post:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// Get Posts by Author
+exports.getPostsByAuthor = async (req, resp) => {
+  try {
+    const { authorId } = req.params;  // Author ID passed as a parameter in the route
+    const posts = await Post.find({ author: authorId }).populate("author", "name email").sort({ createdAt: -1 });
+
+    if (posts.length === 0) {
+      return resp.status(404).json({ status: "fail", message: "No posts found for this author" });
+    }
+
+    resp.status(200).json({ status: "success", posts });
   } catch (err) {
-    console.error("Error liking post:", err);
+    console.error("Error fetching posts by author:", err);
     resp.status(500).json({ status: "fail", error: "Internal server error" });
   }
 };
