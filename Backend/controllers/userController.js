@@ -3,32 +3,37 @@ const jwt = require("jsonwebtoken");
 // Creating user
 exports.signup = async (req, resp) => {
   try {
-    const { email } = req.body;
+    const { email, location } = req.body;
+    const { region, zone, woreda } = location;
 
     const userExist = await User.findOne({ email });
     if (userExist) {
-      return resp
-        .status(400)
-        .json({
-          status: "fail",
-          message: "email alredy exist, please find another one",
-        });
+      return resp.status(400).json({
+        status: "fail",
+        message: "email alredy exist, please find another one",
+      });
     }
 
+    if (!region || !woreda || !zone) {
+      return resp.status(400).json({
+        status: "fail",
+        message: "please fill all locations",
+      });
+    }
     const newUser = new User(req.body);
     await newUser.save();
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET);
 
     resp.status(201).json({ status: "success", newUser, token });
-  } catch (error) {
-    if (error.code === 11000) {
-      const duplicateField = Object.keys(error.keyValue)[0]; // Get the field that caused the duplication
+  } catch (err) {
+    if (err.code === 11000) {
+      const duplicateField = Object.keys(err.keyValue)[0]; // Get the field that caused the duplication
       return resp.status(400).json({
         status: "fail",
         message: `${duplicateField} already exists. Please use a different one.`,
       });
     }
-    resp.status(500).json({ status: "fail", error: err.message });
+    resp.status(500).json({ status: "fail", err: err.message });
   }
 };
 

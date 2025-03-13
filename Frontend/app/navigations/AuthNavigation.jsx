@@ -6,6 +6,7 @@ import LoginScreen from "../screens/LoginScreen";
 import SignupScreen from "../screens/SignupScreen";
 import FeedNavigator from "../navigations/BottomNavigation";
 import welcomeScreen from "../screens/welcomeScreen";
+
 export default function AuthNavigator() {
   return (
     <Stack.Navigator

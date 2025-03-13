@@ -5,6 +5,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  ScrollView,
+  StyleSheet,
 } from "react-native";
 import axios from "axios";
 import { Formik } from "formik";
@@ -12,63 +14,64 @@ import * as Yup from "yup";
 import MyButton from "../components/MyButton";
 import MyTextInput from "../components/MyTextInput";
 import ErrorText from "../components/ErrorText";
-import RNPickerSelect from "react-native-picker-select";
+import DropDownPicker from "react-native-dropdown-picker";
 import { useNavigation } from "expo-router";
 import ethiopianRegions, {
   ethiopianZones,
   ethiopianWoredas,
 } from "./../constants/ethiopianData";
 import { useUser } from "@/context/userContext";
-
-// Validation Schema
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
-  passwordConfirm: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-    .required("Password confirmation is required"),
-  region: Yup.string().required("Region is required"),
-  zone: Yup.string().required("Zone is required"),
-  woreda: Yup.string().required("Woreda is required"),
-});
+import Toast from "react-native-toast-message";
 
 export default function SignupScreen() {
   const navigation = useNavigation();
-
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [selectedZone, setSelectedZone] = useState(null);
   const { storeToken } = useUser();
+
+  // Dropdown states
+  const [regionOpen, setRegionOpen] = useState(false);
+  const [regionValue, setRegionValue] = useState(null);
+
+  const [zoneOpen, setZoneOpen] = useState(false);
+  const [zoneValue, setZoneValue] = useState(null);
+
+  const [woredaOpen, setWoredaOpen] = useState(false);
+  const [woredaValue, setWoredaValue] = useState(null);
+
   const handleSubmit = async (values) => {
     try {
       const formattedData = {
         name: values.name,
         email: values.email,
         password: values.password,
-        confirmPassword: values.passwordConfirm, // Fixed field name
+        confirmPassword: values.passwordConfirm,
         location: {
-          region: values.region,
-          zone: values.zone,
-          woreda: values.woreda,
+          region: regionValue,
+          zone: zoneValue,
+          woreda: woredaValue,
         },
       };
 
       const resp = await axios.post(
-        "http://192.168.234.196:8000/api/users/signup",
+        "http://192.168.74.196:8000/api/users/signup",
         formattedData
       );
       storeToken(resp.data.token);
       navigation.replace("bottomNavigator");
+      Toast.show({
+        type: "success",
+        text1: "Registered Successfully",
+        shadow: true,
+        animation: true,
+        hideOnPress: true,
+      });
     } catch (error) {
       if (error.response) {
-        console.log("Server Error:", error.response.data);
-        alert(error.response.data.message);
-      } else if (error.request) {
-        console.log("No Response:", error.request);
-      } else {
-        console.log("Request Error:", error.message);
+        console.log(error.response?.data || error.message);
+        Toast.show({
+          type: "error",
+          text1: "Signup failed",
+          text2: error.response?.data?.message,
+        });
       }
     }
   };
@@ -79,13 +82,14 @@ export default function SignupScreen() {
       style={{ flex: 1 }}
     >
       <StatusBar backgroundColor="#009000" />
+
       <View
-        style={{
-          flex: 1,
-          backgroundColor: "orange-100",
-          justifyContent: "center",
-          alignItems: "center",
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingVertical: 20,
+          paddingHorizontal: 20,
         }}
+        keyboardShouldPersistTaps="handled"
       >
         <Formik
           initialValues={{
@@ -93,11 +97,19 @@ export default function SignupScreen() {
             email: "",
             password: "",
             passwordConfirm: "",
-            region: "",
-            zone: "",
-            woreda: "",
           }}
-          validationSchema={validationSchema}
+          validationSchema={Yup.object({
+            name: Yup.string().required("Name is required"),
+            email: Yup.string()
+              .email("Invalid email")
+              .required("Email is required"),
+            password: Yup.string()
+              .min(6, "Password must be at least 6 characters")
+              .required("Password is required"),
+            passwordConfirm: Yup.string()
+              .oneOf([Yup.ref("password"), null], "Passwords must match")
+              .required("Password confirmation is required"),
+          })}
           onSubmit={handleSubmit}
         >
           {({
@@ -105,107 +117,113 @@ export default function SignupScreen() {
             handleBlur,
             handleSubmit,
             values,
-            setFieldValue,
             isSubmitting,
             errors,
             touched,
           }) => (
-            <View style={{ gap: 16, width: "80%", alignSelf: "center" }}>
-              {/* Name Field */}
-              <MyTextInput
-                placeholder="Name"
-                value={values.name}
-                onChangeText={handleChange("name")}
-                onBlur={handleBlur("name")}
-              />
-              {touched.name && errors.name && (
-                <ErrorText message={errors.name} />
-              )}
+            <View style={styles.container}>
+              <View style={styles.form}>
+                {/* Input Fields */}
+                <MyTextInput
+                  placeholder="Name"
+                  value={values.name}
+                  onChangeText={handleChange("name")}
+                  onBlur={handleBlur("name")}
+                />
+                {touched.name && errors.name && (
+                  <ErrorText message={errors.name} />
+                )}
 
-              {/* Email Field */}
-              <MyTextInput
-                placeholder="Email"
-                value={values.email}
-                onChangeText={handleChange("email")}
-                onBlur={handleBlur("email")}
-              />
-              {touched.email && errors.email && (
-                <ErrorText message={errors.email} />
-              )}
+                <MyTextInput
+                  placeholder="Email"
+                  value={values.email}
+                  onChangeText={handleChange("email")}
+                  onBlur={handleBlur("email")}
+                />
+                {touched.email && errors.email && (
+                  <ErrorText message={errors.email} />
+                )}
 
-              {/* Password Field */}
+                <MyTextInput
+                  placeholder="Password"
+                  value={values.password}
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
+                  secureTextEntry={true}
+                />
+                {touched.password && errors.password && (
+                  <ErrorText message={errors.password} />
+                )}
 
-              <MyTextInput
-                placeholder="Password"
-                value={values.password}
-                onChangeText={handleChange("password")}
-                onBlur={handleBlur("password")}
-                secureText={true}
-              />
-              {touched.password && errors.password && (
-                <ErrorText message={errors.password} />
-              )}
+                <MyTextInput
+                  placeholder="Confirm Password"
+                  value={values.passwordConfirm}
+                  onChangeText={handleChange("passwordConfirm")}
+                  onBlur={handleBlur("passwordConfirm")}
+                  secureTextEntry={true}
+                />
+                {touched.passwordConfirm && errors.passwordConfirm && (
+                  <ErrorText message={errors.passwordConfirm} />
+                )}
 
-              {/* Confirm Password Field */}
-              <MyTextInput
-                placeholder="Confirm Password"
-                value={values.passwordConfirm}
-                onChangeText={handleChange("passwordConfirm")}
-                onBlur={handleBlur("passwordConfirm")}
-                secureText={true}
-              />
-              {touched.passwordConfirm && errors.passwordConfirm && (
-                <ErrorText message={errors.passwordConfirm} />
-              )}
+                {/* Region Selector */}
+                <DropDownPicker
+                  open={regionOpen}
+                  setOpen={setRegionOpen}
+                  value={regionValue}
+                  items={ethiopianRegions}
+                  setValue={setRegionValue}
+                  placeholder="Select your region"
+                  style={styles.picker}
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                  onChangeValue={(val) => {
+                    setRegionValue(val);
+                    setZoneValue(null);
+                    setWoredaValue(null);
+                  }}
+                />
 
-              {/* Region Selection */}
-              <RNPickerSelect
-                onValueChange={(value) => {
-                  setFieldValue("region", value);
-                  setSelectedRegion(value);
-                  setFieldValue("zone", ""); // Reset zone when region changes
-                  setSelectedZone(null); // Clear zone state
-                  setFieldValue("woreda", ""); // Reset woreda when region changes
-                }}
-                items={ethiopianRegions}
-                value={values.region}
-                placeholder={{ label: "Select your region", value: null }}
-                accessibilityLabel="Select your region"
-              />
+                {/* Zone Selector */}
+                <DropDownPicker
+                  open={zoneOpen}
+                  setOpen={setZoneOpen}
+                  value={zoneValue}
+                  items={ethiopianZones[regionValue] || []}
+                  setValue={setZoneValue}
+                  placeholder="Select your zone"
+                  disabled={!regionValue}
+                  style={styles.picker}
+                  zIndex={2000}
+                  zIndexInverse={2000}
+                  onChangeValue={(val) => {
+                    setZoneValue(val);
+                    setWoredaValue(null);
+                  }}
+                />
 
-              {/* Zone Selection */}
-              <RNPickerSelect
-                onValueChange={(value) => {
-                  setFieldValue("zone", value);
-                  setSelectedZone(value);
-                  setFieldValue("woreda", ""); // Reset woreda when zone changes
-                }}
-                items={ethiopianZones[selectedRegion] || []}
-                value={values.zone}
-                placeholder={{ label: "Select your zone", value: null }}
-                accessibilityLabel="Select your zone"
-                disabled={!selectedRegion} // Disable if no region is selected
-              />
+                {/* Woreda Selector */}
+                <DropDownPicker
+                  open={woredaOpen}
+                  setOpen={setWoredaOpen}
+                  value={woredaValue}
+                  items={ethiopianWoredas[zoneValue] || []}
+                  setValue={setWoredaValue}
+                  placeholder="Select your woreda"
+                  disabled={!zoneValue}
+                  style={styles.picker}
+                  zIndex={1000}
+                  zIndexInverse={3000}
+                />
 
-              {/* Woreda Selection */}
-              <RNPickerSelect
-                onValueChange={(value) => {
-                  setFieldValue("woreda", value);
-                }}
-                items={ethiopianWoredas[selectedZone] || []}
-                value={values.woreda}
-                placeholder={{ label: "Select your woreda", value: null }}
-                accessibilityLabel="Select your woreda"
-                disabled={!selectedZone} // Disable if no zone is selected
-              />
-
-              {/* Submit Button */}
-              <MyButton
-                onPress={handleSubmit}
-                title="Submit"
-                className="self-center w-max h-max"
-                isSubmitting={isSubmitting}
-              />
+                {/* Submit Button */}
+                <MyButton
+                  onPress={handleSubmit}
+                  title="Sign Up"
+                  isSubmitting={isSubmitting}
+                  style={{ margin: "auto", width: 200 }}
+                />
+              </View>
             </View>
           )}
         </Formik>
@@ -213,3 +231,22 @@ export default function SignupScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    justifyContent: "center",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  form: {
+    gap: 10,
+  },
+  picker: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+});

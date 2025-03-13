@@ -4,7 +4,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -12,6 +12,7 @@ import MyButton from "../components/MyButton";
 import MyTextInput from "../components/MyTextInput";
 import ErrorText from "../components/ErrorText";
 import axios from "axios";
+import Toast from "react-native-toast-message"; // Ensure correct import
 import { useUser } from "@/context/userContext";
 
 // Validation Schema using Yup
@@ -23,37 +24,59 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function LoginScreen({ navigation }) {
-  const { storeToken, token } = useUser();
+  const { storeToken } = useUser();
 
   const handleSubmit = useCallback(
     async (values) => {
       try {
         const resp = await axios.post(
-          "http://192.168.234.196:8000/api/users/login",
+          "http://192.168.74.196:8000/api/users/login",
           values
         );
 
         await storeToken(resp.data.token);
         navigation.replace("bottomNavigator");
+
+        // Correct usage of Toast.show
+        Toast.show({
+          type: "success", // Type of toast (success, error, info)
+          text1: "Login Successful",
+          text2: "Welcome back!", // You can customize this message
+          shadow: true,
+          animation: true,
+          hideOnPress: true,
+
+          text2Style: {
+            fontSize: 15,
+          },
+        });
       } catch (error) {
         if (error.response) {
           console.log("Server Error:", error.response.data);
-          alert(error.response.data.message);
+          Toast.show({
+            type: "error",
+            text1: "Login Failed",
+            text2: error.response.data.message,
+          });
         } else if (error.request) {
           console.log("No Response:", error.request);
+          Toast.show({
+            type: "error",
+            text1: "Request Failed",
+            text2: "Please try again later.",
+          });
         } else {
           console.log("Request Error:", error.message);
+          Toast.show({
+            type: "error",
+            text1: "Error",
+            text2: error.message,
+          });
         }
       }
     },
     [storeToken, navigation]
   );
-
-  useEffect(() => {
-    if (token) {
-      navigation.replace("bottomNavigator");
-    }
-  }, [navigation]); //  Dependency array includes `token` and `navigation`
 
   return (
     <KeyboardAvoidingView
@@ -61,14 +84,7 @@ export default function LoginScreen({ navigation }) {
       style={{ flex: 1 }}
     >
       <StatusBar backgroundColor="#009000" />
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "orange-100",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <View style={styles.form}>
         <Formik
           initialValues={{
             email: "",
@@ -112,12 +128,11 @@ export default function LoginScreen({ navigation }) {
                 <ErrorText message={errors.password} />
               )}
 
-              {/* Submit Button */}
               <MyButton
-                onPress={handleSubmit} //  No unnecessary re-renders due to `useCallback`
-                title="Submit"
+                onPress={handleSubmit} // No unnecessary re-renders due to `useCallback`
+                title="Login"
                 isSubmitting={isSubmitting}
-                className="self-center h-max w-max"
+                style={{ margin: "auto", width: 200, height: 50 }}
               />
             </View>
           )}
@@ -126,3 +141,13 @@ export default function LoginScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  form: {
+    flex: 1,
+    backgroundColor: "orange-100",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "80%",
+  },
+});

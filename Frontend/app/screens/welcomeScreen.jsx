@@ -32,13 +32,15 @@ export default function Welcome({ navigation }) {
       <View className="gap-5">
         <MyButton
           title="Login"
-          className="bg-[#009000]"
           onPress={() => navigation.navigate("loginScreen")}
+          style={{ width: 200 }}
+          textStyle={{ fontSize: 20 }}
         />
         <MyButton
           title="SignUp"
-          className="bg-[#009000]"
+          style={{ width: 200 }}
           onPress={() => navigation.navigate("signupScreen")}
+          textStyle={{ fontSize: 20 }}
         />
       </View>
     </ImageBackground>

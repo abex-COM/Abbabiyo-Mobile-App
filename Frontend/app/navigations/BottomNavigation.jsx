@@ -4,11 +4,10 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatScreen from "../screens/ChatScreen";
 import HomeScreen from "../screens/HomeScreen";
 import PostScreen from "../screens/PostScreen";
-import ProfileScreen from "../screens/ProfileScreen";
 import LanguageDropdown from "../components/LanguageSelector";
 import { Text, View } from "react-native";
 import { useUser } from "@/context/userContext";
-import { date } from "yup";
+import PageStack from "../navigations/PageNavigator";
 // Create the Bottom Tab Navigator
 const Tab = createBottomTabNavigator();
 
@@ -77,8 +76,9 @@ export default function BottomNavigator() {
       />
       <Tab.Screen
         name="Account"
-        component={ProfileScreen}
+        component={PageStack}
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, size = 30 }) => (
             <MaterialCommunityIcons name="account" size={size} color={color} />
           ),

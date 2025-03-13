@@ -1,11 +1,13 @@
 const express = require("express");
+const userRoute = require("./routes/userRoute");
+const postRoute = require("./routes/postRoute");
+const commentRoute = require("./routes/commentRoute");
 const cors = require("cors");
 // const socketIo = require("socket.io");
 const http = require("http");
 require("dotenv").config(); // Make sure this is at the very top
 const mongoose = require("mongoose");
 const app = express();
-app.use(express.json()); // Parse JSON data
 
 const server = http.createServer(app);
 
@@ -16,6 +18,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(express.json()); // Parse JSON data
 
 // const io = socketIo(server, {
 //   cors: {
@@ -27,9 +30,6 @@ app.use(cors(corsOptions));
 
 // Middleware
 
-const userRoute = require("./routes/userRoute");
-const postRoute = require("./routes/postRoute");
-const commentRoute = require("./routes/commentRoute");
 // const studentRoute = require("./routes/studentRoute");
 // const attendanceRoute = require("./routes/attendanceRoute"); // Corrected typo
 
@@ -57,7 +57,6 @@ app.all("/*", (req, res) => {
 // Set up the port
 // Start the server
 
-
 mongoose
   .connect(process.env.DB_URI)
   .then(() => console.log("Connected to MONGODB"))
@@ -69,4 +68,4 @@ server.listen(PORT, () => {
 });
 
 // Export both app and server
-module.exports = { app};
+module.exports = { app };
