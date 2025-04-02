@@ -3,17 +3,18 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatScreen from "../screens/ChatScreen";
 import HomeScreen from "../screens/HomeScreen";
-import PostScreen from "../screens/PostScreen";
 import LanguageDropdown from "../components/LanguageSelector";
-import { Text, View } from "react-native";
-import { useUser } from "@/context/userContext";
+import { ActivityIndicator, Text, View } from "react-native";
+import { useUser } from "@/context/UserContext";
 import PageStack from "../navigations/PageNavigator";
+import { useLanguage } from "@/context/LanguageContexts";
+import { useTranslation } from "react-i18next";
 // Create the Bottom Tab Navigator
 const Tab = createBottomTabNavigator();
 
 export default function BottomNavigator() {
-  const { language, setLanguage } = useUser();
-
+  const { language, setLanguage } = useLanguage();
+  const { t } = useTranslation();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -30,6 +31,7 @@ export default function BottomNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
+          title: t("home"),
           headerStyle: {
             backgroundColor: "#f3f4f6",
             shadowColor: "transparent",
@@ -40,20 +42,18 @@ export default function BottomNavigator() {
               <LanguageDropdown value={language} onChange={setLanguage} />
             </View>
           ),
-          headerTitle: "Welcome back, Farmer 🌱",
+          headerTitle: () => <HeaderWelcome language={language} />,
           tabBarIcon: ({ color, size = 30 }) => (
             <MaterialCommunityIcons name="home" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="chat"
+        name="Chat"
         component={ChatScreen}
         options={{
-          headerStyle: {
-            backgroundColor: "#f3f4f6",
-            shadowColor: "transparent",
-          },
+          title: t("chat"),
+
           headerTitle: "Posts",
           headerRight: () => (
             <View className="pr-2">
@@ -65,19 +65,17 @@ export default function BottomNavigator() {
           ),
         }}
       />
-      <Tab.Screen
-        name="Post"
-        component={PostScreen}
-        options={{
-          tabBarIcon: ({ color, size = 30 }) => (
-            <MaterialCommunityIcons name="plus" size={size} color={color} />
-          ),
-        }}
-      />
+
       <Tab.Screen
         name="Account"
         component={PageStack}
         options={{
+          title:
+            language === "en"
+              ? "Account"
+              : language == "om"
+                ? "Akkaawuntii"
+                : "አካውንት",
           headerShown: false,
           tabBarIcon: ({ color, size = 30 }) => (
             <MaterialCommunityIcons name="account" size={size} color={color} />
@@ -87,3 +85,16 @@ export default function BottomNavigator() {
     </Tab.Navigator>
   );
 }
+
+const HeaderWelcome = () => {
+  const { user } = useUser();
+  const { t } = useTranslation();
+  return (
+    <View style={{ flexDirection: "row", gap: 5 }}>
+      <Text style={{ fontWeight: "500" }}>{t("welcome_back")}</Text>
+      <Text style={{ fontWeight: "900", color: "green" }}>
+        {user?.name ? user?.name : <ActivityIndicator />}
+      </Text>
+    </View>
+  );
+};

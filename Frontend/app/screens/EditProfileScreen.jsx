@@ -8,7 +8,7 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import axios from "axios";
 import { Formik } from "formik";
@@ -23,9 +23,11 @@ import ethiopianRegions, {
   ethiopianWoredas,
 } from "./../constants/ethiopianData";
 import Toast from "react-native-toast-message";
-import { useUser } from "@/context/userContext";
+import { useUser } from "@/context/UserContext";
+import { t } from "i18next";
 
 export default function EditProfileScreen() {
+  const { language } = useUser();
   const navigation = useNavigation();
 
   const [selectedRegion, setSelectedRegion] = useState(null);
@@ -33,8 +35,7 @@ export default function EditProfileScreen() {
   const [regionOpen, setRegionOpen] = useState(false);
   const [zoneOpen, setZoneOpen] = useState(false);
   const [woredaOpen, setWoredaOpen] = useState(false);
-  const { token } = useUser();
-  const { user, isLoading, refetch } = useUser();
+  const { user, isLoading, refetch, token } = useUser();
   const [initialValues, setInitialValue] = useState({
     name: "",
     email: "",
@@ -43,6 +44,7 @@ export default function EditProfileScreen() {
     zone: "",
     woreda: "",
   });
+
   useEffect(() => {
     setInitialValue({
       name: user.name || "",
@@ -54,7 +56,8 @@ export default function EditProfileScreen() {
     });
     setSelectedRegion(user.location?.region || "");
     setSelectedZone(user.location?.zone || "");
-  }, []);
+  }, [user]);
+
   const handleSubmit = async (values) => {
     try {
       const formattedData = {
@@ -69,11 +72,10 @@ export default function EditProfileScreen() {
       };
 
       await axios.patch(
-        "http://192.168.74.196:8000/api/users/profile/update",
+        "http://10.42.0.1:8000/api/users/profile/update",
         formattedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       refetch();
       navigation.goBack();
       Toast.show({
@@ -84,13 +86,19 @@ export default function EditProfileScreen() {
         hideOnPress: true,
       });
     } catch (error) {
+      console.log(error);
       Toast.show({
         type: "error",
-        text1: "Signup failed",
+        text1: "Update failed",
         text2: error.response?.data?.message || "An error occurred",
       });
     }
   };
+
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -104,10 +112,12 @@ export default function EditProfileScreen() {
             enableReinitialize={true}
             validationSchema={Yup.object({
               name: Yup.string().required("Name is required"),
-              email: Yup.string().email("Invalid email"),
+              email: Yup.string()
+                .email("Invalid email")
+                .required("Email is required"),
               password: Yup.string()
                 .min(6, "Password must be at least 6 characters")
-                .required("password required"),
+                .required("Password is required"),
             })}
             onSubmit={handleSubmit}
           >
@@ -146,18 +156,20 @@ export default function EditProfileScreen() {
                     value={values.password}
                     onChangeText={handleChange("password")}
                     onBlur={handleBlur("password")}
-                    secureTextEntry={true}
+                    secureText={true}
                   />
                   {touched.password && errors.password && (
                     <ErrorText message={errors.password} />
                   )}
 
+                  {/* Region Dropdown */}
                   <DropDownPicker
                     open={regionOpen}
                     setOpen={setRegionOpen}
                     value={values.region}
                     items={ethiopianRegions}
                     setValue={(val) => {
+                      console.log("Selected Region:", val()); // Debugging the region selection
                       setFieldValue("region", val());
                       setSelectedRegion(val());
                       setFieldValue("zone", "");
@@ -167,14 +179,17 @@ export default function EditProfileScreen() {
                     placeholder="Select your region"
                     style={styles.picker}
                   />
+
+                  {/* Zone Dropdown */}
                   <DropDownPicker
                     open={zoneOpen}
                     setOpen={setZoneOpen}
                     value={values.zone}
                     items={ethiopianZones[selectedRegion] || []}
                     setValue={(val) => {
+                      console.log("Selected Zone:", val()); // Debugging the zone selection
                       setFieldValue("zone", val());
-                      setSelectedZone(val());
+                      setSelectedZone(val);
                       setFieldValue("woreda", "");
                     }}
                     placeholder="Select your zone"
@@ -182,19 +197,22 @@ export default function EditProfileScreen() {
                     style={styles.picker}
                     zIndex={10000}
                   />
+
+                  {/* Woreda Dropdown */}
                   <DropDownPicker
                     open={woredaOpen}
                     setOpen={setWoredaOpen}
                     value={values.woreda}
                     items={ethiopianWoredas[selectedZone] || []}
-                    setValue={setFieldValue.bind(null, "woreda")}
+                    setValue={(val) => setFieldValue("woreda", val())}
                     placeholder="Select your woreda"
                     disabled={!selectedZone}
                     style={styles.picker}
                   />
+
                   <MyButton
                     onPress={handleSubmit}
-                    title="Update"
+                    title={t("update")}
                     isSubmitting={isSubmitting}
                     style={styles.button}
                   />

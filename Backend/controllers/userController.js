@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
-// Creating user
+const { userSockets } = require("../socket/webSocket"); // Import userSockets
+
 exports.signup = async (req, resp) => {
   try {
     const { email, location } = req.body;
@@ -10,16 +11,17 @@ exports.signup = async (req, resp) => {
     if (userExist) {
       return resp.status(400).json({
         status: "fail",
-        message: "email alredy exist, please find another one",
+        message: "Email already exists, please find another one",
       });
     }
 
     if (!region || !woreda || !zone) {
       return resp.status(400).json({
         status: "fail",
-        message: "please fill all locations",
+        message: "Please fill all location fields",
       });
     }
+
     const newUser = new User(req.body);
     await newUser.save();
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET);
@@ -41,7 +43,6 @@ exports.login = async (req, resp) => {
   try {
     const { email, password } = req.body;
 
-    // Using select to deselect password
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -88,7 +89,7 @@ exports.getUser = async (req, resp) => {
 exports.updateUser = async (req, resp) => {
   try {
     const userId = req.user.id; // From authenticateUser middleware
-    const { name, email, profilePicture } = req.body; // Fields to update
+    const { name, email, profilePicture, password } = req.body; // Fields to update
 
     const user = await User.findById(userId);
     if (!user) {
@@ -97,13 +98,25 @@ exports.updateUser = async (req, resp) => {
         .json({ status: "fail", message: "User not found" });
     }
 
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return resp
+        .status(400)
+        .json({ status: "fail", message: "Wrong password" });
+    }
+
     // Update only the fields provided by the user
     if (name) user.name = name;
     if (email) user.email = email;
     if (profilePicture) user.profilePicture = profilePicture;
 
-    // Save the updated user document
-    await user.save();
+    await user.save(); // Save updated user info
+
+    // Emit WebSocket event to notify the specific user
+    const io = req.app.get("socketio"); // Get io instance from app
+    if (io && userSockets[userId]) {
+      io.to(userSockets[userId].id).emit("userUpdated", user); // Emit event with updated user data
+    }
 
     resp
       .status(200)

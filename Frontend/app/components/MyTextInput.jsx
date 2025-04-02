@@ -20,7 +20,6 @@ export default function MyTextInput({
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
-
   return (
     <View style={styles.container}>
       <TextInput

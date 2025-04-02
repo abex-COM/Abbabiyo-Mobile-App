@@ -2,16 +2,10 @@ import { ImageBackground, StatusBar, Text, View } from "react-native";
 import React, { useEffect } from "react";
 import background from "../../assets/images/farmer2.png";
 import MyButton from "../components/MyButton";
-import { useUser } from "@/context/userContext";
+import { useUser } from "@/context/UserContext";
 
 export default function Welcome({ navigation }) {
-  const { token } = useUser();
-  // useEffect(() => {
-  //   console.log(token);
-  //   if (token) {
-  //     navigation.replace("bottomNavigator");
-  //   }
-  // }, []); //  Dependency array includes `token` and `navigation`
+  const { token, language } = useUser();
 
   return (
     <ImageBackground
@@ -26,7 +20,11 @@ export default function Welcome({ navigation }) {
       />
       <View className="text-center">
         <Text className="text-green-100 text-2xl font-bold mb-40   p-4 rounded-[10rem]">
-          Welcome to Abbabiyo AI Assitant
+          {language === "en"
+            ? "Welcome to Abbabiyo AI Assitant "
+            : language == "om"
+              ? "Baga  Gara Abbabiyo AI tti Nagaa n Dhufta"
+              : "ወደ አባቢዮ  AI ረዳት እንኳን በደህና መጡ"}
         </Text>
       </View>
       <View className="gap-5">

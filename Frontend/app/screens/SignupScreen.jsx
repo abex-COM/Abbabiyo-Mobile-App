@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   KeyboardAvoidingView,
   Platform,
   StatusBar,
-  ScrollView,
   StyleSheet,
 } from "react-native";
 import axios from "axios";
@@ -20,13 +18,12 @@ import ethiopianRegions, {
   ethiopianZones,
   ethiopianWoredas,
 } from "./../constants/ethiopianData";
-import { useUser } from "@/context/userContext";
+import { useUser } from "@/context/UserContext";
 import Toast from "react-native-toast-message";
 
 export default function SignupScreen() {
   const navigation = useNavigation();
   const { storeToken } = useUser();
-
   // Dropdown states
   const [regionOpen, setRegionOpen] = useState(false);
   const [regionValue, setRegionValue] = useState(null);
@@ -52,7 +49,7 @@ export default function SignupScreen() {
       };
 
       const resp = await axios.post(
-        "http://192.168.74.196:8000/api/users/signup",
+        "http://10.42.0.1:8000/api/users/signup",
         formattedData
       );
       storeToken(resp.data.token);
@@ -149,7 +146,7 @@ export default function SignupScreen() {
                   value={values.password}
                   onChangeText={handleChange("password")}
                   onBlur={handleBlur("password")}
-                  secureTextEntry={true}
+                  secureText={true}
                 />
                 {touched.password && errors.password && (
                   <ErrorText message={errors.password} />
@@ -160,7 +157,7 @@ export default function SignupScreen() {
                   value={values.passwordConfirm}
                   onChangeText={handleChange("passwordConfirm")}
                   onBlur={handleBlur("passwordConfirm")}
-                  secureTextEntry={true}
+                  secureText={true}
                 />
                 {touched.passwordConfirm && errors.passwordConfirm && (
                   <ErrorText message={errors.passwordConfirm} />

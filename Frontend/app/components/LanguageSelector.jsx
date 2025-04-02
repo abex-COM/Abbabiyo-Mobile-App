@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 
 const LanguageDropdown = ({

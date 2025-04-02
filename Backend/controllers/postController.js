@@ -26,7 +26,7 @@ exports.createPost = async (req, resp) => {
 exports.getAllPosts = async (req, resp) => {
   try {
     const posts = await Post.find()
-      .populate("author", "username email")
+      .populate("author", "name email")
       .sort({ createdAt: -1 });
 
     if (posts.length === 0) {
@@ -135,7 +135,7 @@ exports.getPostsByAuthor = async (req, resp) => {
         .json({ status: "fail", message: "No posts found for this author" });
     }
 
-    resp.status(200).json({ status: "success",posts });
+    resp.status(200).json({ status: "success", posts });
   } catch (err) {
     console.error("Error fetching posts by author:", err.message);
     resp.status(500).json({

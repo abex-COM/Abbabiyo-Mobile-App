@@ -8,23 +8,33 @@ import {
 } from "react-native";
 import React from "react";
 import MyButton from "../components/MyButton";
-import { useUser } from "@/context/userContext";
+import { useUser } from "@/context/UserContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, Switch } from "react-native-gesture-handler";
+import { useTranslation } from "react-i18next";
+import { useTheme } from "../../context/ThemeContext";
+import { Colors } from "../constants/Colors"; // Import colors
 export default function ProfileScreen({ navigation }) {
-  const { logout, isEnabled, setIsenabled, user, isLoading } = useUser();
-  const toggleSwitch = () => {
-    setIsenabled((prev) => !prev);
-  };
+  const { logout, isEnabled, setIsEnabled, user, isLoading } = useUser();
+  const { isDarkMode, toggleTheme } = useTheme();
+  const { t } = useTranslation();
+
   const handleLogout = () => {
     logout();
     navigation.replace("loginScreen");
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="white" barStyle="dark-content" />
-
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: isDarkMode
+            ? Colors.darkTheme.backgroundColor
+            : Colors.lightTheme.backgroundColor,
+        },
+      ]}
+    >
       {isLoading ? (
         <ActivityIndicator />
       ) : (
@@ -34,7 +44,14 @@ export default function ProfileScreen({ navigation }) {
               style={styles.image}
               source={require("../../assets/images/user.png")}
             />
-            <Text style={styles.text}>{user?.name}</Text>
+            <Text
+              style={[
+                styles.text,
+                { color: isDarkMode ? "#c0c0c0" : "#006400" },
+              ]}
+            >
+              {user?.name}
+            </Text>
           </View>
         </View>
       )}
@@ -44,24 +61,32 @@ export default function ProfileScreen({ navigation }) {
           <MaterialCommunityIcons
             name="account-edit"
             size={40}
-            color="#b9b2a3"
+            color={isDarkMode ? "#fff" : "#b9b2a3"}
           />
-          <Text style={styles.lisText}> Edit Profile</Text>
+          <Text
+            style={[styles.lisText, { color: isDarkMode ? "#fff" : "#b9b2a3" }]}
+          >
+            {t("edit_profile")}
+          </Text>
         </View>
       </Pressable>
       <View style={styles.list}>
-        <Switch value={isEnabled} onChange={toggleSwitch} />
-        <Text style={styles.lisText}>Dark Mode</Text>
+        <Switch value={isDarkMode} onChange={toggleTheme} />
+        <Text
+          style={[styles.lisText, { color: isDarkMode ? "#fff" : "#b9b2a3" }]}
+        >
+          {t("dark_mode")}
+        </Text>
       </View>
-      <MyButton title="Logout" onPress={handleLogout} />
+      <MyButton title={t("logout")} onPress={handleLogout} />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     gap: 30,
     padding: 10,
-    backgroundColor: "white",
     minHeight: "100%",
   },
   profileConatiner: {
@@ -80,7 +105,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#006400",
   },
 
   list: {
@@ -97,6 +121,5 @@ const styles = StyleSheet.create({
     gap: 10,
     fontWeight: "900",
     flexDirection: "row",
-    color: "#G864",
   },
 });

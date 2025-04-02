@@ -1,6 +1,12 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { TouchableOpacity, View, TextInput, Image } from "react-native";
+import {
+  TouchableOpacity,
+  View,
+  TextInput,
+  Image,
+  StyleSheet,
+} from "react-native";
 
 const ChatInput = ({
   onSend,
@@ -9,40 +15,65 @@ const ChatInput = ({
   value,
   onChangeText,
   imageUri,
-  className,
 }) => {
   return (
-    <View
-      className={`border ${className} rounded-lg p-4 w-full first-letter:border-slate-300 `}
-    >
-      <View className="flex-row items-center space-x-2 ">
-        {/* Image Picker Button */}
-        <TouchableOpacity
-          className="w-10 h-10 rounded-md overflow-hidden"
-          onPress={onImagePick}
-        >
-          {!imageUri ? (
-            <Ionicons name="image" size={24} color="gray" />
-          ) : (
-            <Image height="100%" width="100%" source={{ uri: imageUri }} />
-          )}
-        </TouchableOpacity>
+    // <View style={[styles.container, styles.firstLetter]}>
+    <View style={styles.innerContainer}>
+      {/* Image Picker Button */}
+      <TouchableOpacity style={styles.imagePickerButton} onPress={onImagePick}>
+        {!imageUri ? (
+          <Ionicons name="image" size={24} color="gray" />
+        ) : (
+          <Image style={styles.image} source={{ uri: imageUri }} />
+        )}
+      </TouchableOpacity>
 
-        {/* TextInput for Comment */}
-        <TextInput
-          className="flex-1 rounded-lg p-2"
-          placeholder={placeholder}
-          value={value}
-          onChangeText={onChangeText}
-        />
+      {/* TextInput for Comment */}
+      <TextInput
+        style={styles.textInput}
+        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+      />
 
-        {/* Send Button */}
-        <TouchableOpacity onPress={onSend}>
-          <Ionicons name="send" size={24} color="green" />
-        </TouchableOpacity>
-      </View>
+      {/* Send Button */}
+      <TouchableOpacity onPress={onSend}>
+        <Ionicons name="send" size={24} color="green" />
+      </TouchableOpacity>
     </View>
+    // </View>
   );
 };
 
 export default ChatInput;
+
+// Stylesheet
+const styles = StyleSheet.create({
+  innerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#bbbdc1", // Border color similar to "border-slate-300"
+    borderRadius: 8,
+    padding: 16,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f3f4f6", // slate-200
+    
+  },
+  imagePickerButton: {
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  textInput: {
+    flex: 1,
+    borderRadius: 8,
+    padding: 8,
+  },
+});

@@ -13,7 +13,7 @@ import MyTextInput from "../components/MyTextInput";
 import ErrorText from "../components/ErrorText";
 import axios from "axios";
 import Toast from "react-native-toast-message"; // Ensure correct import
-import { useUser } from "@/context/userContext";
+import { useUser } from "@/context/UserContext";
 
 // Validation Schema using Yup
 const validationSchema = Yup.object().shape({
@@ -24,13 +24,13 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function LoginScreen({ navigation }) {
-  const { storeToken } = useUser();
+  const { storeToken, token } = useUser();
 
   const handleSubmit = useCallback(
     async (values) => {
       try {
         const resp = await axios.post(
-          "http://192.168.74.196:8000/api/users/login",
+          "http://10.42.0.1:8000/api/users/login",
           values
         );
 
@@ -78,6 +78,11 @@ export default function LoginScreen({ navigation }) {
     [storeToken, navigation]
   );
 
+  useEffect(() => {
+    if (token) {
+      navigation.replace("bottomNavigator");
+    }
+  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -121,7 +126,7 @@ export default function LoginScreen({ navigation }) {
                 value={values.password}
                 onChangeText={handleChange("password")}
                 onBlur={handleBlur("password")}
-                secureTextEntry
+                secureText={true}
                 accessibilityLabel="Enter your password"
               />
               {touched.password && errors.password && (
