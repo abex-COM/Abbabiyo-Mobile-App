@@ -23,13 +23,18 @@ const ChatInput = ({
     // <View style={[styles.container, styles.firstLetter]}>
     <View style={styles.innerContainer}>
       {/* Image Picker Button */}
-      <TouchableOpacity style={styles.imagePickerButton} onPress={onImagePick}>
-        {!imageUri ? (
-          imagePickerIcon && <Ionicons name="image" size={24} color="gray" />
-        ) : (
-          <Image style={styles.image} source={{ uri: imageUri }} />
-        )}
-      </TouchableOpacity>
+      {imagePickerIcon && (
+        <TouchableOpacity
+          style={styles.imagePickerButton}
+          onPress={onImagePick}
+        >
+          {!imageUri ? (
+            <Ionicons name="image" size={24} color="gray" />
+          ) : (
+            <Image style={styles.image} source={{ uri: imageUri }} />
+          )}
+        </TouchableOpacity>
+      )}
 
       {/* TextInput for Comment */}
       <TextInput

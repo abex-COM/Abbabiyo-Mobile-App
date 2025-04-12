@@ -5,19 +5,19 @@ import ChatInput from "./ChatInput";
 import { ScrollView } from "react-native-gesture-handler";
 
 const PostCard = ({
-  postId, // Added postId prop
   imageUri,
   likes,
   comments = [],
   content,
   poster,
+  liked,
   onCommentSubmit,
   isLoading, // Added loading state prop
   isCommentSubmitting,
+  onLike,
 }) => {
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [comment, setComment] = useState("");
-
   return (
     <View style={styles.cardContainer}>
       <View>
@@ -39,7 +39,13 @@ const PostCard = ({
       {/* Likes section */}
       <View style={styles.likesContainer}>
         <View style={styles.likesButtonContainer}>
-          <TouchableOpacity style={styles.likesButton}>
+          <TouchableOpacity
+            style={[
+              styles.likesButton,
+              { backgroundColor: liked ? "#c3c4c5" : "#E5E7EB" },
+            ]}
+            onPress={onLike}
+          >
             <Text>Likes: {likes}</Text>
             <MaterialCommunityIcons name="thumb-up" size={20} />
           </TouchableOpacity>
@@ -138,7 +144,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 8,
-    backgroundColor: "#E5E7EB",
     borderRadius: 8,
     gap: 8,
   },

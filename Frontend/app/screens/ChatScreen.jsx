@@ -17,7 +17,8 @@ import axios from "axios";
 import Toast from "react-native-toast-message";
 import { useUser } from "@/context/UserContext";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-
+import useLike from "../hooks/useLike";
+import useLikePost from "../hooks/useLike";
 // Base API URL for backend requests
 const BASE_URL = "http://192.168.172.196:8000"; //192.168.172.196   //0.42.0.1:8000
 
@@ -58,9 +59,12 @@ export default function ChatScreen() {
   const [imageUri, setImageUri] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const flatlist = useRef(null);
-  const { token } = useUser();
   const queryClient = useQueryClient();
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
+  const { token, user } = useUser(); // user._id will be your user ID
+
+  const { mutate: likePost, isPending } = useLikePost();
+
   // Fetch posts and related comments
   const results = useQueries({
     queries: [
@@ -92,7 +96,7 @@ export default function ChatScreen() {
     acc[postId] = comments;
     return acc;
   }, {});
-
+  // handling refresh
   const handleRefetch = async () => {
     setRefreshing(true);
     try {
@@ -104,7 +108,7 @@ export default function ChatScreen() {
       setRefreshing(false);
     }
   };
-
+  // handle picking image
   const handlePickImage = async () => {
     try {
       const { granted } =
@@ -232,6 +236,11 @@ export default function ChatScreen() {
     );
   }
 
+  // handling like // unlike
+  const handleLike = (postId) => {
+    likePost(postId);
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -245,12 +254,13 @@ export default function ChatScreen() {
           style={styles.flatlist}
           renderItem={({ item }) => (
             <PostCard
+              onLike={() => handleLike(item._id)}
               postId={item._id} //  Add this line
               imageUri={item.image}
               poster={item.author?.name || "Unknown"}
               likes={item.likes?.length || 0}
               content={item.text}
-              isCommentSubmitting={isLoading}
+              liked={item.likes?.includes(user?._id)} //Determine if user liked the post
               comments={comments[item._id] || []}
               onCommentSubmit={(commentText) =>
                 handleNewComment(item._id, commentText)
