@@ -1,15 +1,25 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import React, { memo, useState } from "react"; // Import memo here
+import React, { memo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatInput from "./ChatInput";
-import { Pressable, ScrollView } from "react-native-gesture-handler";
-import OverflowMenu from "../components/ThreeDotMenu"; // Assuming you have a ThreeDotMenu component
-const PostCard = ({ imageUri, likes, comments = [], content, poster }) => {
+import { ScrollView } from "react-native-gesture-handler";
+
+const PostCard = ({
+  postId, // Added postId prop
+  imageUri,
+  likes,
+  comments = [],
+  content,
+  poster,
+  onCommentSubmit,
+  isLoading, // Added loading state prop
+  isCommentSubmitting,
+}) => {
   const [isCommentVisible, setIsCommentVisible] = useState(false);
+  const [comment, setComment] = useState("");
 
   return (
     <View style={styles.cardContainer}>
-      {/* <OverflowMenu /> */}
       <View>
         <Text style={styles.posterName}>{poster}</Text>
         <Text style={styles.content}>{content}</Text>
@@ -20,8 +30,8 @@ const PostCard = ({ imageUri, likes, comments = [], content, poster }) => {
         <View style={styles.imageContainer}>
           <Image
             style={styles.image}
-            source={require("../../assets/images/image.png")} // Ensure this is correctly fetching image by URI
-            resizeMethod="contain"
+            source={{ uri: imageUri }} // Changed to use uri prop
+            resizeMode="contain" // Changed from resizeMethod to resizeMode
           />
         </View>
       )}
@@ -42,17 +52,17 @@ const PostCard = ({ imageUri, likes, comments = [], content, poster }) => {
             isCommentVisible &&
               comments.length && { backgroundColor: "#c7cacf" },
           ]}
-          onPress={() => setIsCommentVisible(!isCommentVisible)} // Toggle comment visibility
+          onPress={() => setIsCommentVisible(!isCommentVisible)}
         >
           <Text>Comments: {comments.length}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Comments display */}
-      {comments && comments.length > 0 && isCommentVisible && (
-        <ScrollView style={[styles.commentsContainer]}>
+      {comments.length > 0 && isCommentVisible && (
+        <ScrollView style={styles.commentsContainer}>
           {comments.map((comment, index) => (
-            <View key={index} style={styles.commentItem}>
+            <View key={`${comment._id || index}`} style={styles.commentItem}>
               <Text style={styles.commentAuthor}>
                 {comment.author?.name || "Anonymous"}
               </Text>
@@ -63,12 +73,21 @@ const PostCard = ({ imageUri, likes, comments = [], content, poster }) => {
       )}
 
       {/* Chat input to post a new comment */}
-      <ChatInput placeholder="Write Comment" style={styles.chatInput} />
+      <ChatInput
+        placeholder="Write Comment"
+        onChangeText={setComment}
+        value={comment}
+        style={styles.chatInput}
+        isLoading={isCommentSubmitting}
+        onSend={() => {
+          onCommentSubmit(comment);
+          setComment("");
+        }} // Clear comment input after submission
+      />
     </View>
   );
 };
 
-// Memoize the PostCard component for better performance
 export default memo(PostCard);
 
 const styles = StyleSheet.create({
@@ -79,27 +98,30 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
     width: "100%",
-    backgroundColor: "#E5E7EB", // slate-400
+    backgroundColor: "#E5E7EB",
     gap: 8,
     borderRadius: 8,
     padding: 8,
+    marginBottom: 16, // Added margin for better separation
   },
   posterName: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#4B5563", // slate-600
+    color: "#4B5563",
   },
   content: {
     marginTop: 8,
-    color: "#303a45", // sky-100
+    color: "#303a45",
   },
   imageContainer: {
     overflow: "hidden",
     marginTop: 16,
+    borderRadius: 8, // Added border radius for image
   },
   image: {
     width: "100%",
     height: 240,
+    borderRadius: 8, // Match container radius
   },
   likesContainer: {
     flexDirection: "row",
@@ -116,42 +138,38 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 8,
-    backgroundColor: "#E5E7EB", // slate-200
+    backgroundColor: "#E5E7EB",
     borderRadius: 8,
     gap: 8,
   },
   commentsButton: {
-    backgroundColor: "#E5E7EB", // slate-200
+    backgroundColor: "#E5E7EB",
     padding: 8,
     borderRadius: 8,
   },
   commentsContainer: {
     width: "100%",
-    backgroundColor: "#cad6e1", // slate-100
-    height: 240,
-    paddingLeft: 10,
-    gap: 8,
+    backgroundColor: "#cad6e1",
+    maxHeight: 240, // Changed from height to maxHeight
     padding: 8,
     borderRadius: 8,
     marginBottom: 12,
-    overflowY: "auto",
   },
   commentItem: {
     padding: 8,
     width: "100%",
-    backgroundColor: "#E5E7EB", // slate-200
+    backgroundColor: "#E5E7EB",
     borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 8, // Reduced margin
   },
   commentAuthor: {
     fontWeight: "bold",
+    marginBottom: 4, // Added margin
   },
   chatInput: {
-    position: "absolute",
-    bottom: 0,
-    backgroundColor: "#F9FAFB", // slate-50
-    marginBottom: 16,
-    left: 0,
-    width: "100%",
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    marginTop: 8,
+    paddingHorizontal: 12,
   },
 });

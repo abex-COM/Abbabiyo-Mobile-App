@@ -6,6 +6,7 @@ import {
   TextInput,
   Image,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 
 const ChatInput = ({
@@ -15,6 +16,8 @@ const ChatInput = ({
   value,
   onChangeText,
   imageUri,
+  isLoading,
+  imagePickerIcon = false,
 }) => {
   return (
     // <View style={[styles.container, styles.firstLetter]}>
@@ -22,7 +25,7 @@ const ChatInput = ({
       {/* Image Picker Button */}
       <TouchableOpacity style={styles.imagePickerButton} onPress={onImagePick}>
         {!imageUri ? (
-          <Ionicons name="image" size={24} color="gray" />
+          imagePickerIcon && <Ionicons name="image" size={24} color="gray" />
         ) : (
           <Image style={styles.image} source={{ uri: imageUri }} />
         )}
@@ -38,7 +41,11 @@ const ChatInput = ({
 
       {/* Send Button */}
       <TouchableOpacity onPress={onSend}>
-        <Ionicons name="send" size={24} color="green" />
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <Ionicons name="send" size={24} color="green" />
+        )}
       </TouchableOpacity>
     </View>
     // </View>
@@ -61,11 +68,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f3f4f6", // slate-200
-    
   },
   imagePickerButton: {
     borderRadius: 8,
     overflow: "hidden",
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
     width: "100%",

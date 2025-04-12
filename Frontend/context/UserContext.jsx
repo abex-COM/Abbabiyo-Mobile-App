@@ -6,7 +6,7 @@ import Toast from "react-native-toast-message";
 import { io } from "socket.io-client"; // Import socket.io-client
 
 const UserContext = createContext();
-const SOCKET_URL = "http://10.42.0.1:8000"; // Your backend URL
+const SOCKET_URL = "http://192.168.172.196:8000"; // or 192.168.172.196  //10.42.0.1
 
 // Fetch user function
 const fetchUser = async (token) => {
@@ -42,7 +42,7 @@ export const UserProvider = ({ children }) => {
     queryFn: () => fetchUser(token),
     enabled: !!token,
   });
-
+  console.log(user);
   // Function to store token
   const storeToken = async (token) => {
     try {

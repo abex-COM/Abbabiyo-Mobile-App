@@ -4,5 +4,5 @@ import BottomNavigator from "./navigations/BottomNavigation";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 
 export default function index() {
-  return <BottomNavigator />;
+  return <AuthNavigator />;
 }

@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }) {
     async (values) => {
       try {
         const resp = await axios.post(
-          "http://10.42.0.1:8000/api/users/login",
+          "http://192.168.172.196:8000/api/users/login", //10.42.0.1 // 192.168.172.196
           values
         );
 

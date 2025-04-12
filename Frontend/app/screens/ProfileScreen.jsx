@@ -61,10 +61,10 @@ export default function ProfileScreen({ navigation }) {
           <MaterialCommunityIcons
             name="account-edit"
             size={40}
-            color={isDarkMode ? "#fff" : "#b9b2a3"}
+            color={isDarkMode ? "#fff" : "#5a5751"}
           />
           <Text
-            style={[styles.lisText, { color: isDarkMode ? "#fff" : "#b9b2a3" }]}
+            style={[styles.lisText, { color: isDarkMode ? "#fff" : "#5a5751" }]}
           >
             {t("edit_profile")}
           </Text>
@@ -73,7 +73,7 @@ export default function ProfileScreen({ navigation }) {
       <View style={styles.list}>
         <Switch value={isDarkMode} onChange={toggleTheme} />
         <Text
-          style={[styles.lisText, { color: isDarkMode ? "#fff" : "#b9b2a3" }]}
+          style={[styles.lisText, { color: isDarkMode ? "#fff" : "#5a5751" }]}
         >
           {t("dark_mode")}
         </Text>
