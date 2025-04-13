@@ -6,7 +6,8 @@ import Toast from "react-native-toast-message";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "@/context/UserContext";
 import { LanguageProvider } from "@/context/LanguageContexts";
-import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { PostsProvider } from "@/context/PostContext";
 import { Stack } from "expo-router";
 import { View } from "react-native";
 
@@ -18,10 +19,12 @@ export default function RootLayout() {
       <ThemeProvider>
         <LanguageProvider>
           <UserProvider>
-            <GestureHandlerRootView>
-              <Stack screenOptions={{ headerShown: false }} />
-              <Toast />
-            </GestureHandlerRootView>
+            <PostsProvider>
+              <GestureHandlerRootView>
+                <Stack screenOptions={{ headerShown: false }} />
+                <Toast />
+              </GestureHandlerRootView>
+            </PostsProvider>
           </UserProvider>
         </LanguageProvider>
       </ThemeProvider>

@@ -6,7 +6,7 @@ import Toast from "react-native-toast-message";
 import { io } from "socket.io-client"; // Import socket.io-client
 
 const UserContext = createContext();
-const SOCKET_URL = "http://192.168.172.196:8000"; // or 192.168.172.196  //10.42.0.1
+const SOCKET_URL = "http://192.168.17.196:8000"; // or 192.168.172.196  //10.42.0.1
 
 // Fetch user function
 const fetchUser = async (token) => {

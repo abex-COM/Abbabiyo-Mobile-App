@@ -9,7 +9,7 @@ const useLikePost = () => {
     mutationFn: async (postId) => {
       // Sending the PATCH request to like/unlike the post
       const res = await axios.patch(
-        `http://192.168.172.196:8000/api/posts/${postId}/like`,
+        `http://192.168.17.196:8000/api/posts/${postId}/like`,
         {},
         {
           headers: {

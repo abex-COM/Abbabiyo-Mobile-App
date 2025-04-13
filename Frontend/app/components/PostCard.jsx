@@ -122,12 +122,18 @@ const styles = StyleSheet.create({
   imageContainer: {
     overflow: "hidden",
     marginTop: 16,
-    borderRadius: 8, // Added border radius for image
+    // borderWidth: 1,
+    borderRadius: 20, // Match container radius
+    borderColor: "#286128",
+    width: "100%",
+    // height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 300,
   },
   image: {
     width: "100%",
-    height: 240,
-    borderRadius: 8, // Match container radius
+    height: "100%",
   },
   likesContainer: {
     flexDirection: "row",
