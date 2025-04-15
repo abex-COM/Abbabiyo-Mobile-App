@@ -1,24 +1,34 @@
-const { default: mongoose } = require("mongoose");
 const Post = require("../models/postModel");
 
+const { getIO } = require("../socket/webSocket"); // Adjust the path as needed
+
 //  Create a Post
-exports.createPost = async (req, resp) => {
+exports.createPost = async (req, res) => {
   try {
-    const { text, image } = req.body;
-    const author = req.user.id; // Extract author from authenticated user
-    if (!text) {
-      return resp
-        .status(400)
-        .json({ status: "fail", message: "Text is required" });
+    const { text } = req.body;
+    let imageUrl = "";
+
+    if (req.file) {
+      imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
     }
 
-    const newPost = new Post({ author, text, image });
-    await newPost.save();
+    const newPost = await Post.create({
+      text,
+      image: imageUrl,
+      author: req.user._id,
+    });
 
-    resp.status(201).json({ status: "success", post: newPost });
+    const populatedPost = await Post.findById(newPost._id).populate("author");
+
+    const io = getIO();
+    io.emit("newPost", populatedPost);
+
+    res.status(201).json(populatedPost);
   } catch (err) {
-    console.error("Error creating post:", err);
-    resp.status(500).json({ status: "fail", error: "Internal server error" });
+    console.error("Create post error:", err);
+    res.status(500).json({ message: "Failed to create post." });
   }
 };
 
@@ -106,6 +116,13 @@ exports.likePost = async (req, res) => {
     }
 
     await post.save();
+    const io = getIO();
+    io.emit("newLike", {
+      postId,
+      userId,
+      liked: !hasLiked,
+    });
+
     res.status(200).json({
       success: true,
       message: hasLiked ? "Post unliked" : "Post liked",

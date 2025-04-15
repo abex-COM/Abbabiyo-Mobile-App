@@ -1,8 +1,10 @@
+import { useTheme } from "@/context/ThemeContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { TextInput, View, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons"; // or use another icon library
+import { Colors } from "../constants/Colors";
 
 export default function MyTextInput({
   placeholder,
@@ -15,7 +17,7 @@ export default function MyTextInput({
 }) {
   // State to toggle password visibility
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
+  const { isDarkMode } = useTheme();
   // Toggle password visibility when icon is pressed
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -24,8 +26,22 @@ export default function MyTextInput({
     <View style={styles.container}>
       <TextInput
         placeholder={placeholder}
+        placeholderTextColor={
+          isDarkMode ? Colors.darkTheme.textColor : Colors.lightTheme.textColor
+        }
         value={value}
-        style={[styles.input, style]}
+        style={[
+          styles.input,
+          style,
+          {
+            backgroundColor: isDarkMode
+              ? Colors.darkTheme.backgroundColor
+              : Colors.lightTheme.backgroundColor,
+            color: isDarkMode
+              ? Colors.darkTheme.textColor
+              : Colors.lightTheme.textColor,
+          },
+        ]}
         onChangeText={onChangeText}
         secureTextEntry={secureText && !isPasswordVisible} // Use secureText prop and toggle visibility
         {...otherProps}

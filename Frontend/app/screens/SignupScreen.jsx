@@ -14,6 +14,8 @@ import MyTextInput from "../components/MyTextInput";
 import ErrorText from "../components/ErrorText";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useNavigation } from "expo-router";
+import baseUrl from "@/baseUrl/baseUrl";
+
 import ethiopianRegions, {
   ethiopianZones,
   ethiopianWoredas,
@@ -49,7 +51,7 @@ export default function SignupScreen() {
       };
 
       const resp = await axios.post(
-        "http://10.42.0.1:8000/api/users/signup",
+        `${baseUrl}/api/users/signup`,
         formattedData
       );
       storeToken(resp.data.token);

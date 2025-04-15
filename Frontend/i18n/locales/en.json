@@ -15,7 +15,7 @@
   "language": "Language",
   "home": "Home",
   "update": "Update",
-  
+  "ask_gemini": "Ask Gemini",
   "search": "Search",
   "notifications": "Notifications",
   "account_settings": "Account Settings",
@@ -27,5 +27,9 @@
   "send_message": "Send Message",
   "edit": "Edit",
   "help": "Help",
-  "about": "About"
+  "about": "About",
+  "myposts": "My Posts",
+  "chatbot": "Chatbot",
+  "what_is_on_your_mind": "What is on your mind",
+  "disease_detector": "Disease Detection"
 }

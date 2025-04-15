@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 
 const ChatInput = ({
   onSend,
@@ -18,10 +19,22 @@ const ChatInput = ({
   imageUri,
   isLoading,
   imagePickerIcon = false,
+  customStyle,
 }) => {
+  const { isDarkMode } = useTheme();
+
+  const backgroundColor = isDarkMode ? "#374151" : "#f3f4f6";
+  const borderColor = isDarkMode ? "#4B5563" : "#bbbdc1";
+  const textColor = isDarkMode ? "#F9FAFB" : "#111827";
+
   return (
-    // <View style={[styles.container, styles.firstLetter]}>
-    <View style={styles.innerContainer}>
+    <View
+      style={[
+        styles.innerContainer,
+        { backgroundColor, borderColor },
+        customStyle,
+      ]}
+    >
       {/* Image Picker Button */}
       {imagePickerIcon && (
         <TouchableOpacity
@@ -38,8 +51,9 @@ const ChatInput = ({
 
       {/* TextInput for Comment */}
       <TextInput
-        style={styles.textInput}
+        style={[styles.textInput, { color: textColor }]}
         placeholder={placeholder}
+        placeholderTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
         value={value}
         onChangeText={onChangeText}
       />
@@ -47,13 +61,12 @@ const ChatInput = ({
       {/* Send Button */}
       <TouchableOpacity onPress={onSend}>
         {isLoading ? (
-          <ActivityIndicator />
+          <ActivityIndicator color={textColor} />
         ) : (
           <Ionicons name="send" size={24} color="green" />
         )}
       </TouchableOpacity>
     </View>
-    // </View>
   );
 };
 
@@ -66,13 +79,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     borderWidth: 1,
-    borderColor: "#bbbdc1", // Border color similar to "border-slate-300"
     borderRadius: 8,
     padding: 16,
     width: "100%",
     justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f3f4f6", // slate-200
+    backgroundColor: "#f3f4f6", // will be overridden
   },
   imagePickerButton: {
     borderRadius: 8,

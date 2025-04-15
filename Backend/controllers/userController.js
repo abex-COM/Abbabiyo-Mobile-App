@@ -86,42 +86,44 @@ exports.getUser = async (req, resp) => {
 };
 
 // Edit profile information (Authenticated User)
-exports.updateUser = async (req, resp) => {
+// Update User function - updated to handle image uploads similar to createPost
+exports.updateUser = async (req, res) => {
   try {
-    const userId = req.user.id; // From authenticateUser middleware
-    const { name, email, profilePicture, password } = req.body; // Fields to update
+    const { name, email, password } = req.body;
+    let profilePicture = req.user.profilePicture; // Default to existing profile picture
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return resp
-        .status(404)
-        .json({ status: "fail", message: "User not found" });
+    if (req.file) {
+      // If a new profile image is uploaded
+      profilePicture = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     }
 
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the password matches the one in the database
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return resp
-        .status(400)
-        .json({ status: "fail", message: "Wrong password" });
+      return res.status(400).json({ message: "Incorrect password" });
     }
 
-    // Update only the fields provided by the user
+    // Update user data
     if (name) user.name = name;
     if (email) user.email = email;
     if (profilePicture) user.profilePicture = profilePicture;
 
-    await user.save(); // Save updated user info
+    await user.save();
 
-    // Emit WebSocket event to notify the specific user
-    const io = req.app.get("socketio"); // Get io instance from app
-    if (io && userSockets[userId]) {
-      io.to(userSockets[userId].id).emit("userUpdated", user); // Emit event with updated user data
-    }
+    // Send WebSocket event after updating user data
+    const io = req.app.get("socketio");
+    io.to(user._id).emit("userUpdated", user); // Emit the updated user data
 
-    resp
-      .status(200)
-      .json({ status: "success", message: "Profile updated", user });
+    res.status(200).json({ message: "Profile updated successfully", user });
   } catch (err) {
-    return resp.status(500).json({ status: "fail", error: err.message });
+    console.error("Update user error:", err);
+    res.status(500).json({ message: "Failed to update profile." });
   }
 };
+

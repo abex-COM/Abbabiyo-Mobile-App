@@ -1,7 +1,7 @@
 import { useUser } from "@/context/UserContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-
+import baseUrl from "@/baseUrl/baseUrl";
 const useLikePost = () => {
   const queryClient = useQueryClient();
   const { token } = useUser();
@@ -9,7 +9,7 @@ const useLikePost = () => {
     mutationFn: async (postId) => {
       // Sending the PATCH request to like/unlike the post
       const res = await axios.patch(
-        `http://192.168.17.196:8000/api/posts/${postId}/like`,
+        `${baseUrl}/api/posts/${postId}/like`,
         {},
         {
           headers: {

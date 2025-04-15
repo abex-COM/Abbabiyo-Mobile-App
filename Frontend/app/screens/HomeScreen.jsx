@@ -23,11 +23,7 @@ const HomeScreen = () => {
       ]}
     >
       <StatusBar
-        backgroundColor={
-          isDarkMode
-            ? Colors.darkTheme.backgroundColor
-            : Colors.lightTheme.textColor
-        }
+        backgroundColor={isDarkMode ? "#111827" : Colors.lightTheme.textColor}
       />
       {/* Weather Section */}
       <View style={styles.weatherContainer}>
@@ -39,8 +35,8 @@ const HomeScreen = () => {
       <View style={styles.cropContainer}>
         <Text style={styles.cropTitle}>{t("recommended_crops")}</Text>
         <View style={styles.cropList}>
-          <CropCard name="Maize" image="https://placeimg.com/150/150" />
-          <CropCard name="Wheat" image="https://via.placeholder.com/100" />
+          {/* <CropCard name="Maize" image="https://placeimg.com/150/150" />
+          <CropCard name="wheat" image="https://via.placeholder.com/100" /> */}
         </View>
       </View>
 
@@ -48,11 +44,11 @@ const HomeScreen = () => {
       <View style={styles.buttonContainer}>
         <MyButton
           title="Ask AI Assistant"
-          onPress={() => navigation.navigate("Chat")}
+          onPress={() => navigation.navigate("askGemini")}
         />
         <MyButton
           title="Detect Disease"
-          onPress={() => navigation.navigate("Upload")}
+          onPress={() => navigation.navigate("DiseaseDetector")}
           style={styles.detectButton}
         />
         <MyButton
@@ -69,20 +65,17 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f3f4f6",
     alignItems: "center",
     width: "100%",
     gap: 10,
   },
   weatherContainer: {
-    backgroundColor: "white",
     padding: 16,
     borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
     marginBottom: 16,
     width: "80%",
     marginTop: 12,
@@ -96,16 +89,14 @@ const styles = StyleSheet.create({
     color: "#6b7280",
   },
   cropContainer: {
-    backgroundColor: "white",
     padding: 16,
     borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
     marginBottom: 16,
     width: "83%",
+    borderWidth: 1,
+    borderColor: "#5e6269",
+    alignItems: "center",
   },
   cropTitle: {
     fontSize: 18,
@@ -116,19 +107,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 12,
     width: "83%",
+    height: 200,
   },
   buttonContainer: {
-    marginTop: 16,
+    marginTop: 76,
     width: "80%",
     gap: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    backgroundColor: "#fef9c3",
     padding: 16,
-    borderRadius: 12,
+    alignItems: "center",
   },
   detectButton: {
     backgroundColor: "#d97706", // Yellow-600

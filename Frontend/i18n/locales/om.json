@@ -27,11 +27,13 @@
   "upload_image": "Suuraa Olka'aa",
   "send_message": "Ergaa Patha",
   "edit": "Fooyyessi",
-
+  "what_is_on_your_mind": "waan sammuu kee keessa jiru",
   "view_details": "Faayilota Ilaali",
   "buy_now": "Amma Bitadhu",
   "sell_now": "Amma Gurguri",
+  "chatbot": "Chatbootii",
   "update": "Haaromsi",
+  "myposts": "Maxxansawwan koo",
   "add_to_cart": "Kaarra Keessatti Dabaluu",
   "order_summary": "Qabiyyee Odeeffannoo",
   "confirm_order": "Ajaja Mirkanessi",
@@ -39,5 +41,7 @@
   "recent_orders": "Ajajaa Dhiyoo",
   "order_history": "Seenaa Ajajaa",
   "help": "Gargaarsa",
-  "about": "Haa Itti Fufu"
+  "about": "Haa Itti Fufu",
+  "ask_gemini": "Gemini Gaafadhu",
+  "disease_detector": "Qorataa dhukkubaa"
 }

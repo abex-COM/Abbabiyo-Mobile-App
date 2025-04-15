@@ -14,6 +14,7 @@ import ErrorText from "../components/ErrorText";
 import axios from "axios";
 import Toast from "react-native-toast-message"; // Ensure correct import
 import { useUser } from "@/context/UserContext";
+import baseUrl from "@/baseUrl/baseUrl";
 
 // Validation Schema using Yup
 const validationSchema = Yup.object().shape({
@@ -30,7 +31,7 @@ export default function LoginScreen({ navigation }) {
     async (values) => {
       try {
         const resp = await axios.post(
-          "http://192.168.17.196:8000/api/users/login", //10.42.0.1 // 192.168.172.196
+          `${baseUrl}/api/users/login`, //10.42.0.1 // 192.168.172.196
           values
         );
 

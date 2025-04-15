@@ -4,17 +4,17 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 import { io } from "socket.io-client"; // Import socket.io-client
+import baseUrl from "@/baseUrl/baseUrl";
 
 const UserContext = createContext();
-const SOCKET_URL = "http://192.168.17.196:8000"; // or 192.168.172.196  //10.42.0.1
 
 // Fetch user function
 const fetchUser = async (token) => {
   try {
-    const resp = await axios.get(`${SOCKET_URL}/api/users/profile`, {
+    const resp = await axios.get(`${baseUrl}/api/users/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return resp.data.user;
+    return resp.data.user || [];
   } catch (error) {
     if (error.response) {
       Toast.show({
@@ -42,7 +42,6 @@ export const UserProvider = ({ children }) => {
     queryFn: () => fetchUser(token),
     enabled: !!token,
   });
-  console.log(user);
   // Function to store token
   const storeToken = async (token) => {
     try {
@@ -76,7 +75,7 @@ export const UserProvider = ({ children }) => {
   // Initialize WebSocket when token is set
   useEffect(() => {
     if (token && user?._id) {
-      const newSocket = io(SOCKET_URL, { transports: ["websocket"] });
+      const newSocket = io(baseUrl, { transports: ["websocket"] });
 
       newSocket.on("connect", () => {
         console.log("Connected to WebSocket:", newSocket.id);

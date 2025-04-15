@@ -1,0 +1,340 @@
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  FlatList,
+  ActivityIndicator,
+  Text,
+  StyleSheet,
+  RefreshControl,
+  Alert,
+} from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  initiateSocketConnection,
+  getSocket,
+  disconnectSocket,
+} from "@/app/utils/socket";
+import { useQueryClient } from "@tanstack/react-query";
+import ChatInput from "../components/ChatInput";
+import PostCard from "../components/PostCard";
+import * as ImagePicker from "expo-image-picker";
+import ItemSepartor from "../components/ItemSepartor";
+import Toast from "react-native-toast-message";
+import { usePosts } from "@/context/PostContext";
+import useLikePost from "../hooks/useLike";
+import axios from "axios";
+import { useUser } from "@/context/UserContext";
+import { useTheme } from "@/context/ThemeContext";
+import { useTranslation } from "react-i18next";
+import baseUrl from "@/baseUrl/baseUrl";
+
+export default function ChatScreen() {
+  const [message, setMessage] = useState("");
+  const [imageUri, setImageUri] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isPostLoading, setIsPostLoading] = useState(false);
+  const [isCommentLoading, setIsCommentLoading] = useState(false);
+
+  const { isDarkMode } = useTheme();
+  const { t } = useTranslation();
+  const flatlist = useRef(null);
+  const { token } = useUser();
+  const { posts, comments, postsQuery, refetchAll, user } = usePosts();
+  const { mutate: likePost } = useLikePost();
+  const queryClient = useQueryClient();
+  const backgroundColor = isDarkMode ? "#1F2937" : "#f3f4f6";
+  const textColor = isDarkMode ? "#F9FAFB" : "#111827";
+  const handleRefetch = async () => {
+    setRefreshing(true);
+    try {
+      await refetchAll();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handlePickImage = async () => {
+    try {
+      const { granted } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!granted) {
+        alert("Permission to access the media library is required.");
+        return;
+      }
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        quality: 0.8,
+      });
+
+      if (!pickerResult.canceled && pickerResult.assets?.[0]?.uri) {
+        setImageUri(pickerResult.assets[0].uri);
+      }
+    } catch (error) {
+      console.log("Error picking image:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to pick image",
+      });
+    }
+  };
+
+  const handleNewPost = async () => {
+    if (!message.trim()) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Message cannot be empty",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("text", message);
+
+    if (imageUri) {
+      formData.append("image", {
+        uri: imageUri,
+        type: "image/jpeg",
+        name: "post-image.jpg",
+      });
+    }
+
+    try {
+      setIsPostLoading(true);
+      await axios.post(`${baseUrl}/api/posts/createPost`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      postsQuery.refetch();
+      setMessage("");
+      setImageUri(null);
+      flatlist.current?.scrollToOffset({ offset: 0, animated: true });
+      Toast.show({
+        type: "success",
+        text1: "Post Created",
+        text2: "Your post has been successfully created!",
+      });
+    } catch (error) {
+      console.log("Error creating post:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to create post.",
+      });
+    } finally {
+      setIsPostLoading(false);
+    }
+  };
+
+  const handleNewComment = async (postId, commentText) => {
+    if (!commentText.trim()) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Comment cannot be empty",
+      });
+      return;
+    }
+    try {
+      setIsCommentLoading(true);
+      await axios.post(
+        `${baseUrl}/api/comments/createComment`,
+        { text: commentText, postId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // postsQuery.refetch();
+      // refetchAll();
+      Toast.show({
+        type: "success",
+        text1: "Comment Posted",
+      });
+    } catch (error) {
+      console.log("Error posting comment:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to post comment.",
+      });
+    } finally {
+      setIsCommentLoading(false);
+    }
+  };
+
+  const handleLike = (postId) => {
+    likePost(postId);
+  };
+
+  useEffect(() => {
+    const fetchComment = async () => {
+      await refetchAll();
+    };
+    fetchComment();
+  });
+  useEffect(() => {
+    if (!user?._id) return;
+
+    initiateSocketConnection(user._id);
+    const socket = getSocket();
+
+    const handleNewComment = ({ postId, comment }) => {
+      console.log("Received newComment via socket:", comment);
+      queryClient.setQueryData(["comments"], (oldCommentsData = []) => {
+        return oldCommentsData.map((entry) =>
+          entry.postId === postId
+            ? {
+                ...entry,
+                comments: [...entry.comments, comment],
+              }
+            : entry
+        );
+      });
+    };
+
+    socket.on("connect", () => console.log("Connected to socket:", socket.id));
+    socket.on("newComment", handleNewComment);
+
+    return () => {
+      socket.off("newComment", handleNewComment); // 💡 cleanup
+      disconnectSocket();
+    };
+  }, [user?._id]);
+
+  const handleDeletePost = (postId) => {
+    Alert.alert(
+      "Delete Post",
+      "Are you sure you want to delete this post?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await axios.delete(`${baseUrl}/api/posts/delete/${postId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              await refetchAll();
+              Toast.show({
+                type: "success",
+                text1: "Post Deleted",
+              });
+            } catch (error) {
+              console.log("Error deleting post:", error);
+              Toast.show({
+                type: "error",
+                text1: "Failed to delete post",
+                text2:
+                  error.response?.data?.message || "Please try again later.",
+              });
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  if (postsQuery.isLoading) {
+    return (
+      <View style={[styles.centered, { backgroundColor }]}>
+        <ActivityIndicator size="large" color={textColor} />
+        <Text style={{ color: textColor }}>Loading posts and comments...</Text>
+      </View>
+    );
+  }
+
+  const uniquePosts = Array.from(
+    new Map(posts.map((post) => [post._id, post])).values()
+  );
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <View style={[styles.content, { backgroundColor }]}>
+        <FlatList
+          ref={flatlist}
+          data={uniquePosts}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <PostCard
+              onLike={() => handleLike(item._id)}
+              onLongPress={
+                item.author?._id === user?._id
+                  ? () => handleDeletePost(item._id)
+                  : undefined
+              }
+              postId={item._id}
+              imageUri={item.image}
+              poster={item.author?.name || "Unknown"}
+              likes={item.likes?.length || 0}
+              content={item.text}
+              liked={item.likes?.includes(user?._id)}
+              isLoading={isCommentLoading}
+              comments={comments[item._id] || []}
+              onCommentSubmit={(commentText) =>
+                handleNewComment(item._id, commentText)
+              }
+            />
+          )}
+          ItemSeparatorComponent={ItemSepartor}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefetch} />
+          }
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={10}
+        />
+      </View>
+
+      <View
+        style={[
+          styles.inputContainer,
+          { backgroundColor: isDarkMode ? "#1F2937" : "" },
+        ]}
+      >
+        <ChatInput
+          placeholder={t("what_is_on_your_mind")}
+          value={message}
+          onChangeText={setMessage}
+          imageUri={imageUri}
+          onSend={handleNewPost}
+          onImagePick={handlePickImage}
+          imagePickerIcon={true}
+          isLoading={isPostLoading}
+        />
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  flatlist: { gap: 16 },
+  inputContainer: {
+    padding: 16,
+    width: "100%",
+  },
+});

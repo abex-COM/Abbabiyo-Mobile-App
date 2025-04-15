@@ -5,35 +5,33 @@ import { useQueries, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import { useUser } from "@/context/UserContext";
-
-const BASE_URL = "http://192.168.17.196:8000";
+import baseUrl from "@/baseUrl/baseUrl";
 
 const PostsContext = createContext();
-
 export const PostsProvider = ({ children }) => {
   const { token, user } = useUser();
   const queryClient = useQueryClient();
 
   const getAllPosts = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/api/posts/getAllposts`, {
+      const resp = await axios.get(`${baseUrl}/api/posts/getAllposts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return resp.data.posts;
+      return resp.data.posts || [];
     } catch (error) {
       Toast.show({
         type: "error",
         text1: "Error",
         text2: "Failed to fetch posts.",
       });
-      throw error;
+      console.log(error);
     }
   };
 
   const getCommentsForPost = async (postId) => {
     try {
       const resp = await axios.get(
-        `${BASE_URL}/api/comments/getComment/${postId}`,
+        `${baseUrl}/api/comments/getComment/${postId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -55,6 +53,7 @@ export const PostsProvider = ({ children }) => {
         queryKey: ["comments"],
         queryFn: async () => {
           const posts = await getAllPosts();
+          if (!Array.isArray(posts)) return []; // Fallback to empty array
           const comments = await Promise.all(
             posts.map((post) => getCommentsForPost(post._id))
           );

@@ -2,14 +2,15 @@ const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const mongoose = require("mongoose");
+
 const dotenv = require("dotenv");
+dotenv.config(); // Load environment variables
 
 const userRoute = require("./routes/userRoute");
 const postRoute = require("./routes/postRoute");
 const commentRoute = require("./routes/commentRoute");
+const geminiRoute = require("./routes/geminiRoute");
 const { initializeSocket } = require("./socket/webSocket"); // Import WebSocket setup
-
-dotenv.config(); // Load environment variables
 
 const app = express();
 const server = http.createServer(app);
@@ -20,6 +21,8 @@ const corsOptions = {
   credentials: true,
   optionSuccessStatus: 200,
 };
+app.use("/uploads", express.static("uploads"));
+
 app.use(cors(corsOptions));
 app.use(express.json()); // Parse JSON data
 
@@ -31,6 +34,8 @@ app.set("socketio", io); // Attach socket instance to app for controllers
 app.use("/api/users", userRoute);
 app.use("/api/comments", commentRoute);
 app.use("/api/posts", postRoute);
+
+app.use("/api/gemini", geminiRoute);
 
 // 404 Error Handler
 app.all("/*", (req, res) => {

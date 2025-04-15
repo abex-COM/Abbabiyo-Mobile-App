@@ -26,5 +26,10 @@
   "send_message": "መልእክት ላክ",
   "edit": "አርትዕ",
   "help": "እርዳታ",
-  "about": "ስለ እኛ"
+  "about": "ስለ እኛ",
+  "ask_gemini": "ጀሚኒን ጠይቅ",
+  "chatbot": "ቻትቦት",
+  "what_is_on_your_mind": "በአእምሮህ ውስጥ ያለው ምንድን ነው",
+  "myposts": "የእኔ ልጥፎች",
+  "disease_detector": "የበሽታ መርማሪ"
 }

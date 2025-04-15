@@ -1,11 +1,14 @@
 const Comment = require("../models/commentModel");
+
+//  Create a Comment
 const Post = require("../models/postModel");
+const { getIO } = require("../socket/webSocket"); // 👈 import socket helper
 
 //  Create a Comment
 const createComment = async (req, res) => {
   try {
     const { postId, text } = req.body;
-    const userId = req.user.id; // Assuming authentication middleware adds `req.user`
+    const userId = req.user.id;
 
     if (!text || !postId) {
       return res
@@ -13,7 +16,6 @@ const createComment = async (req, res) => {
         .json({ success: false, message: "Post ID and text are required" });
     }
 
-    // Check if post exists
     const post = await Post.findById(postId);
     if (!post) {
       return res
@@ -27,14 +29,30 @@ const createComment = async (req, res) => {
       text,
     });
 
-    res
-      .status(201)
-      .json({ success: true, message: "Comment added!", comment: newComment });
+    const populatedComment = await Comment.findById(newComment._id).populate(
+      "author",
+      "name profilePicture"
+    );
+
+    // 🔥 Emit real-time event to all clients
+    const io = getIO();
+    io.emit("newComment", {
+      postId,
+      comment: populatedComment,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Comment added!",
+      comment: populatedComment,
+    });
   } catch (error) {
     console.error("Error creating comment:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
 

@@ -2,7 +2,9 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import React, { memo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatInput from "./ChatInput";
-import { ScrollView } from "react-native-gesture-handler";
+import { Pressable, ScrollView } from "react-native-gesture-handler";
+import { useTheme } from "@/context/ThemeContext";
+import { Colors } from "../constants/Colors";
 
 const PostCard = ({
   imageUri,
@@ -12,89 +14,140 @@ const PostCard = ({
   poster,
   liked,
   onCommentSubmit,
-  isLoading, // Added loading state prop
-  isCommentSubmitting,
+  isLoading,
+  onLongPress,
   onLike,
 }) => {
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [comment, setComment] = useState("");
+  const [showFullContent, setShowFullContent] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  const { isDarkMode } = useTheme();
+
+  // Dynamic color variables
+  const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
+  const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
+  const cardBackground = isDarkMode
+    ? Colors.darkTheme.backgroundColor
+    : "#E5E7EB";
+  const commentBackground = isDarkMode ? Colors.darkTheme.cardColor : "#cad6e1";
+  const commentItemBg = isDarkMode ? Colors.darkTheme.cardColor : "#E5E7EB";
+  const commentAuthorColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : "#1F2937";
+
+  const handleCommentSubmit = () => {
+    setComment("");
+    onCommentSubmit(comment);
+  };
+
   return (
-    <View style={styles.cardContainer}>
-      <View>
-        <Text style={styles.posterName}>{poster}</Text>
-        <Text style={styles.content}>{content}</Text>
-      </View>
+    <Pressable onLongPress={onLongPress} delayLongPress={300} activeOpacity={1}>
+      <View style={[styles.cardContainer, { backgroundColor: cardBackground }]}>
+        <View>
+          <Text style={[styles.posterName, { color: textColor }]}>
+            {poster}
+          </Text>
 
-      {/* Display image if it exists */}
-      {imageUri && (
-        <View style={styles.imageContainer}>
-          <Image
-            style={styles.image}
-            source={{ uri: imageUri }} // Changed to use uri prop
-            resizeMode="contain" // Changed from resizeMethod to resizeMode
-          />
+          <Text
+            onTextLayout={(e) => {
+              if (e.nativeEvent.lines.length > 2 && !showFullContent) {
+                setIsTruncated(true);
+              }
+            }}
+            numberOfLines={showFullContent ? undefined : 2}
+            style={[styles.content, { color: contentColor }]}
+          >
+            {content}
+          </Text>
+
+          {isTruncated && (
+            <TouchableOpacity
+              onPress={() => setShowFullContent((prev) => !prev)}
+            >
+              <Text style={{ color: "#2563eb", marginTop: 4 }}>
+                {showFullContent ? "Show less" : "...more"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
-      )}
 
-      {/* Likes section */}
-      <View style={styles.likesContainer}>
-        <View style={styles.likesButtonContainer}>
+        {imageUri && (
+          <View style={styles.imageContainer}>
+            <Image
+              style={styles.image}
+              source={{ uri: imageUri }}
+              resizeMode="contain"
+            />
+          </View>
+        )}
+
+        <View style={styles.likesContainer}>
+          <View style={styles.likesButtonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.likesButton,
+                { backgroundColor: liked ? "#c3c4c5" : "#E5E7EB" },
+              ]}
+              onPress={onLike}
+            >
+              <Text>Likes: {likes}</Text>
+              <MaterialCommunityIcons name="thumb-up" size={20} />
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
             style={[
-              styles.likesButton,
-              { backgroundColor: liked ? "#c3c4c5" : "#E5E7EB" },
+              styles.commentsButton,
+              isCommentVisible &&
+                comments.length && { backgroundColor: "#c7cacf" },
             ]}
-            onPress={onLike}
+            onPress={() => setIsCommentVisible(!isCommentVisible)}
           >
-            <Text>Likes: {likes}</Text>
-            <MaterialCommunityIcons name="thumb-up" size={20} />
+            <Text>Comments: {comments.length}</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Comments section */}
-        <TouchableOpacity
-          style={[
-            styles.commentsButton,
-            isCommentVisible &&
-              comments.length && { backgroundColor: "#c7cacf" },
-          ]}
-          onPress={() => setIsCommentVisible(!isCommentVisible)}
-        >
-          <Text>Comments: {comments.length}</Text>
-        </TouchableOpacity>
+        {comments.length > 0 && isCommentVisible && (
+          <ScrollView
+            style={[
+              styles.commentsContainer,
+              { backgroundColor: commentBackground },
+            ]}
+          >
+            {comments.map((comment, index) => (
+              <View
+                key={`${comment._id || index}`}
+                style={[styles.commentItem, { backgroundColor: commentItemBg }]}
+              >
+                <Text
+                  style={[styles.commentAuthor, { color: commentAuthorColor }]}
+                >
+                  {comment.author?.name || "Anonymous"}
+                </Text>
+                <Text style={{ color: commentAuthorColor }}>
+                  {comment.text}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+
+        <ChatInput
+          placeholder="Write Comment"
+          onChangeText={setComment}
+          value={comment}
+          style={styles.chatInput}
+          isLoading={isLoading}
+          onSend={handleCommentSubmit}
+        />
       </View>
-
-      {/* Comments display */}
-      {comments.length > 0 && isCommentVisible && (
-        <ScrollView style={styles.commentsContainer}>
-          {comments.map((comment, index) => (
-            <View key={`${comment._id || index}`} style={styles.commentItem}>
-              <Text style={styles.commentAuthor}>
-                {comment.author?.name || "Anonymous"}
-              </Text>
-              <Text>{comment.text}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-
-      {/* Chat input to post a new comment */}
-      <ChatInput
-        placeholder="Write Comment"
-        onChangeText={setComment}
-        value={comment}
-        style={styles.chatInput}
-        isLoading={isCommentSubmitting}
-        onSend={() => {
-          onCommentSubmit(comment);
-          setComment("");
-        }} // Clear comment input after submission
-      />
-    </View>
+    </Pressable>
   );
 };
 
-export default memo(PostCard);
+export default PostCard;
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -104,29 +157,25 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
     width: "100%",
-    backgroundColor: "#E5E7EB",
     gap: 8,
     borderRadius: 8,
     padding: 8,
-    marginBottom: 16, // Added margin for better separation
+    marginBottom: 16,
   },
   posterName: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#4B5563",
   },
   content: {
     marginTop: 8,
-    color: "#303a45",
+    fontSize: 16,
   },
   imageContainer: {
     overflow: "hidden",
     marginTop: 16,
-    // borderWidth: 1,
-    borderRadius: 20, // Match container radius
+    borderRadius: 20,
     borderColor: "#286128",
     width: "100%",
-    // height: 200,
     justifyContent: "center",
     alignItems: "center",
     height: 300,
@@ -160,8 +209,7 @@ const styles = StyleSheet.create({
   },
   commentsContainer: {
     width: "100%",
-    backgroundColor: "#cad6e1",
-    maxHeight: 240, // Changed from height to maxHeight
+    maxHeight: 240,
     padding: 8,
     borderRadius: 8,
     marginBottom: 12,
@@ -169,13 +217,12 @@ const styles = StyleSheet.create({
   commentItem: {
     padding: 8,
     width: "100%",
-    backgroundColor: "#E5E7EB",
     borderRadius: 8,
-    marginBottom: 8, // Reduced margin
+    marginBottom: 8,
   },
   commentAuthor: {
     fontWeight: "bold",
-    marginBottom: 4, // Added margin
+    marginBottom: 4,
   },
   chatInput: {
     backgroundColor: "#F9FAFB",
