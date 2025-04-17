@@ -28,7 +28,9 @@
   "help": "እርዳታ",
   "about": "ስለ እኛ",
   "ask_gemini": "ጀሚኒን ጠይቅ",
+  "ask_ai_assistant": "AI ረዳትን ይጠይቁ",
   "chatbot": "ቻትቦት",
+  "detect_disease": "በሽታን መለየት",
   "what_is_on_your_mind": "በአእምሮህ ውስጥ ያለው ምንድን ነው",
   "myposts": "የእኔ ልጥፎች",
   "disease_detector": "የበሽታ መርማሪ"

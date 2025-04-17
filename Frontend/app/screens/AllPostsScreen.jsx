@@ -19,6 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import ChatInput from "../components/ChatInput";
 import PostCard from "../components/PostCard";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import ItemSepartor from "../components/ItemSepartor";
 import Toast from "react-native-toast-message";
 import { usePosts } from "@/context/PostContext";
@@ -59,7 +60,7 @@ export default function ChatScreen() {
       const { granted } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!granted) {
-        alert("Permission to access the media library is required.");
+        alert("Permission required");
         return;
       }
 
@@ -69,7 +70,13 @@ export default function ChatScreen() {
       });
 
       if (!pickerResult.canceled && pickerResult.assets?.[0]?.uri) {
-        setImageUri(pickerResult.assets[0].uri);
+        const manipResult = await ImageManipulator.manipulateAsync(
+          pickerResult.assets[0].uri,
+          [{ resize: { width: 800 } }], // adjust to your needs
+          { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        setImageUri(manipResult.uri);
       }
     } catch (error) {
       console.log("Error picking image:", error);
@@ -152,8 +159,7 @@ export default function ChatScreen() {
           },
         }
       );
-      // postsQuery.refetch();
-      // refetchAll();
+
       Toast.show({
         type: "success",
         text1: "Comment Posted",

@@ -26,21 +26,21 @@ export default function MyTextInput({
     <View style={styles.container}>
       <TextInput
         placeholder={placeholder}
-        placeholderTextColor={
-          isDarkMode ? Colors.darkTheme.textColor : Colors.lightTheme.textColor
-        }
+        // placeholderTextColor={
+        //   isDarkMode ? Colors.darkTheme.textColor : Colors.lightTheme.textColor
+        // }
         value={value}
         style={[
           styles.input,
           style,
-          {
-            backgroundColor: isDarkMode
-              ? Colors.darkTheme.backgroundColor
-              : Colors.lightTheme.backgroundColor,
-            color: isDarkMode
-              ? Colors.darkTheme.textColor
-              : Colors.lightTheme.textColor,
-          },
+          // {
+          //   backgroundColor: isDarkMode
+          //     ? Colors.darkTheme.backgroundColor
+          //     : Colors.lightTheme.backgroundColor,
+          //   color: isDarkMode
+          //     ? Colors.darkTheme.textColor
+          //     : Colors.lightTheme.textColor,
+          // },
         ]}
         onChangeText={onChangeText}
         secureTextEntry={secureText && !isPasswordVisible} // Use secureText prop and toggle visibility

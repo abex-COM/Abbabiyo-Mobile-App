@@ -27,7 +27,7 @@ const useLikePost = () => {
 
       // Optimistically update the posts cache with the new liked status
       queryClient.setQueryData(["posts"], (oldPosts) =>
-        oldPosts.map((post) =>
+        (oldPosts || []).map((post) =>
           post._id === postId
             ? {
                 ...post,
@@ -42,15 +42,15 @@ const useLikePost = () => {
     },
     onError: (error) => {
       if (axios.isAxiosError(error)) {
-        console.error("Axios error message:", error.message);
+        console.log("Axios error message:", error.message);
         if (error.response) {
-          console.error("Status:", error.response.status);
-          console.error("Data:", error.response.data);
+          console.log("Status:", error.response.status);
+          console.log("Data:", error.response.data);
         } else if (error.request) {
-          console.error("No response received:", error.request);
+          console.log("No response received:", error.request);
         }
       } else {
-        console.error("Non-Axios error:", error);
+        console.log("Non-Axios error:", error);
       }
     },
     onSuccess: () => {

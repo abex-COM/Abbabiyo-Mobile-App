@@ -17,17 +17,18 @@ export const PostsProvider = ({ children }) => {
       const resp = await axios.get(`${baseUrl}/api/posts/getAllposts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return resp.data.posts || [];
+
+      return resp.data?.posts || [];
     } catch (error) {
       Toast.show({
         type: "error",
         text1: "Error",
         text2: "Failed to fetch posts.",
       });
-      console.log(error);
+      console.log(error.message);
+      return []; // <- Ensure a defined return value
     }
   };
-
   const getCommentsForPost = async (postId) => {
     try {
       const resp = await axios.get(
@@ -36,8 +37,9 @@ export const PostsProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      return { postId, comments: resp.data.comments || [] };
+      return { postId, comments: resp.data?.comments || [] };
     } catch (error) {
+      console.log(`Failed to fetch comments for post ${postId}`, error.message);
       return { postId, comments: [] };
     }
   };

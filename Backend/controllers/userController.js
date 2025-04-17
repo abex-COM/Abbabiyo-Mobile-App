@@ -94,7 +94,9 @@ exports.updateUser = async (req, res) => {
 
     if (req.file) {
       // If a new profile image is uploaded
-      profilePicture = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      profilePicture = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
     }
 
     const user = await User.findById(req.user._id);
@@ -123,7 +125,8 @@ exports.updateUser = async (req, res) => {
     res.status(200).json({ message: "Profile updated successfully", user });
   } catch (err) {
     console.error("Update user error:", err);
-    res.status(500).json({ message: "Failed to update profile." });
+    res
+      .status(500)
+      .json({ message: "Failed to update profile.", error: err.message });
   }
 };
-

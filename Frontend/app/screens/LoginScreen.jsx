@@ -79,11 +79,6 @@ export default function LoginScreen({ navigation }) {
     [storeToken, navigation]
   );
 
-  useEffect(() => {
-    if (token) {
-      navigation.replace("bottomNavigator");
-    }
-  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}

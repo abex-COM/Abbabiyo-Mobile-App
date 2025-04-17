@@ -76,9 +76,10 @@ const PostCard = ({
         {imageUri && (
           <View style={styles.imageContainer}>
             <Image
-              style={styles.image}
               source={{ uri: imageUri }}
-              resizeMode="contain"
+              style={{ width: "100%", height: 300, borderRadius: 9 }}
+              contentFit="cover"
+              placeholder={{ blurhash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH" }} // Optional
             />
           </View>
         )}

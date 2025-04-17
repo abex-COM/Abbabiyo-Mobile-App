@@ -47,7 +47,7 @@ const createComment = async (req, res) => {
       comment: populatedComment,
     });
   } catch (error) {
-    console.error("Error creating comment:", error);
+    console.log("Error creating comment:", error);
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -67,7 +67,7 @@ const getCommentsByPost = async (req, res) => {
 
     res.status(200).json({ success: true, comments });
   } catch (error) {
-    console.error("Error fetching comments:", error);
+    console.log("Error fetching comments:", error);
     res
       .status(500)
       .json({ success: false, message: "Server error", error: error.message });
@@ -101,7 +101,7 @@ const deleteComment = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Comment deleted successfully" });
   } catch (error) {
-    console.error("Error deleting comment:", error);
+    console.log("Error deleting comment:", error);
     res
       .status(500)
       .json({ success: false, message: "Server error", error: error.message });

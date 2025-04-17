@@ -19,10 +19,9 @@ export default function ProfileScreen({ navigation }) {
   const { logout, user, isLoading } = useUser();
   const { isDarkMode, toggleTheme } = useTheme();
   const { t } = useTranslation();
-  console.log(user?.profilePicture);
   const handleLogout = () => {
     logout();
-    navigation.replace("loginScreen");
+    navigation.replace("welcomeScreen");
   };
 
   return (

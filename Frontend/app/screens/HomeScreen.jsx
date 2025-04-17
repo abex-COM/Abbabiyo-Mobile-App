@@ -43,18 +43,18 @@ const HomeScreen = () => {
       {/* Buttons */}
       <View style={styles.buttonContainer}>
         <MyButton
-          title="Ask AI Assistant"
+          title={t("ask_ai_assistant")}
           onPress={() => navigation.navigate("askGemini")}
         />
         <MyButton
-          title="Detect Disease"
+          title={t("detect_disease")}
           onPress={() => navigation.navigate("DiseaseDetector")}
           style={styles.detectButton}
         />
-        <MyButton
+        {/* <MyButton
           title="My Farm Data"
           onPress={() => navigation.navigate("Account")}
-        />
+        /> */}
       </View>
     </View>
   );

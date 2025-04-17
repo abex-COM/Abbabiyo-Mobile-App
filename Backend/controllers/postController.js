@@ -27,8 +27,9 @@ exports.createPost = async (req, res) => {
 
     res.status(201).json(populatedPost);
   } catch (err) {
-    console.error("Create post error:", err);
-    res.status(500).json({ message: "Failed to create post." });
+    res
+      .status(500)
+      .json({ message: "Failed to create post.", error: err.message });
   }
 };
 
@@ -47,8 +48,8 @@ exports.getAllPosts = async (req, resp) => {
 
     resp.status(200).json({ status: "success", posts });
   } catch (err) {
-    console.error("Error fetching posts:", err);
-    resp.status(500).json({ status: "fail", error: "Internal server error" });
+    console.log("Error fetching posts:", err);
+    resp.status(500).json({ status: "fail", error: err.message });
   }
 };
 
@@ -69,8 +70,8 @@ exports.getPostById = async (req, resp) => {
 
     resp.status(200).json({ status: "success", post });
   } catch (err) {
-    console.error("Error fetching post:", err);
-    resp.status(500).json({ status: "fail", error: "Internal server error" });
+    console.log("Error fetching post:", err);
+    resp.status(500).json({ status: "fail", error: err.message });
   }
 };
 
@@ -90,8 +91,8 @@ exports.deletePost = async (req, resp) => {
       .status(200)
       .json({ status: "success", message: "Post deleted successfully" });
   } catch (err) {
-    console.error("Error deleting post:", err);
-    resp.status(500).json({ status: "fail", error: "Internal server error" });
+    console.log("Error deleting post:", err);
+    resp.status(500).json({ status: "fail", error: err.message });
   }
 };
 exports.likePost = async (req, res) => {
@@ -129,7 +130,7 @@ exports.likePost = async (req, res) => {
       post,
     });
   } catch (error) {
-    console.error("Error liking/unliking post:", error);
+    console.log("Error liking/unliking post:", error);
     res
       .status(500)
       .json({ success: false, message: "Server error", error: error.message });
@@ -154,7 +155,7 @@ exports.getPostsByAuthor = async (req, resp) => {
 
     resp.status(200).json({ status: "success", posts });
   } catch (err) {
-    console.error("Error fetching posts by author:", err.message);
+    console.log("Error fetching posts by author:", err.message);
     resp.status(500).json({
       status: "fail",
       error: err.message,
