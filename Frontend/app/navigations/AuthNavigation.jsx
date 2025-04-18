@@ -48,6 +48,7 @@ export default function AuthNavigator() {
         name="myposts"
         component={MyPosts}
         options={{
+          title: t("myposts"), // Automatically handles translation based on current language
           headerTitle: t("myposts"),
           headerTintColor: isDarkMode
             ? Colors.darkTheme.textColor

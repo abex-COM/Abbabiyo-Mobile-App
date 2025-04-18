@@ -5,7 +5,6 @@ import ChatInput from "./ChatInput";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
 import { useTheme } from "@/context/ThemeContext";
 import { Colors } from "../constants/Colors";
-
 const PostCard = ({
   imageUri,
   likes,
@@ -16,15 +15,14 @@ const PostCard = ({
   onCommentSubmit,
   isLoading,
   onLongPress,
+  commentCount,
   onLike,
 }) => {
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [comment, setComment] = useState("");
   const [showFullContent, setShowFullContent] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
-
   const { isDarkMode } = useTheme();
-
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";

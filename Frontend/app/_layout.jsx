@@ -9,25 +9,24 @@ import { LanguageProvider } from "@/context/LanguageContexts";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { PostsProvider } from "@/context/PostContext";
 import { Stack } from "expo-router";
-import { View } from "react-native";
 
 export default function RootLayout() {
   const queryClient = new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <LanguageProvider>
-          <UserProvider>
-            <PostsProvider>
-              <GestureHandlerRootView>
+      <GestureHandlerRootView>
+        <ThemeProvider>
+          <LanguageProvider>
+            <UserProvider>
+              <PostsProvider>
                 <Stack screenOptions={{ headerShown: false }} />
                 <Toast />
-              </GestureHandlerRootView>
-            </PostsProvider>
-          </UserProvider>
-        </LanguageProvider>
-      </ThemeProvider>
+              </PostsProvider>
+            </UserProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </GestureHandlerRootView>
     </QueryClientProvider>
   );
 }

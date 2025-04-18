@@ -79,8 +79,8 @@ export default function BottomNavigator() {
         name="Chat"
         component={ChatScreen}
         options={{
-          title: t("chat"),
-          headerTitle: "Posts",
+          title: t("posts"),
+          headerTitle: t("posts"),
           headerStyle: {
             backgroundColor: headerBackgroundColor,
             shadowColor: "transparent",
@@ -88,9 +88,18 @@ export default function BottomNavigator() {
           headerTintColor: textColor,
           headerRight: () => (
             <View className="pr-10">
-              <Pressable onPress={() => navigation.navigate("myposts")}>
+              <Pressable
+                style={{
+                  padding: 5,
+                  borderRadius: 5,
+                  borderColor: "#009000",
+                  alignItems: "center",
+                  borderStyle: "dashed",
+                }}
+                onPress={() => navigation.navigate("myposts")}
+              >
                 <Text style={{ color: textColor, fontWeight: 600 }}>
-                  My Posts
+                  {t("myposts")}
                 </Text>
               </Pressable>
             </View>

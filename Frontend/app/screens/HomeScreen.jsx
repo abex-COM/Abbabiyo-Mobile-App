@@ -22,9 +22,7 @@ const HomeScreen = () => {
         },
       ]}
     >
-      <StatusBar
-        backgroundColor={isDarkMode ? "#111827" : Colors.lightTheme.textColor}
-      />
+      <StatusBar backgroundColor={isDarkMode ? "#111827" : "green"} />
       {/* Weather Section */}
       <View style={styles.weatherContainer}>
         <Text style={styles.weatherTitle}>{t("weather_today")}</Text>

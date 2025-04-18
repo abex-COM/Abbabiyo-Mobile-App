@@ -98,7 +98,7 @@ exports.deletePost = async (req, resp) => {
 exports.likePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user.id; // Get user ID from authenticated user
+    const userId = req.user.id;
 
     const post = await Post.findById(postId);
     if (!post) {
@@ -109,17 +109,22 @@ exports.likePost = async (req, res) => {
 
     const hasLiked = post.likes.includes(userId);
     if (hasLiked) {
-      // Unlike: Remove userId from likes array
       post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
-      // Like: Add userId to likes array
       post.likes.push(userId);
     }
 
     await post.save();
+
+    const updatedPost = await Post.findById(postId)
+      .populate("author", "-password") // Optional: populate author
+      .populate("likes", "-password"); // Optional: populate liked users
+
     const io = getIO();
     io.emit("newLike", {
-      postId,
+      postId: updatedPost._id,
+      likeCount: updatedPost.likes.length,
+      likedBy: updatedPost.likes.map((user) => user._id), // just IDs
       userId,
       liked: !hasLiked,
     });
@@ -127,13 +132,15 @@ exports.likePost = async (req, res) => {
     res.status(200).json({
       success: true,
       message: hasLiked ? "Post unliked" : "Post liked",
-      post,
+      post: updatedPost,
     });
   } catch (error) {
     console.log("Error liking/unliking post:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
 

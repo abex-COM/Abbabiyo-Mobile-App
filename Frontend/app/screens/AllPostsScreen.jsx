@@ -9,7 +9,7 @@ import {
   RefreshControl,
   Alert,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   initiateSocketConnection,
   getSocket,
@@ -35,7 +35,7 @@ export default function ChatScreen() {
   const [imageUri, setImageUri] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isPostLoading, setIsPostLoading] = useState(false);
-  const [isCommentLoading, setIsCommentLoading] = useState(false);
+  const [commentLoadingMap, setCommentLoadingMap] = useState({});
 
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
@@ -49,7 +49,7 @@ export default function ChatScreen() {
   const handleRefetch = async () => {
     setRefreshing(true);
     try {
-      await refetchAll();
+      await postsQuery.refetch();
     } finally {
       setRefreshing(false);
     }
@@ -118,7 +118,7 @@ export default function ChatScreen() {
         },
       });
 
-      postsQuery.refetch();
+      await postsQuery.refetch();
       setMessage("");
       setImageUri(null);
       flatlist.current?.scrollToOffset({ offset: 0, animated: true });
@@ -148,8 +148,10 @@ export default function ChatScreen() {
       });
       return;
     }
+    await postsQuery.refetch();
+    setCommentLoadingMap((prev) => ({ ...prev, [postId]: true }));
+
     try {
-      setIsCommentLoading(true);
       await axios.post(
         `${baseUrl}/api/comments/createComment`,
         { text: commentText, postId },
@@ -159,6 +161,7 @@ export default function ChatScreen() {
           },
         }
       );
+      await postsQuery.refetch();
 
       Toast.show({
         type: "success",
@@ -172,20 +175,14 @@ export default function ChatScreen() {
         text2: "Failed to post comment.",
       });
     } finally {
-      setIsCommentLoading(false);
+      setCommentLoadingMap((prev) => ({ ...prev, [postId]: false }));
     }
   };
 
-  const handleLike = (postId) => {
+  const handleLike = async (postId) => {
     likePost(postId);
   };
 
-  useEffect(() => {
-    const fetchComment = async () => {
-      await refetchAll();
-    };
-    fetchComment();
-  });
   useEffect(() => {
     if (!user?._id) return;
 
@@ -206,11 +203,33 @@ export default function ChatScreen() {
       });
     };
 
+    const handleNewPost = (newPost) => {
+      console.log("Received newPost via socket:", newPost);
+      queryClient.setQueryData(["posts"], (oldPosts = []) => {
+        return [newPost, ...oldPosts]; // Add new post to the top
+      });
+    };
+    const handleNewLike = ({ postId, likeCount, likedBy }) => {
+      queryClient.setQueryData(["posts"], (oldPosts = []) =>
+        oldPosts.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                likes: likedBy, // store liked user IDs for easier checks
+              }
+            : post
+        )
+      );
+    };
+
     socket.on("connect", () => console.log("Connected to socket:", socket.id));
     socket.on("newComment", handleNewComment);
-
+    socket.on("newPost", handleNewPost);
+    socket.on("newLike", handleNewLike);
+    socket.on("disconnect", () => console.log("Disconnected from socket"));
     return () => {
-      socket.off("newComment", handleNewComment); // 💡 cleanup
+      socket.off("newComment", handleNewComment);
+      socket.off("newPost", handleNewPost);
       disconnectSocket();
     };
   }, [user?._id]);
@@ -252,15 +271,18 @@ export default function ChatScreen() {
     );
   };
 
-  if (postsQuery.isLoading) {
-    return (
-      <View style={[styles.centered, { backgroundColor }]}>
-        <ActivityIndicator size="large" color={textColor} />
-        <Text style={{ color: textColor }}>Loading posts and comments...</Text>
-      </View>
-    );
-  }
-
+  useEffect(() => {
+    if (postsQuery.isLoading || comments.isLoading) {
+      return (
+        <View style={[styles.centered, { backgroundColor }]}>
+          <ActivityIndicator size="large" color={textColor} />
+          <Text style={{ color: textColor }}>
+            Loading posts and comments...
+          </Text>
+        </View>
+      );
+    }
+  }, [postsQuery.isLoading, comments.isLoading]);
   const uniquePosts = Array.from(
     new Map(posts.map((post) => [post._id, post])).values()
   );
@@ -289,8 +311,8 @@ export default function ChatScreen() {
               likes={item.likes?.length || 0}
               content={item.text}
               liked={item.likes?.includes(user?._id)}
-              isLoading={isCommentLoading}
-              comments={comments[item._id] || []}
+              isLoading={commentLoadingMap[item._id] || false}
+              comments={comments[item._id]}
               onCommentSubmit={(commentText) =>
                 handleNewComment(item._id, commentText)
               }

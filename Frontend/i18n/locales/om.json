@@ -32,7 +32,7 @@
   "sell_now": "Amma Gurguri",
   "chatbot": "Chatbootii",
   "update": "Haaromsi",
-  "myposts": "Maxxansawwan koo",
+  "myposts": "Maxxansaalee koo",
   "add_to_cart": "Kaarra Keessatti Dabaluu",
   "order_summary": "Qabiyyee Odeeffannoo",
   "confirm_order": "Ajaja Mirkanessi",
@@ -44,5 +44,6 @@
   "help": "Gargaarsa",
   "about": "Haa Itti Fufu",
   "ask_gemini": "Gemini Gaafadhu",
-  "disease_detector": "Qorataa dhukkubaa"
+  "disease_detector": "Qorataa dhukkubaa",
+  "posts": "Maxxansaalee"
 }
