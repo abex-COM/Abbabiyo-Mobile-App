@@ -35,12 +35,11 @@ export default function SignupScreen() {
 
   const [woredaOpen, setWoredaOpen] = useState(false);
   const [woredaValue, setWoredaValue] = useState(null);
-
   const handleSubmit = async (values) => {
     try {
       const formattedData = {
         name: values.name,
-        email: values.email,
+        phoneNumber: values.phoneNumber, // Change 'email' to 'phoneNumber'
         password: values.password,
         confirmPassword: values.passwordConfirm,
         location: {
@@ -93,15 +92,15 @@ export default function SignupScreen() {
         <Formik
           initialValues={{
             name: "",
-            email: "",
+            phoneNumber: "", // Changed email to phoneNumber
             password: "",
             passwordConfirm: "",
           }}
           validationSchema={Yup.object({
             name: Yup.string().required("Name is required"),
-            email: Yup.string()
-              .email("Invalid email")
-              .required("Email is required"),
+            phoneNumber: Yup.string()
+              .matches(/^[0-9]{10}$/, "Phone number must be 10 digits") // Validating phone number format
+              .required("Phone number is required"),
             password: Yup.string()
               .min(6, "Password must be at least 6 characters")
               .required("Password is required"),
@@ -133,14 +132,16 @@ export default function SignupScreen() {
                   <ErrorText message={errors.name} />
                 )}
 
+                {/* Phone Number Input */}
                 <MyTextInput
-                  placeholder="Email"
-                  value={values.email}
-                  onChangeText={handleChange("email")}
-                  onBlur={handleBlur("email")}
+                  placeholder="Phone Number"
+                  value={values.phoneNumber} // Changed to phoneNumber
+                  onChangeText={handleChange("phoneNumber")} // Changed to phoneNumber
+                  onBlur={handleBlur("phoneNumber")} // Changed to phoneNumber
+                  keyboardType="phone-pad"
                 />
-                {touched.email && errors.email && (
-                  <ErrorText message={errors.email} />
+                {touched.phoneNumber && errors.phoneNumber && (
+                  <ErrorText message={errors.phoneNumber} />
                 )}
 
                 <MyTextInput
@@ -165,7 +166,7 @@ export default function SignupScreen() {
                   <ErrorText message={errors.passwordConfirm} />
                 )}
 
-                {/* Region Selector */}
+                {/* Region, Zone, Woreda Selectors */}
                 <DropDownPicker
                   open={regionOpen}
                   setOpen={setRegionOpen}
@@ -183,7 +184,6 @@ export default function SignupScreen() {
                   }}
                 />
 
-                {/* Zone Selector */}
                 <DropDownPicker
                   open={zoneOpen}
                   setOpen={setZoneOpen}
@@ -201,7 +201,6 @@ export default function SignupScreen() {
                   }}
                 />
 
-                {/* Woreda Selector */}
                 <DropDownPicker
                   open={woredaOpen}
                   setOpen={setWoredaOpen}

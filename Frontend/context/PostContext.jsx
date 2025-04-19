@@ -74,7 +74,6 @@ export const PostsProvider = ({ children }) => {
       queryClient.invalidateQueries(["comments"]),
     ]);
   };
-console.log(comments);
   const postsData = postsQuery.data || [];
   const commentsData = commentsQuery.data || [];
   const comments = commentsData.reduce((acc, { postId, comments }) => {

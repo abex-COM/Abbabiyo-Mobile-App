@@ -78,9 +78,13 @@ export default function DiseaseDetector() {
     });
 
     try {
-      const res = await axios.post(`http://10.42.0.1:8000/predict`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post(
+        `http://192.168.137.1:8000/predict`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       setResult(res.data);
       setError("");
       setLoading(false);
