@@ -48,14 +48,25 @@ export default function ProfileScreen({ navigation }) {
                   : require("../../assets/images/user.png")
               }
             />
-            <Text
-              style={[
-                styles.text,
-                { color: isDarkMode ? "#c0c0c0" : "#006400" },
-              ]}
-            >
-              {user?.name}
-            </Text>
+            <View style={{ gap: 5 }}>
+              <Text
+                style={[
+                  styles.text,
+                  { color: isDarkMode ? "#c0c0c0" : "#006400" },
+                ]}
+              >
+                {user?.name}
+              </Text>
+              <Text>{user?.phoneNumber}</Text>
+              <Text>
+                Location:{" "}
+                {user?.location?.woreda +
+                  ", " +
+                  user?.location?.zone +
+                  ", " +
+                  user?.location?.region}
+              </Text>
+            </View>
           </View>
         </View>
       )}

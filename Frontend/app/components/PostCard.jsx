@@ -1,13 +1,19 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import React, { memo, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatInput from "./ChatInput";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
 import { useTheme } from "@/context/ThemeContext";
 import { Colors } from "../constants/Colors";
+import ThreeDotMenu from "../components/ThreeDotMenu";
+import { useNavigation } from "expo-router";
+import axios from "axios";
+import baseUrl from "@/baseUrl/baseUrl";
+import { useUser } from "@/context/UserContext";
 const PostCard = ({
   imageUri,
   likes,
+  post,
   comments = [],
   content,
   poster,
@@ -15,7 +21,7 @@ const PostCard = ({
   onCommentSubmit,
   isLoading,
   onLongPress,
-  commentCount,
+  postId,
   onLike,
 }) => {
   const [isCommentVisible, setIsCommentVisible] = useState(false);
@@ -23,6 +29,9 @@ const PostCard = ({
   const [showFullContent, setShowFullContent] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const { isDarkMode } = useTheme();
+  const navigation = useNavigation();
+  const { token } = useUser();
+
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
@@ -34,15 +43,24 @@ const PostCard = ({
   const commentAuthorColor = isDarkMode
     ? Colors.darkTheme.textColor
     : "#1F2937";
-
   const handleCommentSubmit = () => {
     setComment("");
     onCommentSubmit(comment);
   };
 
+  const handleViewPost = () => {
+    navigation.navigate("PostDetail", { post: post });
+  };
+
   return (
     <Pressable onLongPress={onLongPress} delayLongPress={300} activeOpacity={1}>
       <View style={[styles.cardContainer, { backgroundColor: cardBackground }]}>
+        <ThreeDotMenu
+          post={post}
+          postId={postId}
+          comments={comments}
+          likes={likes}
+        />
         <View>
           <Text style={[styles.posterName, { color: textColor }]}>
             {poster}
@@ -72,14 +90,16 @@ const PostCard = ({
         </View>
 
         {imageUri && (
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: imageUri }}
-              style={{ width: "100%", height: 300, borderRadius: 9 }}
-              contentFit="cover"
-              placeholder={{ blurhash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH" }} // Optional
-            />
-          </View>
+          <Pressable onPress={handleViewPost}>
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: imageUri }}
+                style={{ width: "100%", height: 300, borderRadius: 9 }}
+                contentFit="cover"
+                placeholder={{ blurhash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH" }} // Optional
+              />
+            </View>
+          </Pressable>
         )}
 
         <View style={styles.likesContainer}>

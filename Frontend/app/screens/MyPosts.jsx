@@ -12,26 +12,27 @@ import { useUser } from "@/context/UserContext";
 import { useTheme } from "@/context/ThemeContext";
 import PostCard from "../components/PostCard";
 import ItemSeparator from "../components/ItemSepartor";
-import useLikePost from "../hooks/useLike";
 import Toast from "react-native-toast-message";
 import baseUrl from "@/baseUrl/baseUrl";
 import { useTranslation } from "react-i18next";
+import useDeletePost from "@/app/hooks/useDelete";
+
 import {
   initiateSocketConnection,
   getSocket,
   disconnectSocket,
 } from "@/app/utils/socket";
 import axios from "axios";
-import { Alert } from "react-native";
 
 export default function MyPosts() {
   const { posts, comments, postsQuery, refetchAll, user } = usePosts();
   const { token } = useUser();
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
-  const { mutate: likePost } = useLikePost();
   const [refreshing, setRefreshing] = useState(false);
   const [isCommentLoading, setIsCommentLoading] = useState(false);
+  const handleDeletePost = useDeletePost(token, refetchAll);
+
   const flatlist = useRef(null);
 
   const backgroundColor = isDarkMode ? "#1F2937" : "#f3f4f6";
@@ -88,45 +89,6 @@ export default function MyPosts() {
     }
   };
   // handle delete
-  const handleDeletePost = (postId) => {
-    Alert.alert(
-      "Delete Post",
-      "Are you sure you want to delete this post?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await axios.delete(
-                `${baseUrl}/api/posts/delete/${postId}`, //192.168.95.196
-                {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
-              await refetchAll();
-              Toast.show({
-                type: "success",
-                text1: "Post Deleted",
-              });
-            } catch (error) {
-              console.log("Error deleting post:", error);
-              Toast.show({
-                type: "error",
-                text1: "Failed to delete post",
-                text2:
-                  error.response?.data?.message || "Please try again later.",
-              });
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
-  };
 
   useEffect(() => {
     if (user?._id) {
@@ -164,8 +126,7 @@ export default function MyPosts() {
   }
 
   // Filter user posts
-  const userPosts = posts.filter((post) => post.author?._id === user?._id);
-  console.log(posts.map((post) => post));
+  const userPosts = posts.filter((post) => post?.author?._id === user?._id);
   return (
     <View style={[styles.container, { backgroundColor }]}>
       {userPosts.length === 0 ? (
@@ -180,7 +141,8 @@ export default function MyPosts() {
             <PostCard
               onLongPress={() => handleDeletePost(item._id)}
               onLike={() => handleLike(item._id)}
-              postId={item._id}
+              postId={item.author?._id}
+              post={item}
               imageUri={item.image}
               poster={item.author?.name || "Unknown"}
               likes={item.likes?.length || 0}

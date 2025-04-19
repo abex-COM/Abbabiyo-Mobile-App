@@ -16,9 +16,11 @@ import Toast from "react-native-toast-message"; // Ensure correct import
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
 
-// Validation Schema using Yup
+// Validation Schema using Yup for phone number
 const validationSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  phoneNumber: Yup.string()
+    .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
+    .required("Phone number is required"),
   password: Yup.string()
     .min(6, "Password must be at least 6 characters")
     .required("Password is required"),
@@ -88,7 +90,7 @@ export default function LoginScreen({ navigation }) {
       <View style={styles.form}>
         <Formik
           initialValues={{
-            email: "",
+            phoneNumber: "",
             password: "",
           }}
           validationSchema={validationSchema}
@@ -104,16 +106,17 @@ export default function LoginScreen({ navigation }) {
             touched,
           }) => (
             <View style={{ gap: 16, width: "80%", alignSelf: "center" }}>
-              {/* Email Field */}
+              {/* Phone Number Field */}
               <MyTextInput
-                placeholder="Email"
-                value={values.email}
-                onChangeText={handleChange("email")}
-                onBlur={handleBlur("email")}
-                accessibilityLabel="Enter your email"
+                placeholder="Phone Number"
+                value={values.phoneNumber}
+                onChangeText={handleChange("phoneNumber")}
+                onBlur={handleBlur("phoneNumber")}
+                accessibilityLabel="Enter your phone number"
+                keyboardType="numeric"
               />
-              {touched.email && errors.email && (
-                <ErrorText message={errors.email} />
+              {touched.phoneNumber && errors.phoneNumber && (
+                <ErrorText message={errors.phoneNumber} />
               )}
 
               {/* Password Field */}

@@ -1,17 +1,16 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
-const { userSockets } = require("../socket/webSocket"); // Import userSockets
 
 exports.signup = async (req, resp) => {
   try {
-    const { email, location } = req.body;
+    const { phoneNumber, location } = req.body;
     const { region, zone, woreda } = location;
 
-    const userExist = await User.findOne({ email });
+    const userExist = await User.findOne({ phoneNumber });
     if (userExist) {
       return resp.status(400).json({
         status: "fail",
-        message: "Email already exists, please find another one",
+        message: "phoneNumber already exists, please find another one",
       });
     }
 
@@ -41,14 +40,14 @@ exports.signup = async (req, resp) => {
 
 exports.login = async (req, resp) => {
   try {
-    const { email, password } = req.body;
+    const { phoneNumber, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ phoneNumber });
 
     if (!user) {
       return resp
         .status(400)
-        .json({ status: "fail", message: "Invalid email" });
+        .json({ status: "fail", message: "Invalid phoneNumber" });
     }
 
     const isMatch = await user.comparePassword(password);
@@ -89,7 +88,7 @@ exports.getUser = async (req, resp) => {
 // Update User function - updated to handle image uploads similar to createPost
 exports.updateUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, phoneNumber, password } = req.body;
     let profilePicture = req.user.profilePicture; // Default to existing profile picture
 
     if (req.file) {
@@ -113,7 +112,7 @@ exports.updateUser = async (req, res) => {
 
     // Update user data
     if (name) user.name = name;
-    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
     if (profilePicture) user.profilePicture = profilePicture;
 
     await user.save();

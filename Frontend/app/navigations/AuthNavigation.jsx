@@ -11,8 +11,16 @@ import { t } from "i18next";
 import { Colors } from "../constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import DiseaseDetector from "../screens/DiseaseDetectionScreen";
+import PostDetailScreen from "@/app/screens/PostDetailScreen";
 
 export default function AuthNavigator() {
+  const headerBackgroundColor = isDarkMode
+    ? "#111827"
+    : Colors.lightTheme.backgroundColor;
+  const headerTintColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : Colors.lightTheme.textColor;
+
   const { isDarkMode } = useTheme();
   return (
     <Stack.Navigator
@@ -69,6 +77,20 @@ export default function AuthNavigator() {
           headerTintColor: isDarkMode
             ? Colors.darkTheme.textColor
             : Colors.lightTheme.textColor,
+          headerStyle: {
+            backgroundColor: isDarkMode
+              ? "#111827"
+              : Colors.lightTheme.backgroundColor, // Dynamic background color for header
+          },
+          headerShown: true, // Show header for back navigation
+        }}
+      />
+      <Stack.Screen
+        name="PostDetail"
+        component={PostDetailScreen}
+        options={{
+          headerTitle: t("post"), // Automatically handles translation based on current language
+          headerTintColor: headerTintColor, // Dynamic text color based on theme
           headerStyle: {
             backgroundColor: isDarkMode
               ? "#111827"

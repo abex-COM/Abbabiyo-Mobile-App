@@ -45,7 +45,7 @@ export default function EditProfileScreen() {
   const { user, isLoading, refetch, token } = useUser();
   const [initialValues, setInitialValue] = useState({
     name: "",
-    email: "",
+    phoneNumber: "",
     password: "",
     region: "",
     zone: "",
@@ -54,10 +54,11 @@ export default function EditProfileScreen() {
   });
   const [imageUri, setImageUri] = useState(null);
   const { isDarkMode } = useTheme();
+
   useEffect(() => {
     setInitialValue({
       name: user.name || "",
-      email: user.email || "",
+      phoneNumber: user.phoneNumber || "", // Set phoneNumber instead of email
       password: "", // Keep password empty for security
       region: user.location?.region || "",
       zone: user.location?.zone || "",
@@ -73,7 +74,7 @@ export default function EditProfileScreen() {
     try {
       const formattedData = {
         name: values.name,
-        email: values.email,
+        phoneNumber: values.phoneNumber, // Include phoneNumber instead of email
         password: values.password,
         profilePicture: imageUri,
         location: {
@@ -190,9 +191,9 @@ export default function EditProfileScreen() {
               enableReinitialize={true}
               validationSchema={Yup.object({
                 name: Yup.string().required("Name is required"),
-                email: Yup.string()
-                  .email("Invalid email")
-                  .required("Email is required"),
+                phoneNumber: Yup.string()
+                  .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
+                  .required("Phone number is required"), // Validate phone number
                 password: Yup.string()
                   .min(6, "Password must be at least 6 characters")
                   .required("Password is required"),
@@ -220,15 +221,19 @@ export default function EditProfileScreen() {
                     {touched.name && errors.name && (
                       <ErrorText message={errors.name} />
                     )}
+
+                    {/* Updated phone number field */}
                     <MyTextInput
-                      placeholder="Email"
-                      value={values.email}
-                      onChangeText={handleChange("email")}
-                      onBlur={handleBlur("email")}
+                      placeholder="Phone Number"
+                      value={values.phoneNumber}
+                      onChangeText={handleChange("phoneNumber")}
+                      onBlur={handleBlur("phoneNumber")}
+                      keyboardType="numeric" // Make it numeric for phone number
                     />
-                    {touched.email && errors.email && (
-                      <ErrorText message={errors.email} />
+                    {touched.phoneNumber && errors.phoneNumber && (
+                      <ErrorText message={errors.phoneNumber} />
                     )}
+
                     <MyTextInput
                       placeholder="Password"
                       value={values.password}
@@ -334,6 +339,7 @@ export default function EditProfileScreen() {
     </TouchableWithoutFeedback>
   );
 }
+
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,

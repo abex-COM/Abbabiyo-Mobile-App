@@ -5,7 +5,6 @@ import ProfileScreen from "../screens/ProfileScreen";
 import EditProfile from "../screens/EditProfileScreen";
 import { useTheme } from "@/context/ThemeContext"; // Import the theme context
 import { Colors } from "../constants/Colors"; // Import the colors if you have predefined colors for themes
-import DiseaseDetector from "@/app/screens/DiseaseDetectionScreen";
 const Stack = createStackNavigator();
 
 const PageStack = () => {

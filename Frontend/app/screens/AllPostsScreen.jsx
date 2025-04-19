@@ -29,19 +29,20 @@ import { useUser } from "@/context/UserContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useTranslation } from "react-i18next";
 import baseUrl from "@/baseUrl/baseUrl";
-
+import useDeletePost from "@/app/hooks/useDelete";
 export default function ChatScreen() {
   const [message, setMessage] = useState("");
   const [imageUri, setImageUri] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isPostLoading, setIsPostLoading] = useState(false);
   const [commentLoadingMap, setCommentLoadingMap] = useState({});
-
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const flatlist = useRef(null);
   const { token } = useUser();
   const { posts, comments, postsQuery, refetchAll, user } = usePosts();
+  const handleDeletePost = useDeletePost(token, refetchAll);
+
   const { mutate: likePost } = useLikePost();
   const queryClient = useQueryClient();
   const backgroundColor = isDarkMode ? "#1F2937" : "#f3f4f6";
@@ -149,6 +150,7 @@ export default function ChatScreen() {
       return;
     }
     await postsQuery.refetch();
+    await queryClient.refetchQueries(["comments"]);
     setCommentLoadingMap((prev) => ({ ...prev, [postId]: true }));
 
     try {
@@ -181,8 +183,21 @@ export default function ChatScreen() {
 
   const handleLike = async (postId) => {
     likePost(postId);
+    console.log(postId);
   };
+// I set this because comment is net being fetched on the first time when comment mounts
+  useEffect(() => {
+    const refetch = async () => {
+      try {
+        await queryClient.refetchQueries(["comments"]);
+        console.log(" Comments refetched on mount");
+      } catch (error) {
+        console.error(" Error refetching comments:", error);
+      }
+    };
 
+    refetch();
+  }, [queryClient]);
   useEffect(() => {
     if (!user?._id) return;
 
@@ -234,55 +249,6 @@ export default function ChatScreen() {
     };
   }, [user?._id]);
 
-  const handleDeletePost = (postId) => {
-    Alert.alert(
-      "Delete Post",
-      "Are you sure you want to delete this post?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await axios.delete(`${baseUrl}/api/posts/delete/${postId}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-              await refetchAll();
-              Toast.show({
-                type: "success",
-                text1: "Post Deleted",
-              });
-            } catch (error) {
-              console.log("Error deleting post:", error);
-              Toast.show({
-                type: "error",
-                text1: "Failed to delete post",
-                text2:
-                  error.response?.data?.message || "Please try again later.",
-              });
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
-  };
-
-  useEffect(() => {
-    if (postsQuery.isLoading || comments.isLoading) {
-      return (
-        <View style={[styles.centered, { backgroundColor }]}>
-          <ActivityIndicator size="large" color={textColor} />
-          <Text style={{ color: textColor }}>
-            Loading posts and comments...
-          </Text>
-        </View>
-      );
-    }
-  }, [postsQuery.isLoading, comments.isLoading]);
   const uniquePosts = Array.from(
     new Map(posts.map((post) => [post._id, post])).values()
   );
@@ -305,14 +271,15 @@ export default function ChatScreen() {
                   ? () => handleDeletePost(item._id)
                   : undefined
               }
-              postId={item._id}
+              postId={item.author?._id}
               imageUri={item.image}
               poster={item.author?.name || "Unknown"}
               likes={item.likes?.length || 0}
               content={item.text}
+              post={item}
               liked={item.likes?.includes(user?._id)}
               isLoading={commentLoadingMap[item._id] || false}
-              comments={comments[item._id]}
+              comments={comments[item._id] || []}
               onCommentSubmit={(commentText) =>
                 handleNewComment(item._id, commentText)
               }
