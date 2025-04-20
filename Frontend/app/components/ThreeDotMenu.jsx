@@ -10,7 +10,6 @@ import { usePosts } from "@/context/PostContext";
 import { useNavigation } from "expo-router";
 
 export default function ThreeDotMenu({ post, postId, comments, likes }) {
-  console.log(comments);
   const [visible, setVisible] = useState(false);
   const { refetchAll } = usePosts();
   const { user, token } = useUser();
@@ -30,7 +29,15 @@ export default function ThreeDotMenu({ post, postId, comments, likes }) {
     handleDeletePost(post?._id); // Then delete the post
   };
   const handleViewPost = () => {
-    navigation.navigate("PostDetail", { post: post });
+    navigation.navigate("PostDetail", {
+      post: post,
+      comments: comments,
+      likes: likes,
+    });
+    hideMenu();
+  };
+  const handleEditPost = () => {
+    navigation.navigate("EditPost", { post: post });
     hideMenu();
   };
   return (
@@ -62,7 +69,7 @@ export default function ThreeDotMenu({ post, postId, comments, likes }) {
             <MenuItem
               textStyle={{ color: textColor }}
               style={{ backgroundColor: backgroundColor }}
-              onPress={hideMenu}
+              onPress={handleEditPost}
             >
               Edit Post
             </MenuItem>

@@ -169,3 +169,52 @@ exports.getPostsByAuthor = async (req, resp) => {
     });
   }
 };
+// Update a Post
+// Update a Post (Only if current user is the author)
+exports.updatePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { text } = req.body;
+    const userId = req.user.id;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Ensure the logged-in user is the author of the post
+    if (post.author.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to update this post" });
+    }
+
+    let updatedData = {};
+    if (text) updatedData.text = text;
+
+    // Handle new image if uploaded
+    if (req.file) {
+      const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
+      updatedData.image = imageUrl;
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { $set: updatedData },
+      { new: true }
+    ).populate("author");
+
+    const io = getIO();
+    io.emit("postUpdated", updatedPost);
+
+    res.status(200).json({ message: "Post updated", post: updatedPost });
+  } catch (error) {
+    console.error("Error updating post:", error);
+    res.status(500).json({
+      message: "Failed to update post",
+      error: error.message,
+    });
+  }
+};

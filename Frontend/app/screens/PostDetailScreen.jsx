@@ -5,70 +5,102 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  FlatList,
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  FlatList,
 } from "react-native";
+import { useUser } from "@/context/UserContext";
+import useLikePost from "../hooks/useLike";
+import { usePosts } from "@/context/PostContext";
 
 export default function PostDetailScreen({ route }) {
-  const { post } = route.params;
+  const { post = {}, comments = [] } = route.params || {};
+  const { user } = useUser();
+  const { handleNewComment } = usePosts();
+
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState(post.comments || []);
-  const [liked, setLiked] = useState(post.likes.includes("yourUserId")); // replace with real user ID
-  const [likesCount, setLikesCount] = useState(post.likes.length);
+  const [likes, setLikes] = useState(post.likes || []);
+  const [showAllComments, setShowAllComments] = useState(false);
+
+  const { mutate: likePost } = useLikePost();
+  const hasLiked = likes.includes(user?._id);
 
   const handleLike = () => {
-    setLiked(!liked);
-    setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
-    // TODO: Send like to server
+    likePost(post._id);
+    setLikes((prev) =>
+      hasLiked ? prev.filter((id) => id !== user._id) : [...prev, user._id]
+    );
   };
 
   const handleComment = () => {
     if (!commentText.trim()) return;
-    const newComment = {
-      id: Date.now().toString(),
-      text: commentText,
-      author: "You", // replace with current user
-    };
-    setComments([...comments, newComment]);
+    handleNewComment(post._id, commentText);
     setCommentText("");
-    // TODO: Send comment to server
   };
+
+  const visibleComments = showAllComments ? comments : comments.slice(-6);
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={100}
     >
       <FlatList
+        data={visibleComments}
+        keyExtractor={(item) => item._id || item.id}
         ListHeaderComponent={
-          <View>
-            <Text style={styles.author}>{post.author.name}</Text>
+          <View style={{ padding: 16 }}>
+            <Text style={styles.postAuthor}>{post.author?.name}</Text>
+
             {post.image && (
-              <Image source={{ uri: post.image }} style={styles.image} />
+              <Image
+                source={{ uri: post.image }}
+                style={styles.image}
+                resizeMode="cover"
+              />
             )}
-            <Text style={styles.content}>{post.text}</Text>
+
+            <Text style={styles.postText}>{post.text}</Text>
 
             <View style={styles.likesRow}>
               <TouchableOpacity onPress={handleLike}>
                 <Text style={styles.likeBtn}>
-                  {liked ? "❤️" : "🤍"} {likesCount}
+                  {hasLiked ? "💙" : "🤍"} {likes.length} Likes
                 </Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.commentHeading}>Comments</Text>
+            <Text style={styles.CommentTitle}>Comments: {comments.length}</Text>
+
+            {comments.length > 6 && !showAllComments && (
+              <TouchableOpacity
+                onPress={() => setShowAllComments(true)}
+                style={styles.seeMoreBtn}
+              >
+                <Text style={styles.seeMoreText}>See previous comments</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
-        data={comments}
-        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.comment}>
-            <Text style={styles.commentAuthor}>{item.author}</Text>
-            <Text style={styles.commentText}>{item.text}</Text>
+            <View style={styles.avatarContainer}>
+              <Image
+                source={
+                  item?.author?.profilePicture
+                    ? { uri: item?.author?.profilePicture }
+                    : require("../../assets/images/user.png")
+                }
+                style={styles.profilePicture}
+              />
+              <Text style={styles.commentAuthor}>{item?.author?.name}</Text>
+            </View>
+            <Text style={styles.commentText}>{item?.text}</Text>
           </View>
         )}
+        contentContainerStyle={{ paddingBottom: 100 }}
       />
 
       <View style={styles.commentInputContainer}>
@@ -78,7 +110,7 @@ export default function PostDetailScreen({ route }) {
           value={commentText}
           onChangeText={setCommentText}
         />
-        <TouchableOpacity onPress={handleComment} style={styles.sendBtn}>
+        <TouchableOpacity style={styles.sendBtn} onPress={handleComment}>
           <Text style={{ color: "#fff" }}>Send</Text>
         </TouchableOpacity>
       </View>
@@ -87,26 +119,79 @@ export default function PostDetailScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  author: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
-  image: { width: "100%", height: 300, borderRadius: 8, marginBottom: 12 },
-  content: { fontSize: 16, marginBottom: 12 },
-  likesRow: { flexDirection: "row", marginBottom: 16 },
-  likeBtn: { fontSize: 18 },
-  commentHeading: { fontWeight: "bold", fontSize: 16, marginBottom: 8 },
-  comment: { marginBottom: 12 },
-  commentAuthor: { fontWeight: "bold" },
-  commentText: {},
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  postAuthor: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 8,
+    color: "#333",
+  },
+  image: {
+    width: "100%",
+    height: 230,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  postText: {
+    fontSize: 16,
+    marginTop: 8,
+  },
+  likesRow: {
+    flexDirection: "row",
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  likeBtn: {
+    fontSize: 18,
+  },
+  CommentTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 8,
+    paddingVertical: 8,
+  },
+  comment: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
+  avatarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profilePicture: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  commentAuthor: {
+    fontWeight: "bold",
+  },
+  commentText: {
+    color: "#666",
+    marginLeft: 48,
+    marginTop: 4,
+  },
   commentInputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
     borderTopWidth: 1,
     borderColor: "#ccc",
+    padding: 8,
+    backgroundColor: "#fff",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   input: {
     flex: 1,
-    padding: 10,
+    padding: 14,
     backgroundColor: "#f0f0f0",
     borderRadius: 8,
     marginRight: 8,
@@ -114,7 +199,20 @@ const styles = StyleSheet.create({
   sendBtn: {
     backgroundColor: "#2563eb",
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 8,
+  },
+  seeMoreBtn: {
+    paddingVertical: 8,
+    marginBottom: 12,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  seeMoreText: {
+    color: "#2563eb",
+    fontWeight: "bold",
   },
 });

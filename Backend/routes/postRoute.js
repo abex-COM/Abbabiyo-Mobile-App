@@ -29,7 +29,15 @@ router.get("/getPostBypostId/:postId", postController.getPostById);
 // delete post
 
 router.delete("/delete/:postId", authenticateUser, postController.deletePost);
+// update post
+router.put(
+  "/update/:postId",
+  authenticateUser,
+  upload.single("image"),
+  postController.updatePost
+);
 // liking post
+
 router.patch("/:postId/like", authenticateUser, postController.likePost);
 // Get Posts by Author (new route)
 router.get(

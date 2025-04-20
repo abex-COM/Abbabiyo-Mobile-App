@@ -1,16 +1,17 @@
 // context/PostsContext.js
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
-
+import { initiateSocketConnection, getSocket } from "@/app/utils/socket";
 const PostsContext = createContext();
 export const PostsProvider = ({ children }) => {
   const { token, user } = useUser();
   const queryClient = useQueryClient();
+  const [commentLoadingMap, setCommentLoadingMap] = useState({});
 
   const getAllPosts = async () => {
     try {
@@ -81,6 +82,49 @@ export const PostsProvider = ({ children }) => {
     return acc;
   }, {});
 
+  // Add this function inside your PostContext
+  const handleNewComment = async (postId, commentText) => {
+    if (!commentText.trim()) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Comment cannot be empty",
+      });
+      return;
+    }
+
+    setCommentLoadingMap((prev) => ({ ...prev, [postId]: true }));
+
+    try {
+      await axios.post(
+        `${baseUrl}/api/comments/createComment`,
+        { text: commentText, postId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      await postsQuery.refetch();
+      await queryClient.refetchQueries(["comments"]);
+
+      Toast.show({
+        type: "success",
+        text1: "Comment Posted",
+      });
+    } catch (error) {
+      console.log("Error posting comment:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to post comment.",
+      });
+    } finally {
+      setCommentLoadingMap((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
+
   return (
     <PostsContext.Provider
       value={{
@@ -89,6 +133,8 @@ export const PostsProvider = ({ children }) => {
         postsQuery,
         commentsQuery,
         refetchAll,
+        handleNewComment,
+        commentLoadingMap,
         user,
       }}
     >

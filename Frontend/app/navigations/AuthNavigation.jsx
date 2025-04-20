@@ -12,6 +12,7 @@ import { Colors } from "../constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import DiseaseDetector from "../screens/DiseaseDetectionScreen";
 import PostDetailScreen from "@/app/screens/PostDetailScreen";
+import UpdatePostScreen from "./../screens/EditPostScreen";
 
 export default function AuthNavigator() {
   const headerBackgroundColor = isDarkMode
@@ -90,6 +91,20 @@ export default function AuthNavigator() {
         component={PostDetailScreen}
         options={{
           headerTitle: t("post"), // Automatically handles translation based on current language
+          headerTintColor: headerTintColor, // Dynamic text color based on theme
+          headerStyle: {
+            backgroundColor: isDarkMode
+              ? "#111827"
+              : Colors.lightTheme.backgroundColor, // Dynamic background color for header
+          },
+          headerShown: true, // Show header for back navigation
+        }}
+      />
+      <Stack.Screen
+        name="EditPost"
+        component={UpdatePostScreen}
+        options={{
+          headerTitle: t("update"), // Automatically handles translation based on current language
           headerTintColor: headerTintColor, // Dynamic text color based on theme
           headerStyle: {
             backgroundColor: isDarkMode

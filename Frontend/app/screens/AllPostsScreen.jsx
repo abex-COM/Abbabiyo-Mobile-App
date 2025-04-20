@@ -35,18 +35,24 @@ export default function ChatScreen() {
   const [imageUri, setImageUri] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isPostLoading, setIsPostLoading] = useState(false);
-  const [commentLoadingMap, setCommentLoadingMap] = useState({});
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const flatlist = useRef(null);
   const { token } = useUser();
-  const { posts, comments, postsQuery, refetchAll, user } = usePosts();
+  const {
+    posts,
+    comments,
+    postsQuery,
+    refetchAll,
+    user,
+    handleNewComment,
+    commentLoadingMap,
+  } = usePosts();
   const handleDeletePost = useDeletePost(token, refetchAll);
 
   const { mutate: likePost } = useLikePost();
   const queryClient = useQueryClient();
   const backgroundColor = isDarkMode ? "#1F2937" : "#f3f4f6";
-  const textColor = isDarkMode ? "#F9FAFB" : "#111827";
   const handleRefetch = async () => {
     setRefreshing(true);
     try {
@@ -140,52 +146,52 @@ export default function ChatScreen() {
     }
   };
 
-  const handleNewComment = async (postId, commentText) => {
-    if (!commentText.trim()) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Comment cannot be empty",
-      });
-      return;
-    }
-    await postsQuery.refetch();
-    await queryClient.refetchQueries(["comments"]);
-    setCommentLoadingMap((prev) => ({ ...prev, [postId]: true }));
+  // const handleNewComment = async (postId, commentText) => {
+  //   if (!commentText.trim()) {
+  //     Toast.show({
+  //       type: "error",
+  //       text1: "Error",
+  //       text2: "Comment cannot be empty",
+  //     });
+  //     return;
+  //   }
+  //   await postsQuery.refetch();
+  //   await queryClient.refetchQueries(["comments"]);
+  //   setCommentLoadingMap((prev) => ({ ...prev, [postId]: true }));
 
-    try {
-      await axios.post(
-        `${baseUrl}/api/comments/createComment`,
-        { text: commentText, postId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      await postsQuery.refetch();
+  //   try {
+  //     await axios.post(
+  //       `${baseUrl}/api/comments/createComment`,
+  //       { text: commentText, postId },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     await postsQuery.refetch();
 
-      Toast.show({
-        type: "success",
-        text1: "Comment Posted",
-      });
-    } catch (error) {
-      console.log("Error posting comment:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Failed to post comment.",
-      });
-    } finally {
-      setCommentLoadingMap((prev) => ({ ...prev, [postId]: false }));
-    }
-  };
+  //     Toast.show({
+  //       type: "success",
+  //       text1: "Comment Posted",
+  //     });
+  //   } catch (error) {
+  //     console.log("Error posting comment:", error);
+  //     Toast.show({
+  //       type: "error",
+  //       text1: "Error",
+  //       text2: "Failed to post comment.",
+  //     });
+  //   } finally {
+  //     setCommentLoadingMap((prev) => ({ ...prev, [postId]: false }));
+  //   }
+  // };
 
   const handleLike = async (postId) => {
     likePost(postId);
     console.log(postId);
   };
-// I set this because comment is net being fetched on the first time when comment mounts
+  // I set this because comment is net being fetched on the first time when comment mounts
   useEffect(() => {
     const refetch = async () => {
       try {
@@ -236,7 +242,18 @@ export default function ChatScreen() {
         )
       );
     };
+    socket.on("postUpdated", (updatedPost) => {
+      console.log("Post updated in real time:", updatedPost);
 
+      // Update React Query cache if you're using it
+      queryClient.setQueryData(["posts"], (oldData) => {
+        if (!oldData) return oldData;
+
+        return oldData.map((post) =>
+          post._id === updatedPost._id ? updatedPost : post
+        );
+      });
+    });
     socket.on("connect", () => console.log("Connected to socket:", socket.id));
     socket.on("newComment", handleNewComment);
     socket.on("newPost", handleNewPost);

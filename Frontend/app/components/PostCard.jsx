@@ -30,7 +30,6 @@ const PostCard = ({
   const [isTruncated, setIsTruncated] = useState(false);
   const { isDarkMode } = useTheme();
   const navigation = useNavigation();
-  const { token } = useUser();
 
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
@@ -49,7 +48,11 @@ const PostCard = ({
   };
 
   const handleViewPost = () => {
-    navigation.navigate("PostDetail", { post: post });
+    navigation.navigate("PostDetail", {
+      post: post,
+      comments: comments,
+      likes: likes,
+    });
   };
 
   return (
