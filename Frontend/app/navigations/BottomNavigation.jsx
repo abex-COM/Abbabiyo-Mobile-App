@@ -47,11 +47,6 @@ export default function BottomNavigator() {
             shadowColor: "transparent",
           },
           headerTintColor: textColor,
-          headerRight: () => (
-            <View style={{ alignItems: "center", paddingRight: 10 }}>
-              <LanguageDropdown value={language} onChange={setLanguage} />
-            </View>
-          ),
           headerTitle: () => <HeaderWelcome />,
           tabBarIcon: ({ color, size = 30 }) => (
             <MaterialCommunityIcons name="home" size={size} color={color} />
@@ -63,7 +58,7 @@ export default function BottomNavigator() {
         component={GeminiScreen}
         options={{
           title: t("chatbot"),
-          headerTitle: t("ask_gemini"),
+          headerTitle: t("Abbabiyo AI"),
           headerStyle: {
             backgroundColor: headerBackgroundColor,
             shadowColor: "transparent",
@@ -113,12 +108,7 @@ export default function BottomNavigator() {
         name="Account"
         component={PageStack}
         options={{
-          title:
-            language === "en"
-              ? "Account"
-              : language == "om"
-                ? "Akkaawuntii"
-                : "አካውንት",
+          title: t("account"),
           headerShown: false,
           tabBarIcon: ({ color, size = 30 }) => (
             <MaterialCommunityIcons name="account" size={size} color={color} />

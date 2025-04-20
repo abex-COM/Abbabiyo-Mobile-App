@@ -105,7 +105,7 @@ export default function GeminiScreen() {
         </ScrollView>
 
         <ChatInput
-          placeholder={t("ask_gemini")}
+          placeholder={t("ask_abbabiyo")}
           onSend={() => {
             sendPromptToGemini(); // Call the sendPromptToGemini function
             setPrompt(""); // Clear the prompt after sending

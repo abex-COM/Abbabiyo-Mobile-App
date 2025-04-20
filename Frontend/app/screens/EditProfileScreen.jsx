@@ -22,6 +22,7 @@ import baseUrl from "@/baseUrl/baseUrl";
 import ErrorText from "../components/ErrorText";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useNavigation } from "expo-router";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ethiopianRegions, {
   ethiopianZones,
   ethiopianWoredas,
@@ -32,7 +33,6 @@ import { t } from "i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
 import { Colors } from "../constants/Colors";
-
 export default function EditProfileScreen() {
   const { language } = useUser();
   const navigation = useNavigation();
@@ -161,30 +161,41 @@ export default function EditProfileScreen() {
     }
   };
 
+  const backgroundColor = isDarkMode
+    ? Colors.darkTheme.backgroundColor
+    : Colors.lightTheme.backgroundColor;
+  const textColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : Colors.lightTheme.textColor;
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <>
-        <View style={styles.imageWrapper}>
-          <TouchableOpacity onPress={handlePickImage} style={styles.imageTouch}>
-            <Image
-              style={styles.image}
-              source={
-                imageUri
-                  ? { uri: imageUri }
-                  : require("../../assets/images/user.png")
-              }
-            />
-            <View style={styles.iconOverlay}>
-              <MaterialCommunityIcons name="camera" size={20} color="#fff" />
-            </View>
-          </TouchableOpacity>
-          <Text style={styles.text}>{user?.name}</Text>
-        </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        extraScrollHeight={120}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={{ backgroundColor: backgroundColor }}>
+          <View style={styles.imageWrapper}>
+            <TouchableOpacity
+              onPress={handlePickImage}
+              style={styles.imageTouch}
+            >
+              <Image
+                style={styles.image}
+                source={
+                  imageUri
+                    ? { uri: imageUri }
+                    : require("../../assets/images/user.png")
+                }
+              />
+              <View style={styles.iconOverlay}>
+                <MaterialCommunityIcons name="camera" size={20} color="#fff" />
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.text}>{user?.name}</Text>
+          </View>
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-        >
           <View contentContainerStyle={styles.scrollContainer}>
             <Formik
               initialValues={initialValues}
@@ -245,83 +256,104 @@ export default function EditProfileScreen() {
                       <ErrorText message={errors.password} />
                     )}
 
-                    <DropDownPicker
-                      open={regionOpen}
-                      setOpen={setRegionOpen}
-                      value={values.region}
-                      items={ethiopianRegions}
-                      setValue={(val) => {
-                        setFieldValue("region", val);
-                        setSelectedRegion(val);
-                        setFieldValue("zone", "");
-                        setSelectedZone(null);
-                        setFieldValue("woreda", "");
-                      }}
-                      placeholder="Select your region"
-                      style={[
-                        styles.picker,
-                        {
-                          backgroundColor: isDarkMode
-                            ? Colors.darkTheme.backgroundColor
-                            : Colors.lightTheme.backgroundColor,
-                        },
-                      ]}
-                      textStyle={{
-                        color: isDarkMode
-                          ? Colors.darkTheme.textColor
-                          : Colors.lightTheme.textColor,
-                      }}
-                    />
+                    <View style={{ zIndex: 3000 }}>
+                      <DropDownPicker
+                        open={regionOpen}
+                        setOpen={(open) => {
+                          setRegionOpen(open);
+                          if (open) {
+                            setZoneOpen(false);
+                            setWoredaOpen(false);
+                          }
+                        }}
+                        value={values.region}
+                        items={ethiopianRegions}
+                        setValue={(val) => {
+                          setFieldValue("region", val);
+                          setSelectedRegion(val);
+                          setFieldValue("zone", "");
+                          setSelectedZone(null);
+                          setFieldValue("woreda", "");
+                        }}
+                        placeholder="Select your region"
+                        searchable={true}
+                        searchablePlaceholder="Search for region"
+                        searchTextInputStyle={{
+                          color: textColor,
+                          backgroundColor,
+                        }}
+                        searchContainerStyle={{
+                          backgroundColor: backgroundColor,
+                        }}
+                        style={[styles.picker, { backgroundColor }]}
+                        textStyle={{ color: textColor }}
+                        dropDownContainerStyle={{ backgroundColor }}
+                      />
+                    </View>
 
-                    <DropDownPicker
-                      open={zoneOpen}
-                      setOpen={setZoneOpen}
-                      value={values.zone}
-                      items={ethiopianZones[selectedRegion] || []}
-                      setValue={(val) => {
-                        setFieldValue("zone", val);
-                        setSelectedZone(val);
-                        setFieldValue("woreda", "");
-                      }}
-                      placeholder="Select your zone"
-                      disabled={!selectedRegion}
-                      style={[
-                        styles.picker,
-                        {
-                          backgroundColor: isDarkMode
-                            ? Colors.darkTheme.backgroundColor
-                            : Colors.lightTheme.backgroundColor,
-                        },
-                      ]}
-                      textStyle={{
-                        color: isDarkMode
-                          ? Colors.darkTheme.textColor
-                          : Colors.lightTheme.textColor,
-                      }}
-                    />
+                    <View style={{ zIndex: 2000 }}>
+                      <DropDownPicker
+                        open={zoneOpen}
+                        setOpen={(open) => {
+                          setZoneOpen(open);
+                          if (open) {
+                            setRegionOpen(false);
+                            setWoredaOpen(false);
+                          }
+                        }}
+                        value={values.zone}
+                        items={ethiopianZones[selectedRegion] || []}
+                        setValue={(val) => {
+                          setFieldValue("zone", val);
+                          setSelectedZone(val);
+                          setFieldValue("woreda", "");
+                        }}
+                        placeholder="Select your zone"
+                        disabled={!selectedRegion}
+                        searchable={true}
+                        searchablePlaceholder="Search for zone"
+                        searchTextInputStyle={{
+                          color: textColor,
+                          backgroundColor,
+                        }}
+                        searchContainerStyle={{
+                          backgroundColor: backgroundColor,
+                        }}
+                        style={[styles.picker, { backgroundColor }]}
+                        textStyle={{ color: textColor }}
+                        dropDownContainerStyle={{ backgroundColor }}
+                      />
+                    </View>
 
-                    <DropDownPicker
-                      open={woredaOpen}
-                      setOpen={setWoredaOpen}
-                      value={values.woreda}
-                      items={ethiopianWoredas[selectedZone] || []}
-                      setValue={(val) => setFieldValue("woreda", val)}
-                      placeholder="Select your woreda"
-                      disabled={!selectedZone}
-                      style={[
-                        styles.picker,
-                        {
-                          backgroundColor: isDarkMode
-                            ? Colors.darkTheme.backgroundColor
-                            : Colors.lightTheme.backgroundColor,
-                        },
-                      ]}
-                      textStyle={{
-                        color: isDarkMode
-                          ? Colors.darkTheme.textColor
-                          : Colors.lightTheme.textColor,
-                      }}
-                    />
+                    <View style={{ zIndex: 1000 }}>
+                      <DropDownPicker
+                        open={woredaOpen}
+                        setOpen={(open) => {
+                          setWoredaOpen(open);
+                          if (open) {
+                            setRegionOpen(false);
+                            setZoneOpen(false);
+                          }
+                        }}
+                        value={values.woreda}
+                        items={ethiopianWoredas[selectedZone] || []}
+                        setValue={(val) => setFieldValue("woreda", val)}
+                        placeholder="Select your woreda"
+                        disabled={!selectedZone}
+                        searchable={true}
+                        searchablePlaceholder="Search for woreda"
+                        searchTextInputStyle={{
+                          color: textColor,
+                          backgroundColor,
+                        }}
+                        searchContainerStyle={{
+                          backgroundColor: backgroundColor,
+                        }}
+                        style={[styles.picker, { backgroundColor }]}
+                        textStyle={{ color: textColor }}
+                        dropDownContainerStyle={{ backgroundColor }}
+                      />
+                    </View>
 
                     <MyButton
                       onPress={handleSubmit}
@@ -334,8 +366,8 @@ export default function EditProfileScreen() {
               )}
             </Formik>
           </View>
-        </KeyboardAvoidingView>
-      </>
+        </View>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 }
@@ -357,9 +389,11 @@ const styles = StyleSheet.create({
   form: {
     gap: 10,
     width: "100%",
+    zIndex: 1000,
   },
   picker: {
     marginVertical: 10,
+    zIndex: 1000,
   },
   imageContainer: {
     flexDirection: "row",

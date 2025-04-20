@@ -341,12 +341,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     paddingTop: 10,
   },
   flatlist: { gap: 16 },
   inputContainer: {
-    padding: 16,
+    padding: 8,
     width: "100%",
   },
 });

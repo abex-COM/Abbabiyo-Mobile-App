@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-  StatusBar,
-} from "react-native";
+import { View, Text, Image, StyleSheet, ActivityIndicator } from "react-native";
 import MyButton from "../components/MyButton";
 import { useUser } from "@/context/UserContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -14,107 +7,91 @@ import { Pressable, Switch } from "react-native-gesture-handler";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../context/ThemeContext";
 import { Colors } from "../constants/Colors";
+import LanguageDropdown from "../components/LanguageSelector";
+import { useLanguage } from "@/context/LanguageContexts";
 
 export default function ProfileScreen({ navigation }) {
   const { logout, user, isLoading } = useUser();
   const { isDarkMode, toggleTheme } = useTheme();
+  const { setLanguage } = useLanguage();
   const { t } = useTranslation();
+
   const handleLogout = () => {
     logout();
     navigation.replace("welcomeScreen");
   };
 
+  const themeColors = isDarkMode ? Colors.darkTheme : Colors.lightTheme;
+
   return (
     <View
       style={[
         styles.container,
-        {
-          backgroundColor: isDarkMode
-            ? Colors.darkTheme.backgroundColor
-            : Colors.lightTheme.backgroundColor,
-        },
+        { backgroundColor: themeColors.backgroundColor },
       ]}
     >
       {isLoading ? (
-        <ActivityIndicator />
+        <ActivityIndicator color={themeColors.textColor} />
       ) : (
-        <View>
-          <View style={styles.profileConatiner}>
-            <Image
-              style={styles.image}
-              source={
-                user.profilePicture
-                  ? { uri: user.profilePicture }
-                  : require("../../assets/images/user.png")
-              }
-            />
-            <View style={{ gap: 5 }}>
-              <Text
-                style={[
-                  styles.text,
-                  { color: isDarkMode ? "#c0c0c0" : "#006400" },
-                ]}
-              >
-                {user?.name}
-              </Text>
-              <Text>{user?.phoneNumber}</Text>
-              <Text>
-                Location:{" "}
-                {user?.location?.woreda +
-                  ", " +
-                  user?.location?.zone +
-                  ", " +
-                  user?.location?.region}
-              </Text>
-            </View>
+        <View style={styles.profileConatiner}>
+          <Image
+            style={[styles.image, { borderColor: themeColors.cardColor }]}
+            source={
+              user.profilePicture
+                ? { uri: user.profilePicture }
+                : require("../../assets/images/user.png")
+            }
+          />
+          <View style={{ gap: 5 }}>
+            <Text
+              style={[
+                styles.text,
+                { color: isDarkMode ? "#c0c0c0" : "#006400" },
+              ]}
+            >
+              {user?.name}
+            </Text>
+            <Text style={{ color: themeColors.textColor }}>
+              {user?.phoneNumber}
+            </Text>
+            <Text style={{ color: themeColors.textColor }}>
+              Location: {user?.location?.woreda}, {user?.location?.zone},{" "}
+              {user?.location?.region}
+            </Text>
           </View>
         </View>
       )}
+
       <View
-        style={{
-          borderWidth: 1,
-          borderColor: isDarkMode ? "#4b5563" : "#cfd4cb",
-          marginVertical: 10,
-        }}
+        style={[
+          styles.divider,
+          { borderColor: isDarkMode ? "#4b5563" : "#cfd4cb" },
+        ]}
       />
+      <LanguageDropdown onChange={setLanguage} />
+
       {/* Edit Profile */}
       <Pressable onPress={() => navigation.navigate("EditProfile")}>
-        <View
-          style={[
-            styles.list,
-            {
-              backgroundColor: isDarkMode ? "#374151" : "#dddfda",
-            },
-          ]}
-        >
+        <View style={[styles.list, { backgroundColor: themeColors.cardColor }]}>
           <MaterialCommunityIcons
             name="account-edit"
             size={40}
-            color={isDarkMode ? "#fff" : "#5a5751"}
+            color={themeColors.textColor}
           />
-          <Text
-            style={[styles.lisText, { color: isDarkMode ? "#fff" : "#5a5751" }]}
-          >
+          <Text style={[styles.listText, { color: themeColors.textColor }]}>
             {t("edit_profile")}
           </Text>
         </View>
       </Pressable>
-      {/* Toggle Dark Mode */}
-      <View
-        style={[
-          styles.list,
-          {
-            backgroundColor: isDarkMode ? "#374151" : "#dddfda",
-          },
-        ]}
-      >
+
+      {/* Toggle Theme */}
+      <View style={[styles.list, { backgroundColor: themeColors.cardColor }]}>
         <Switch value={isDarkMode} onChange={toggleTheme} />
-        <Text
-          style={[styles.lisText, { color: isDarkMode ? "#fff" : "#5a5751" }]}
-        >
+        <Text style={[styles.listText, { color: themeColors.textColor }]}>
           {t("dark_mode")}
         </Text>
       </View>
+
       {/* Logout Button */}
       <MyButton title={t("logout")} onPress={handleLogout} />
     </View>
@@ -138,24 +115,24 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 50,
-    borderColor: "#ced8d1",
   },
   text: {
     fontSize: 20,
     fontWeight: "bold",
   },
+  divider: {
+    borderWidth: 1,
+    marginVertical: 10,
+  },
   list: {
-    fontSize: 20,
     alignItems: "center",
     gap: 10,
     flexDirection: "row",
     borderRadius: 10,
     padding: 10,
   },
-  lisText: {
+  listText: {
     fontSize: 16,
-    gap: 10,
     fontWeight: "900",
-    flexDirection: "row",
   },
 });

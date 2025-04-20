@@ -165,11 +165,7 @@ export default function DiseaseDetector() {
           </View>
         </View>
 
-        <View style={[styles.footer, theme.footer]}>
-          <Text style={theme.text}>
-            © 2025 Abbaa Biyyo. All Rights Reserved.
-          </Text>
-        </View>
+        <View style={[styles.footer, theme.footer]}></View>
       </View>
     </ScrollView>
   );
@@ -179,7 +175,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     minHeight: "100%",
-    justifyContent: "space-between",
+    justifyContent: "center",
   },
   header: {
     flexDirection: "row",

@@ -15,6 +15,8 @@ import axios from "axios";
 import Toast from "react-native-toast-message"; // Ensure correct import
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
+import { Colors } from "../constants/Colors";
+import { useTheme } from "@/context/ThemeContext";
 
 // Validation Schema using Yup for phone number
 const validationSchema = Yup.object().shape({
@@ -28,7 +30,10 @@ const validationSchema = Yup.object().shape({
 
 export default function LoginScreen({ navigation }) {
   const { storeToken, token } = useUser();
-
+  const { isDarkMode } = useTheme();
+  const backgroundColor = isDarkMode
+    ? Colors.darkTheme.backgroundColor
+    : Colors.lightTheme.backgroundColor;
   const handleSubmit = useCallback(
     async (values) => {
       try {
@@ -86,10 +91,9 @@ export default function LoginScreen({ navigation }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
-      <StatusBar backgroundColor="#009000" />
-      <View style={styles.form}>
+      <View style={[styles.form, { backgroundColor: backgroundColor }]}>
         <Formik
-          initialValues={{
+          initialValues={{ 
             phoneNumber: "",
             password: "",
           }}

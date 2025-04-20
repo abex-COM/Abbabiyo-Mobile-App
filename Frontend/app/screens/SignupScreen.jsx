@@ -15,31 +15,33 @@ import ErrorText from "../components/ErrorText";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useNavigation } from "expo-router";
 import baseUrl from "@/baseUrl/baseUrl";
-
 import ethiopianRegions, {
   ethiopianZones,
   ethiopianWoredas,
 } from "./../constants/ethiopianData";
 import { useUser } from "@/context/UserContext";
 import Toast from "react-native-toast-message";
+import { useTheme } from "@/context/ThemeContext";
+import { Colors } from "../constants/Colors";
 
 export default function SignupScreen() {
   const navigation = useNavigation();
   const { storeToken } = useUser();
+  const { isDarkMode } = useTheme(); // Get the current theme
+
   // Dropdown states
   const [regionOpen, setRegionOpen] = useState(false);
   const [regionValue, setRegionValue] = useState(null);
-
   const [zoneOpen, setZoneOpen] = useState(false);
   const [zoneValue, setZoneValue] = useState(null);
-
   const [woredaOpen, setWoredaOpen] = useState(false);
   const [woredaValue, setWoredaValue] = useState(null);
+
   const handleSubmit = async (values) => {
     try {
       const formattedData = {
         name: values.name,
-        phoneNumber: values.phoneNumber, // Change 'email' to 'phoneNumber'
+        phoneNumber: values.phoneNumber, // Changed 'email' to 'phoneNumber'
         password: values.password,
         confirmPassword: values.passwordConfirm,
         location: {
@@ -74,13 +76,18 @@ export default function SignupScreen() {
     }
   };
 
+  const backgroundColor = isDarkMode
+    ? Colors.darkTheme.backgroundColor
+    : Colors.lightTheme.backgroundColor;
+  const textColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : Colors.lightTheme.textColor;
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
-      <StatusBar backgroundColor="#009000" />
-
       <View
         contentContainerStyle={{
           flexGrow: 1,
@@ -88,6 +95,7 @@ export default function SignupScreen() {
           paddingHorizontal: 20,
         }}
         keyboardShouldPersistTaps="handled"
+        style={{ backgroundColor }} // Apply background color based on theme
       >
         <Formik
           initialValues={{
@@ -119,7 +127,7 @@ export default function SignupScreen() {
             errors,
             touched,
           }) => (
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor }]}>
               <View style={styles.form}>
                 {/* Input Fields */}
                 <MyTextInput
@@ -127,6 +135,7 @@ export default function SignupScreen() {
                   value={values.name}
                   onChangeText={handleChange("name")}
                   onBlur={handleBlur("name")}
+                  placeholderTextColor={textColor} // Adjust placeholder color
                 />
                 {touched.name && errors.name && (
                   <ErrorText message={errors.name} />
@@ -139,6 +148,7 @@ export default function SignupScreen() {
                   onChangeText={handleChange("phoneNumber")} // Changed to phoneNumber
                   onBlur={handleBlur("phoneNumber")} // Changed to phoneNumber
                   keyboardType="phone-pad"
+                  placeholderTextColor={textColor} // Adjust placeholder color
                 />
                 {touched.phoneNumber && errors.phoneNumber && (
                   <ErrorText message={errors.phoneNumber} />
@@ -150,6 +160,7 @@ export default function SignupScreen() {
                   onChangeText={handleChange("password")}
                   onBlur={handleBlur("password")}
                   secureText={true}
+                  placeholderTextColor={textColor} // Adjust placeholder color
                 />
                 {touched.password && errors.password && (
                   <ErrorText message={errors.password} />
@@ -161,6 +172,7 @@ export default function SignupScreen() {
                   onChangeText={handleChange("passwordConfirm")}
                   onBlur={handleBlur("passwordConfirm")}
                   secureText={true}
+                  placeholderTextColor={textColor} // Adjust placeholder color
                 />
                 {touched.passwordConfirm && errors.passwordConfirm && (
                   <ErrorText message={errors.passwordConfirm} />
@@ -174,7 +186,9 @@ export default function SignupScreen() {
                   items={ethiopianRegions}
                   setValue={setRegionValue}
                   placeholder="Select your region"
-                  style={styles.picker}
+                  style={[styles.picker, { backgroundColor }]}
+                  textStyle={{ color: textColor }}
+                  dropDownContainerStyle={{ backgroundColor }}
                   zIndex={3000}
                   zIndexInverse={1000}
                   onChangeValue={(val) => {
@@ -192,7 +206,9 @@ export default function SignupScreen() {
                   setValue={setZoneValue}
                   placeholder="Select your zone"
                   disabled={!regionValue}
-                  style={styles.picker}
+                  style={[styles.picker, { backgroundColor }]}
+                  textStyle={{ color: textColor }}
+                  dropDownContainerStyle={{ backgroundColor }}
                   zIndex={2000}
                   zIndexInverse={2000}
                   onChangeValue={(val) => {
@@ -209,8 +225,10 @@ export default function SignupScreen() {
                   setValue={setWoredaValue}
                   placeholder="Select your woreda"
                   disabled={!zoneValue}
-                  style={styles.picker}
+                  style={[styles.picker, { backgroundColor }]}
+                  textStyle={{ color: textColor }}
                   zIndex={1000}
+                  dropDownContainerStyle={{ backgroundColor }}
                   zIndexInverse={3000}
                 />
 
@@ -232,6 +250,7 @@ export default function SignupScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    height: "100%",
     justifyContent: "center",
     padding: 20,
     borderRadius: 10,
@@ -243,7 +262,6 @@ const styles = StyleSheet.create({
   },
   picker: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 5,
     marginBottom: 10,
   },

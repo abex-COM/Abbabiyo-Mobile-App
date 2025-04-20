@@ -22,25 +22,26 @@ export default function MyTextInput({
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
+
+  const backgroundColor = isDarkMode
+    ? Colors.darkTheme.backgroundColor
+    : Colors.lightTheme.backgroundColor;
+  const textColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : Colors.lightTheme.textColor;
   return (
     <View style={styles.container}>
       <TextInput
         placeholder={placeholder}
-        // placeholderTextColor={
-        //   isDarkMode ? Colors.darkTheme.textColor : Colors.lightTheme.textColor
-        // }
+        placeholderTextColor={textColor}
         value={value}
         style={[
           styles.input,
           style,
-          // {
-          //   backgroundColor: isDarkMode
-          //     ? Colors.darkTheme.backgroundColor
-          //     : Colors.lightTheme.backgroundColor,
-          //   color: isDarkMode
-          //     ? Colors.darkTheme.textColor
-          //     : Colors.lightTheme.textColor,
-          // },
+          {
+            backgroundColor: backgroundColor,
+            color: textColor,
+          },
         ]}
         onChangeText={onChangeText}
         secureTextEntry={secureText && !isPasswordVisible} // Use secureText prop and toggle visibility
@@ -70,8 +71,8 @@ const styles = StyleSheet.create({
   },
   input: {
     minWidth: "100%",
-    borderWidth: 1,
-    borderColor: "#f1eee7",
+    borderWidth: 2,
+    borderColor: "#41403e",
     borderRadius: 10,
     padding: 10,
     paddingLeft: 20,

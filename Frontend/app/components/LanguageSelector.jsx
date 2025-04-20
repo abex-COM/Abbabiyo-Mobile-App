@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useTheme } from "@/context/ThemeContext";
+import { Colors } from "../constants/Colors";
 
 const LanguageDropdown = ({
   value = "en", // Default to English
@@ -15,25 +16,12 @@ const LanguageDropdown = ({
   const [open, setOpen] = useState(false);
   const { isDarkMode } = useTheme();
 
-  const dropdownStyles = isDarkMode
-    ? {
-        backgroundColor: "#333",
-        borderColor: "#444",
-      }
-    : {
-        backgroundColor: "#fff",
-        borderColor: "#ccc",
-      };
-
-  const dropdownContainerStyles = isDarkMode
-    ? {
-        backgroundColor: "#333",
-        borderColor: "#444",
-      }
-    : {
-        backgroundColor: "#fff",
-        borderColor: "#ccc",
-      };
+  const backgroundColor = isDarkMode
+    ? Colors.darkTheme.statusbarColor
+    : Colors.lightTheme.backgroundColor;
+  const textColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : Colors.lightTheme.textColor;
 
   return (
     <DropDownPicker
@@ -43,14 +31,17 @@ const LanguageDropdown = ({
       setOpen={setOpen}
       setValue={onChange}
       setItems={() => {}}
-      style={[styles.dropdown, dropdownStyles]} // main dropdown style
-      dropDownContainerStyle={dropdownContainerStyles} // dropdown list container style
+      style={[styles.dropdown, { backgroundColor }]} // main dropdown style
+      dropDownContainerStyle={{
+        backgroundColor: backgroundColor,
+        width: 350,
+      }} // dropdown list container style
       textStyle={{
         fontSize: 11,
-        color: isDarkMode ? "#fff" : "#000", // selected item text
+        color: textColor, // selected item text
       }}
       listItemLabelStyle={{
-        color: isDarkMode ? "#fff" : "#000", // list items text color
+        color: textColor, // list items text color
       }}
     />
   );
@@ -58,7 +49,7 @@ const LanguageDropdown = ({
 
 const styles = StyleSheet.create({
   dropdown: {
-    width: 110,
+    width: 350,
     height: 50,
     borderRadius: 5,
   },

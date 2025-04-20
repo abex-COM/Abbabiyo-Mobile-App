@@ -35,5 +35,11 @@
   "what_is_on_your_mind": "What is on your mind",
   "disease_detector": "Disease Detection",
   "ask_ai_assistant": "Ask AI Assitant",
-  "posts": "Posts"
+  "posts": "Posts",
+  "edit_post": "Edit Post",
+  "delete_post": "Delete Post",
+  "view_post": "View Post",
+  "add_post": "Add Post",
+  "post": "post",
+  "ask_abbabiyo": "Ask Abbabiyo"
 }

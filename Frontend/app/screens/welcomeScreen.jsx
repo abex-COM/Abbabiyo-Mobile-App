@@ -1,11 +1,23 @@
-import { ImageBackground, StatusBar, Text, View } from "react-native";
-import React, { useEffect } from "react";
+import {
+  ImageBackground,
+  StatusBar,
+  Text,
+  View,
+  StyleSheet,
+} from "react-native";
+import React from "react";
 import background from "../../assets/images/farmer-b.jpg";
 import MyButton from "../components/MyButton";
 import { useUser } from "@/context/UserContext";
+import { useTranslation } from "react-i18next";
+import LanguageDropdown from "../components/LanguageSelector";
+import { useLanguage } from "@/context/LanguageContexts";
 
 export default function Welcome({ navigation }) {
-  const { token, language } = useUser();
+  const { token } = useUser();
+  const { setLanguage } = useLanguage();
+
+  const { t } = useTranslation();
   const handleLogin = () => {
     if (token) {
       navigation.navigate("bottomNavigator");
@@ -14,37 +26,63 @@ export default function Welcome({ navigation }) {
   return (
     <ImageBackground
       source={background}
-      className="w-full h-full flex-1 justify-around items-center "
+      style={styles.background}
       resizeMode="cover"
     >
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content" // Use "dark-content" for dark images
-      />
-      <View className="text-center">
-        <Text className="text-yellow-900 text-2xl font-bold mb-40   p-4 rounded-[10rem]">
-          {language === "en"
-            ? "Welcome to Abbabiyo AI Assitant "
-            : language == "om"
-              ? "Baga  Gara Abbabiyo AI tti Nagaa n Dhufta"
-              : "ወደ አባቢዮ  AI ረዳት እንኳን በደህና መጡ"}
+      <StatusBar translucent backgroundColor="transparent" />
+      <View style={styles.textContainer}>
+        <Text style={styles.welcomeText}>Welcome to Abbabiyo AI Assistant</Text>
+        <Text style={styles.welcomeText}>
+          Baga Gara Abbabiyo AI tti Nagaan Dhufta
         </Text>
+        <Text style={styles.welcomeText}>ወደ አባቢዮ AI ረዳት እንኳን በደህና መጡ</Text>
+        <LanguageDropdown onChange={setLanguage} />
       </View>
-      <View className="gap-5">
+      <View style={styles.buttonContainer}>
         <MyButton
-          title="Login"
+          title={t("login")}
           onPress={handleLogin}
-          style={{ width: 200 }}
-          textStyle={{ fontSize: 20 }}
+          style={styles.button}
+          textStyle={styles.buttonText}
         />
         <MyButton
-          title="SignUp"
-          style={{ width: 200 }}
+          title={t("register")}
+          style={styles.button}
           onPress={() => navigation.navigate("signupScreen")}
-          textStyle={{ fontSize: 20 }}
+          textStyle={styles.buttonText}
         />
       </View>
     </ImageBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: "space-around",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+  },
+  textContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 40,
+  },
+  welcomeText: {
+    color: "#157015", // Green color (similar to text-green-400)
+    fontSize: 20, // Text size (similar to text-2xl)
+    fontWeight: "bold",
+    padding: 16,
+    borderRadius: 100, // Rounded corners (similar to rounded-[10rem])
+  },
+  buttonContainer: {
+    gap: 20, // Similar to gap-5
+  },
+  button: {
+    width: 200,
+  },
+  buttonText: {
+    fontSize: 20,
+  },
+});

@@ -34,5 +34,11 @@
   "what_is_on_your_mind": "በአእምሮህ ውስጥ ያለው ምንድን ነው",
   "myposts": "የእኔ ልጥፎች",
   "disease_detector": "የበሽታ መርማሪ",
-  "posts": "ልጥፎች"
+  "posts": "ልጥፎች",
+  "post": "ልጥፎ",
+  "edit_post": "የልጥፍ አርትዕ",
+  "delete_post": "የልጥፍ ሰርዝ",
+  "view_post": "የልጥፍ እይታ",
+  "add_post": "የልጥፍ አክል",
+  "ask_abbabiyo": "አባቢዮን ጠይቅ"
 }

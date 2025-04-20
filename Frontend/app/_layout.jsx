@@ -14,19 +14,19 @@ export default function RootLayout() {
   const queryClient = new QueryClient();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView>
-        <ThemeProvider>
-          <LanguageProvider>
+    <LanguageProvider>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView>
+          <ThemeProvider>
             <UserProvider>
               <PostsProvider>
                 <Stack screenOptions={{ headerShown: false }} />
                 <Toast />
               </PostsProvider>
             </UserProvider>
-          </LanguageProvider>
-        </ThemeProvider>
-      </GestureHandlerRootView>
-    </QueryClientProvider>
+          </ThemeProvider>
+        </GestureHandlerRootView>
+      </QueryClientProvider>
+    </LanguageProvider>
   );
 }

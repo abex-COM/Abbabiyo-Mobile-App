@@ -11,18 +11,19 @@ const HomeScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
+  const backgroundColor = isDarkMode
+    ? Colors.darkTheme.backgroundColor
+    : Colors.lightTheme.backgroundColor;
   return (
     <View
       style={[
         styles.container,
         {
-          backgroundColor: isDarkMode
-            ? Colors.darkTheme.backgroundColor
-            : Colors.lightTheme.backgroundColor,
+          backgroundColor: backgroundColor,
         },
       ]}
     >
-      <StatusBar backgroundColor={isDarkMode ? "#111827" : "green"} />
+      <StatusBar backgroundColor={isDarkMode ? backgroundColor : "green"} />
       {/* Weather Section */}
       <View style={styles.weatherContainer}>
         <Text style={styles.weatherTitle}>{t("weather_today")}</Text>

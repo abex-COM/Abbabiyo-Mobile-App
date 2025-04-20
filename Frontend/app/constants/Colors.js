@@ -1,7 +1,8 @@
 export const Colors = {
   darkTheme: {
     textColor: "#c0c0c0",
-    backgroundColor: "rgb(66, 66, 66)",
+    backgroundColor: "#1F2937",
+    statusbarColor: "#111827",
   },
   lightTheme: {
     textColor: "#000000", // Black for better visibility in light mode

@@ -52,7 +52,12 @@ export default function ThreeDotMenu({ post, postId, comments, likes }) {
       <Menu
         visible={visible}
         anchor={
-          <MaterialIcons name="more-horiz" size={24} onPress={showMenu} />
+          <MaterialIcons
+            name="more-horiz"
+            size={24}
+            onPress={showMenu}
+            color={textColor}
+          />
         }
         onRequestClose={hideMenu}
         style={{ backgroundColor: backgroundColor }}

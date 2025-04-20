@@ -7,9 +7,9 @@ import { useTheme } from "@/context/ThemeContext";
 import { Colors } from "../constants/Colors";
 import ThreeDotMenu from "../components/ThreeDotMenu";
 import { useNavigation } from "expo-router";
-import axios from "axios";
-import baseUrl from "@/baseUrl/baseUrl";
-import { useUser } from "@/context/UserContext";
+
+import { Dimensions } from "react-native";
+
 const PostCard = ({
   imageUri,
   likes,
@@ -34,11 +34,9 @@ const PostCard = ({
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
-  const cardBackground = isDarkMode
-    ? Colors.darkTheme.backgroundColor
-    : "#E5E7EB";
-  const commentBackground = isDarkMode ? Colors.darkTheme.cardColor : "#cad6e1";
-  const commentItemBg = isDarkMode ? Colors.darkTheme.cardColor : "#E5E7EB";
+  const cardBackground = isDarkMode ? "#1F2937" : "#E5E7EB";
+  const commentBackground = isDarkMode ? "#101a28" : "#cad6e1";
+  const commentItemBg = isDarkMode ? "#08101b" : "#E5E7EB";
   const commentAuthorColor = isDarkMode
     ? Colors.darkTheme.textColor
     : "#1F2937";
@@ -54,7 +52,25 @@ const PostCard = ({
       likes: likes,
     });
   };
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
+  useEffect(() => {
+    if (imageUri) {
+      Image.getSize(
+        imageUri,
+        (width, height) => {
+          setImageSize({ width, height });
+        },
+        (error) => {
+          console.error("Failed to get image size", error);
+        }
+      );
+    }
+  }, [imageUri]);
+  const screenWidth = Dimensions.get("window").width;
+  const imageAspectRatio = imageSize.width / imageSize.height;
+  const displayWidth = screenWidth - 32; // subtract padding/margin if needed
+  const displayHeight = displayWidth / imageAspectRatio;
   return (
     <Pressable onLongPress={onLongPress} delayLongPress={300} activeOpacity={1}>
       <View style={[styles.cardContainer, { backgroundColor: cardBackground }]}>
@@ -92,14 +108,17 @@ const PostCard = ({
           )}
         </View>
 
-        {imageUri && (
+        {imageUri && imageSize.width > 0 && (
           <Pressable onPress={handleViewPost}>
             <View style={styles.imageContainer}>
               <Image
                 source={{ uri: imageUri }}
-                style={{ width: "100%", height: 300, borderRadius: 9 }}
-                contentFit="cover"
-                placeholder={{ blurhash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH" }} // Optional
+                style={{
+                  width: displayWidth,
+                  height: displayHeight,
+                  borderRadius: 9,
+                }}
+                resizeMode="cover"
               />
             </View>
           </Pressable>
@@ -181,7 +200,6 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 8,
     borderRadius: 8,
-    padding: 8,
     marginBottom: 16,
   },
   posterName: {
@@ -200,7 +218,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    height: 300,
+    // height: 300,
   },
   image: {
     width: "100%",

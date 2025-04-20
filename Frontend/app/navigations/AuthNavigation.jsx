@@ -13,16 +13,18 @@ import { useTheme } from "@/context/ThemeContext";
 import DiseaseDetector from "../screens/DiseaseDetectionScreen";
 import PostDetailScreen from "@/app/screens/PostDetailScreen";
 import UpdatePostScreen from "./../screens/EditPostScreen";
+import { useTranslation } from "react-i18next";
 
 export default function AuthNavigator() {
+  const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
   const headerBackgroundColor = isDarkMode
-    ? "#111827"
+    ? Colors.darkTheme.statusbarColor
     : Colors.lightTheme.backgroundColor;
   const headerTintColor = isDarkMode
     ? Colors.darkTheme.textColor
     : Colors.lightTheme.textColor;
 
-  const { isDarkMode } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
@@ -40,12 +42,24 @@ export default function AuthNavigator() {
       <Stack.Screen
         name="loginScreen"
         component={LoginScreen}
-        options={{ headerTitle: "Login" }}
+        options={{
+          headerTitle: "Sign Up",
+          headerTintColor: headerTintColor,
+          headerStyle: {
+            backgroundColor: headerBackgroundColor, // Dynamic background color for header
+          },
+        }}
       />
       <Stack.Screen
         name="signupScreen"
         component={SignupScreen}
-        options={{ headerTitle: "SignUp" }}
+        options={{
+          headerTitle: "Sign Up",
+          headerTintColor: headerTintColor,
+          headerStyle: {
+            backgroundColor: headerBackgroundColor, // Dynamic background color for header
+          },
+        }}
       />
 
       <Stack.Screen
@@ -59,13 +73,9 @@ export default function AuthNavigator() {
         options={{
           title: t("myposts"), // Automatically handles translation based on current language
           headerTitle: t("myposts"),
-          headerTintColor: isDarkMode
-            ? Colors.darkTheme.textColor
-            : Colors.lightTheme.textColor,
+          headerTintColor: headerTintColor,
           headerStyle: {
-            backgroundColor: isDarkMode
-              ? "#111827"
-              : Colors.lightTheme.backgroundColor, // Dynamic background color for header
+            backgroundColor: headerBackgroundColor, // Dynamic background color for header
           },
           headerShown: true, // Show header for back navigation
         }}
@@ -75,13 +85,9 @@ export default function AuthNavigator() {
         component={DiseaseDetector}
         options={{
           headerTitle: t("disease_detector"), // Automatically handles translation based on current language
-          headerTintColor: isDarkMode
-            ? Colors.darkTheme.textColor
-            : Colors.lightTheme.textColor,
+          headerTintColor: headerTintColor,
           headerStyle: {
-            backgroundColor: isDarkMode
-              ? "#111827"
-              : Colors.lightTheme.backgroundColor, // Dynamic background color for header
+            backgroundColor: headerBackgroundColor, // Dynamic background color for header
           },
           headerShown: true, // Show header for back navigation
         }}
@@ -89,27 +95,24 @@ export default function AuthNavigator() {
       <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}
-        options={{
-          headerTitle: t("post"), // Automatically handles translation based on current language
-          headerTintColor: headerTintColor, // Dynamic text color based on theme
+        options={({ route }) => ({
+          headerTitle: route.params?.post?.author?.name + `'s ${t("post")}`,
+          headerTintColor: headerTintColor,
           headerStyle: {
-            backgroundColor: isDarkMode
-              ? "#111827"
-              : Colors.lightTheme.backgroundColor, // Dynamic background color for header
+            backgroundColor: headerBackgroundColor,
           },
-          headerShown: true, // Show header for back navigation
-        }}
+          animation: "slide_from_bottom", // Animation for the screen transition",
+          headerShown: true,
+        })}
       />
       <Stack.Screen
         name="EditPost"
         component={UpdatePostScreen}
         options={{
-          headerTitle: t("update"), // Automatically handles translation based on current language
+          headerTitle: t("edit_post"), // Automatically handles translation based on current language
           headerTintColor: headerTintColor, // Dynamic text color based on theme
           headerStyle: {
-            backgroundColor: isDarkMode
-              ? "#111827"
-              : Colors.lightTheme.backgroundColor, // Dynamic background color for header
+            backgroundColor: headerBackgroundColor, // Dynamic background color for header
           },
           headerShown: true, // Show header for back navigation
         }}
