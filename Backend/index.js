@@ -47,8 +47,8 @@ app.all("/*", (req, res) => {
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.Local_DB_URL)
-  .then(() => console.log("Connected to Local MongoDB"))
+  .connect(process.env.DB_URI)
+  .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((err) => console.error(`Error connecting to DB: ${err.message}`));
 
 const PORT = process.env.PORT || 6000;
