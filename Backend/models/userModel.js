@@ -1,30 +1,28 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phoneNumber: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   profilePicture: { type: String, default: "" },
-  role: {
-    type: String,
-    enum: ["farmer", "moderator", "admin"],
-    default: "farmer",
-  },
   location: {
     region: { type: String, required: [true, "Region required"] },
     zone: { type: String, required: [true, "Zone required"] },
     woreda: { type: String, required: [true, "Woreda required"] },
-    coordinates: {
-      lat: { type: Number }, // Latitude
-      lon: { type: Number }, // Longitude
-    },
   },
+  farmLocations: [
+    {
+      lat: { type: Number, required: true },
+      lon: { type: Number, required: true },
+    }
+  ],
   createdAt: { type: Date, default: Date.now },
 });
 
-// Hash the password before saving
+// Hash password before saving
 UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next(); // Skip if password is not modified
+  if (!this.isModified("password")) return next();
 
   try {
     const salt = await bcrypt.genSalt(10);
@@ -35,7 +33,7 @@ UserSchema.pre("save", async function (next) {
   }
 });
 
-// Compare Password (for login)
+// Compare password method
 UserSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
