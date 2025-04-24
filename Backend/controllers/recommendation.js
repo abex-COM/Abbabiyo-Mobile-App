@@ -1,5 +1,5 @@
 const axios = require("axios");
-const User = require("../models/User");
+const User = require("../models/userModel");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const dotenv = require("dotenv");
 dotenv.config();

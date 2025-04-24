@@ -1,4 +1,4 @@
-const User = require("../models/User"); // Adjust the path as necessary
+const User = require("../models/userModel"); // Adjust the path as necessary
 
 // Add a new farm location
 exports.addFarmLocation = async (req, res) => {
