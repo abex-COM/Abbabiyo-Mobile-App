@@ -10,6 +10,7 @@ const userRoute = require("./routes/userRoute");
 const postRoute = require("./routes/postRoute");
 const commentRoute = require("./routes/commentRoute");
 const geminiRoute = require("./routes/geminiRoute");
+const farmLocationRoute = require("./routes/farmLocationRoute"); // Import farm location route
 const { initializeSocket } = require("./socket/webSocket"); // Import WebSocket setup
 
 const app = express();
@@ -34,8 +35,8 @@ app.set("socketio", io); // Attach socket instance to app for controllers
 app.use("/api/users", userRoute);
 app.use("/api/comments", commentRoute);
 app.use("/api/posts", postRoute);
-
 app.use("/api/gemini", geminiRoute);
+app.use("/api/farm-locations", farmLocationRoute);
 
 // 404 Error Handler
 app.all("/*", (req, res) => {
