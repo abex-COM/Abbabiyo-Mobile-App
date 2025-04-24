@@ -13,8 +13,9 @@ const UserSchema = new mongoose.Schema({
   },
   farmLocations: [
     {
-      lat: { type: Number, required: true },
-      lon: { type: Number, required: true },
+      name: { type: String },
+      lat: { type: Number },
+      lon: { type: Number },
     }
   ],
   createdAt: { type: Date, default: Date.now },
