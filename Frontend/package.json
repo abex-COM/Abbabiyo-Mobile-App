@@ -35,6 +35,7 @@
     "expo-image-manipulator": "~13.0.6",
     "expo-image-picker": "~16.0.6",
     "expo-linking": "~7.0.5",
+    "expo-location": "~18.0.10",
     "expo-router": "~4.0.19",
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
@@ -49,6 +50,7 @@
     "react-dom": "18.3.1",
     "react-hook-form": "^7.54.2",
     "react-i18next": "^15.4.1",
+    "react-icons": "^5.5.0",
     "react-native": "0.76.7",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-geolocation-service": "^5.3.1",
@@ -68,8 +70,7 @@
     "socket.io-client": "^4.8.1",
     "tailwind-rn": "^4.2.0",
     "tailwindcss": "^3.4.17",
-    "yup": "^1.6.1",
-    "expo-location": "~18.0.10"
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
