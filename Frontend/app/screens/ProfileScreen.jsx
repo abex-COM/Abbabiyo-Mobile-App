@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import MyButton from "../components/MyButton";
 import { useUser } from "@/context/UserContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -68,6 +74,8 @@ export default function ProfileScreen({ navigation }) {
           { borderColor: isDarkMode ? "#4b5563" : "#cfd4cb" },
         ]}
       />
+
+      {/* Language Selector */}
       <LanguageDropdown onChange={setLanguage} />
 
       {/* Edit Profile */}
@@ -80,6 +88,20 @@ export default function ProfileScreen({ navigation }) {
           />
           <Text style={[styles.listText, { color: themeColors.textColor }]}>
             {t("edit_profile")}
+          </Text>
+        </View>
+      </Pressable>
+
+      {/* Manage Farm Locations */}
+      <Pressable onPress={() => navigation.navigate("ManageFarmLocations")}>
+        <View style={[styles.list, { backgroundColor: themeColors.cardColor }]}>
+          <MaterialCommunityIcons
+            name="map-marker-radius"
+            size={40}
+            color={themeColors.textColor}
+          />
+          <Text style={[styles.listText, { color: themeColors.textColor }]}>
+            Manage Farm Locations
           </Text>
         </View>
       </Pressable>

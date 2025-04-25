@@ -1,451 +1,139 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import { useUser } from "@/context/UserContext";
-import { useLanguage } from "@/context/LanguageContexts";
-import axios from "axios";
-import baseUrl from "@/baseUrl/baseUrl";
-import Toast from "react-native-toast-message";
-import * as Location from "expo-location";
+const axios = require("axios");
+const User = require("../models/userModel");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const dotenv = require("dotenv");
+dotenv.config();
 
-const Recommendation = () => {
-  const { user, token } = useUser();
-  const { language } = useLanguage();
-  const [loading, setLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState(null);
-  const [forecast, setForecast] = useState(null);
-  const [season, setSeason] = useState("");
-  const [newFarmName, setNewFarmName] = useState("");
-  const [currentLat, setCurrentLat] = useState(null);
-  const [currentLon, setCurrentLon] = useState(null);
-  const [farmLocations, setFarmLocations] = useState([]);
-  const [selectedFarmLocation, setSelectedFarmLocation] = useState("");
-  const [apiError, setApiError] = useState(null);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-  useEffect(() => {
-    if (user) {
-      fetchFarmLocations();
-    }
-  }, [user]);
+const getRecommendations = async (req, res) => {
+  console.log("============ INCOMING REQUEST ============");
+  console.log("Headers:", req.headers);
+  console.log("Method:", req.method);
+  console.log("URL:", req.originalUrl);
+  console.log("Body:", req.body);
+  console.log("==========================================");
 
-  const fetchFarmLocations = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${baseUrl}/api/farm-locations/all/${user._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 10000,
-      });
-      setFarmLocations(res.data.farmLocations || []);
-      setApiError(null);
-    } catch (err) {
-      setApiError(err.response?.data?.error || err.message || "Failed to fetch farm locations");
-      Alert.alert("Error", apiError);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { farmerId, farmId, language = "en" } = req.body;
 
-  const fetchRecommendations = async (farmId) => {
-    if (!farmId) {
-      Alert.alert("Selection Required", "Please select a farm location first.");
-      return;
-    }
-
-    setLoading(true);
-    setRecommendations(null);
-    setForecast(null);
-    setApiError(null);
-
-    try {
-      const response = await axios.post(
-        `${baseUrl}/api/recommendations/personalized`,
-        {
-          farmerId: user._id,
-          farmId: farmId,
-          language: language,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 15000,
-        }
-      );
-
-      if (response.data?.recommendations) {
-        setRecommendations(response.data.recommendations);
-        setForecast(response.data.forecast);
-        setSeason(response.data.season || "");
-      } else {
-        throw new Error("Received empty recommendations from server");
-      }
-    } catch (error) {
-      let errorMessage = "Failed to get recommendations";
-      if (error.response) {
-        errorMessage = error.response.data?.error || error.response.data?.message || `Server error: ${error.response.status}`;
-      } else if (error.request) {
-        errorMessage = "No response from server - check your connection";
-      } else {
-        errorMessage = error.message || "Request setup error";
-      }
-      setApiError(errorMessage);
-      Alert.alert("Recommendation Error", errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddFarmLocation = async () => {
-    if (!newFarmName.trim()) {
-      Alert.alert("Validation Error", "Please enter a farm name");
-      return;
-    }
-
-    if (currentLat === null || currentLon === null) {
-      Alert.alert("Location Required", "Please detect location first");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await axios.post(
-        `${baseUrl}/api/farm-locations/add`,
-        {
-          userId: user._id,
-          name: newFarmName.trim(),
-          lat: parseFloat(currentLat),
-          lon: parseFloat(currentLon),
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 10000,
-        }
-      );
-      await fetchFarmLocations();
-      Toast.show({
-        type: "success",
-        text1: "Success",
-        text2: "Farm location added successfully!",
-      });
-      setNewFarmName("");
-      setCurrentLat(null);
-      setCurrentLon(null);
-    } catch (error) {
-      const errorMsg = error.response?.data?.error || error.message || "Failed to add farm";
-      Alert.alert("Error", errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const requestLocationPermission = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Required", "Location permission is required to add farms");
-      return false;
-    }
-    return true;
-  };
-
-  const getCurrentLocation = async () => {
-    try {
-      const hasPermission = await requestLocationPermission();
-      if (!hasPermission) return;
-
-      const { coords } = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      setCurrentLat(coords.latitude);
-      setCurrentLon(coords.longitude);
-      Toast.show({
-        type: "success",
-        text1: "Location Detected",
-        text2: `Lat: ${coords.latitude.toFixed(4)}, Lon: ${coords.longitude.toFixed(4)}`,
-      });
-    } catch (error) {
-      Alert.alert("Location Error", "Failed to get current location");
-    }
-  };
-
-  useEffect(() => {
-    if (selectedFarmLocation) {
-      fetchRecommendations(selectedFarmLocation);
-    }
-  }, [selectedFarmLocation]);
-
-  const getWeatherIcon = (code) => {
-    const icons = {
-      0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
-      51: "🌦️", 53: "🌧️", 55: "🌧️", 61: "🌦️", 63: "🌧️", 65: "🌧️",
-      66: "🌧️", 67: "🌧️", 71: "❄️", 73: "❄️", 75: "❄️", 77: "❄️",
-      80: "🌧️", 81: "🌧️", 82: "🌧️", 95: "⛈️", 96: "⛈️", 99: "⛈️"
-    };
-    return icons[code] || "❓";
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#4A90E2" />
-        <Text style={styles.loadingText}>Loading recommendations...</Text>
-      </View>
-    );
+  if (!farmerId || !farmId) {
+    return res.status(400).json({ error: "Farmer ID and Farm ID are required." });
   }
+  try {
+    const farmer = await User.findById(farmerId);
+    if (!farmer) {
+      return res.status(404).json({ error: "Farmer not found." });
+    }
 
-  if (!user) {
-    return (
-      <View style={styles.center}>
-        <Text>Please log in to view recommendations</Text>
-      </View>
-    );
+    const farm = farmer.farmLocations.find(f => f._id.toString() === farmId);
+    if (!farm || farm.lat == null || farm.lon == null) {
+      return res.status(400).json({ error: "Farm location is invalid or missing." });
+    }
+
+    // Fetch weather data from Open-Meteo (free API)
+    const weatherRes = await axios.get("https://api.open-meteo.com/v1/forecast", {
+      params: {
+        latitude: farm.lat,
+        longitude: farm.lon,
+        daily: "weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum",
+        forecast_days: 8,
+        timezone: "auto"
+      },
+    });
+
+    const forecast = weatherRes.data.daily;
+    const season = getCurrentSeason();
+
+    // Format weather summary
+    const weatherSummary = forecast.time.map((date, i) => {
+      const weatherDescription = getWeatherDescription(forecast.weathercode[i]);
+      return `Day ${i + 1} (${date}): ${weatherDescription}, high ${forecast.temperature_2m_max[i]}°C, low ${forecast.temperature_2m_min[i]}°C, rain ${forecast.precipitation_sum[i]}mm`;
+    }).join("\n");
+
+    let systemInstruction = `
+You are an agricultural advisor for Ethiopian farmers.
+
+Based on the following:
+- Location: Region: ${farmer.location.region}, Zone: ${farmer.location.zone}, Woreda: ${farmer.location.woreda}
+- Season: ${season}
+- 8-day weather forecast:
+${weatherSummary}
+
+Give only 5 short, personalized recommendations related to planting, harvesting, irrigation, or pest control. 
+Each recommendation should be a separate bullet point. Be clear, simple, and no more than one sentence per recommendation.
+`;
+
+    if (language === "om") systemInstruction += `\nRespond only in Afan Oromo.`;
+    else if (language === "am") systemInstruction += `\nRespond only in Amharic.`;
+    else systemInstruction += `\nRespond in English.`;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent([{ text: systemInstruction }]);
+    const parts = result?.response?.candidates?.[0]?.content?.parts;
+    const response = parts?.map(p => p.text).join("\n").trim();
+
+    if (!response) throw new Error("Empty response from Gemini.");
+
+    res.status(200).json({
+      location: farmer.location,
+      farm,
+      forecast: {
+        time: forecast.time,
+        temperature_2m_max: forecast.temperature_2m_max,
+        temperature_2m_min: forecast.temperature_2m_min,
+        precipitation_sum: forecast.precipitation_sum
+      },
+      recommendations: response,
+    });
+  } catch (error) {
+    console.error("Recommendation error:", error);
+    res.status(500).json({
+      error: `Something went wrong while generating recommendations: ${error.message}`,
+    });
   }
-
-  if (farmLocations.length === 0) {
-    return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Add Your First Farm</Text>
-        <Text style={styles.subtitle}>You need to add at least one farm location to get recommendations</Text>
-
-        <View style={styles.formContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Farm Name (e.g., My Coffee Farm)"
-            value={newFarmName}
-            onChangeText={setNewFarmName}
-            placeholderTextColor="#999"
-          />
-
-          <View style={styles.locationContainer}>
-            <Button 
-              title="Detect Current Location" 
-              onPress={getCurrentLocation}
-              color="#4A90E2"
-            />
-            {currentLat && currentLon ? (
-              <Text style={styles.coordinatesText}>
-                Location: {currentLat.toFixed(4)}, {currentLon.toFixed(4)}
-              </Text>
-            ) : (
-              <Text style={styles.coordinatesText}>No location detected</Text>
-            )}
-          </View>
-
-          <Button
-            title="Add Farm Location"
-            onPress={handleAddFarmLocation}
-            disabled={!newFarmName.trim() || !currentLat || !currentLon}
-            color="#4CAF50"
-          />
-        </View>
-
-        {apiError && (
-          <Text style={styles.errorText}>Error: {apiError}</Text>
-        )}
-      </ScrollView>
-    );
-  }
-
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.sectionTitle}>Select Farm Location</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={selectedFarmLocation}
-          onValueChange={(value) => setSelectedFarmLocation(value)}
-          style={styles.picker}
-          dropdownIconColor="#4A90E2"
-        >
-          <Picker.Item label="Select a farm..." value="" />
-          {farmLocations.map((farm) => (
-            <Picker.Item 
-              key={farm._id} 
-              label={`${farm.name} (${farm.lat?.toFixed(2)}, ${farm.lon?.toFixed(2)})`} 
-              value={farm._id} 
-            />
-          ))}
-        </Picker>
-      </View>
-
-      {season && <Text style={styles.seasonText}>Current Season: {season}</Text>}
-
-      {forecast && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.forecastScroll}>
-          {forecast.time.map((date, index) => (
-            <View key={index} style={styles.forecastCard}>
-              <Text style={styles.forecastDate}>{date}</Text>
-              <Text style={styles.forecastIcon}>{getWeatherIcon(forecast.weathercode[index])}</Text>
-              <Text style={styles.forecastTemp}>🌡️ {forecast.temperature_2m_max[index]}° / {forecast.temperature_2m_min[index]}°</Text>
-              <Text style={styles.forecastRain}>🌧️ {forecast.precipitation_sum[index]}mm</Text>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-
-      {recommendations ? (
-        <View style={styles.recommendationsContainer}>
-          <Text style={styles.recommendationTitle}>Your Personalized Recommendations</Text>
-          {recommendations.split("\n").map((rec, idx) => (
-            <View key={idx} style={styles.recommendationCard}>
-              <Text style={styles.recommendationCardText}>{rec.trim()}</Text>
-            </View>
-          ))}
-        </View>
-      ) : (
-        <Text style={styles.placeholderText}>
-          {selectedFarmLocation 
-            ? "Generating recommendations..." 
-            : "Select a farm to view recommendations"}
-        </Text>
-      )}
-    </ScrollView>
-  );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#f9f9f9',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
-  },
-  loadingText: {
-    marginTop: 10,
-    color: '#666',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  formContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    elevation: 3,
-  },
-  input: {
-    height: 50,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    fontSize: 16,
-  },
-  locationContainer: {
-    marginBottom: 15,
-  },
-  coordinatesText: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 10,
-    color: '#333',
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
-  picker: {
-    height: 50,
-    backgroundColor: '#fff',
-  },
-  seasonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1976D2',
-    marginBottom: 10,
-  },
-  forecastScroll: {
-    marginBottom: 20,
-  },
-  forecastCard: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 10,
-    marginRight: 10,
-    width: 120,
-    alignItems: 'center',
-    elevation: 3,
-  },
-  forecastDate: {
-    fontWeight: '600',
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  forecastIcon: {
-    fontSize: 28,
-    marginBottom: 5,
-  },
-  forecastTemp: {
-    fontSize: 14,
-    marginBottom: 4,
-    color: '#333',
-  },
-  forecastRain: {
-    fontSize: 13,
-    color: '#007AFF',
-  },
-  recommendationsContainer: {
-    marginTop: 10,
-  },
-  recommendationTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#2E7D32',
-  },
-  recommendationCard: {
-    backgroundColor: '#e8f5e9',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    elevation: 2,
-  },
-  recommendationCardText: {
-    fontSize: 16,
-    color: '#2e7d32',
-  },
-  placeholderText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  errorText: {
-    color: '#D32F2F',
-    marginTop: 10,
-    textAlign: 'center',
-    fontSize: 14,
-  },
-});
+// Helper function to convert weather codes to descriptions
+function getWeatherDescription(code) {
+  const weatherMap = {
+    0: "Clear sky",
+    1: "Mainly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Depositing rime fog",
+    51: "Light drizzle",
+    53: "Moderate drizzle",
+    55: "Dense drizzle",
+    56: "Light freezing drizzle",
+    57: "Dense freezing drizzle",
+    61: "Slight rain",
+    63: "Moderate rain",
+    65: "Heavy rain",
+    66: "Light freezing rain",
+    67: "Heavy freezing rain",
+    71: "Slight snow fall",
+    73: "Moderate snow fall",
+    75: "Heavy snow fall",
+    77: "Snow grains",
+    80: "Slight rain showers",
+    81: "Moderate rain showers",
+    82: "Violent rain showers",
+    85: "Slight snow showers",
+    86: "Heavy snow showers",
+    95: "Thunderstorm",
+    96: "Thunderstorm with slight hail",
+    99: "Thunderstorm with heavy hail"
+  };
+  return weatherMap[code] || "Unknown weather";
+}
 
-export default Recommendation;
+function getCurrentSeason() {
+  const month = new Date().getMonth() + 1;
+  if ([12, 1, 2].includes(month)) return "Bega (dry season)";
+  if ([3, 4, 5].includes(month)) return "Belg (short rainy season)";
+  if ([6, 7, 8, 9].includes(month)) return "Kiremt (main rainy season)";
+  return "Meher (harvest/post-rainy season)";
+}
+
+module.exports = { getRecommendations };

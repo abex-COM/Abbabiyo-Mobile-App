@@ -1,8 +1,10 @@
+// navigation/PageStack.js
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useTranslation } from "react-i18next";
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfile from "../screens/EditProfileScreen";
+import ManageFarmLocationsScreen from "../screens/ManageFarmLocationsScreen";  // Import the new screen
 import { useTheme } from "@/context/ThemeContext";
 import { Colors } from "../constants/Colors";
 
@@ -45,6 +47,19 @@ const PageStack = () => {
           headerTitle: t("edit_profile"),
           animation: "scale_from_center",
           headerShown: true,
+        }}
+      />
+
+      {/* Add the Manage Farm Locations screen here */}
+      <Stack.Screen
+        name="ManageFarmLocations"
+        component={ManageFarmLocationsScreen}  // Register the new screen
+        options={{
+          headerStyle: {
+            backgroundColor: headerBackgroundColor,
+          },
+          headerTintColor: headerTintColor,
+          headerTitle: t("manage_farm_locations"),
         }}
       />
     </Stack.Navigator>

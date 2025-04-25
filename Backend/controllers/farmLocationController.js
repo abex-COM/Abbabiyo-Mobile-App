@@ -62,27 +62,35 @@ exports.updateFarmLocation = async (req, res) => {
 
 // Delete a farm location
 exports.deleteFarmLocation = async (req, res) => {
+  console.log("Deleting farm location...");
   try {
-    const { userId, farmLocationId } = req.body;
+    const { userId, farmLocationId } = req.params;
 
-    // Find the user by their ID
+    if (!userId || !farmLocationId) {
+      return res.status(400).json({ message: "Missing userId or farmLocationId in params" });
+    }
+
     const user = await User.findById(userId);
-
-    // If user not found
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Find the farm location by its ID within the user's farmLocations array and remove it
-    const farmLocation = user.farmLocations.id(farmLocationId);
-    if (farmLocation) {
-      farmLocation.remove();
-      await user.save();
-      return res.status(200).json({ message: "Farm location deleted successfully", farmLocations: user.farmLocations });
-    } else {
+    // Pull the farm location from the array using Mongoose's .pull()
+    const beforeCount = user.farmLocations.length;
+    user.farmLocations.pull({ _id: farmLocationId });
+
+    if (user.farmLocations.length === beforeCount) {
       return res.status(404).json({ message: "Farm location not found" });
     }
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Farm location deleted successfully",
+      farmLocations: user.farmLocations,
+    });
   } catch (error) {
+    console.error("Server error deleting farm:", error);
     return res.status(500).json({ message: "Error deleting farm location", error });
   }
 };
