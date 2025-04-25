@@ -22,8 +22,6 @@ const Recommendation = () => {
   const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
-  const [forecast, setForecast] = useState(null);
-  const [season, setSeason] = useState("");
   const [newFarmName, setNewFarmName] = useState("");
   const [currentLat, setCurrentLat] = useState(null);
   const [currentLon, setCurrentLon] = useState(null);
@@ -47,6 +45,7 @@ const Recommendation = () => {
       setFarmLocations(res.data.farmLocations || []);
       setApiError(null);
     } catch (err) {
+      console.error("Farm locations fetch error:", err);
       setApiError(err.response?.data?.error || err.message || "Failed to fetch farm locations");
       Alert.alert("Error", apiError);
     } finally {
@@ -62,7 +61,6 @@ const Recommendation = () => {
 
     setLoading(true);
     setRecommendations(null);
-    setForecast(null);
     setApiError(null);
 
     try {
@@ -75,26 +73,32 @@ const Recommendation = () => {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 15000,
+          timeout: 15000, // 15 seconds for Gemini API
         }
       );
 
       if (response.data?.recommendations) {
         setRecommendations(response.data.recommendations);
-        setForecast(response.data.forecast);
-        setSeason(response.data.season || "");
       } else {
         throw new Error("Received empty recommendations from server");
       }
     } catch (error) {
+      console.error("Recommendation fetch error:", error);
+      
       let errorMessage = "Failed to get recommendations";
       if (error.response) {
-        errorMessage = error.response.data?.error || error.response.data?.message || `Server error: ${error.response.status}`;
+        // Server responded with error status
+        errorMessage = error.response.data?.error || 
+                      error.response.data?.message || 
+                      `Server error: ${error.response.status}`;
       } else if (error.request) {
+        // Request was made but no response
         errorMessage = "No response from server - check your connection";
       } else {
+        // Something happened in setting up the request
         errorMessage = error.message || "Request setup error";
       }
+
       setApiError(errorMessage);
       Alert.alert("Recommendation Error", errorMessage);
     } finally {
@@ -128,6 +132,7 @@ const Recommendation = () => {
           timeout: 10000,
         }
       );
+      
       await fetchFarmLocations();
       Toast.show({
         type: "success",
@@ -138,6 +143,7 @@ const Recommendation = () => {
       setCurrentLat(null);
       setCurrentLon(null);
     } catch (error) {
+      console.error("Add farm error:", error);
       const errorMsg = error.response?.data?.error || error.message || "Failed to add farm";
       Alert.alert("Error", errorMsg);
     } finally {
@@ -148,7 +154,11 @@ const Recommendation = () => {
   const requestLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission Required", "Location permission is required to add farms");
+      Alert.alert(
+        "Permission Required",
+        "Location permission is required to add farms",
+        [{ text: "OK" }]
+      );
       return false;
     }
     return true;
@@ -162,14 +172,17 @@ const Recommendation = () => {
       const { coords } = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
+      
       setCurrentLat(coords.latitude);
       setCurrentLon(coords.longitude);
+
       Toast.show({
         type: "success",
         text1: "Location Detected",
         text2: `Lat: ${coords.latitude.toFixed(4)}, Lon: ${coords.longitude.toFixed(4)}`,
       });
     } catch (error) {
+      console.error("Location error:", error);
       Alert.alert("Location Error", "Failed to get current location");
     }
   };
@@ -179,16 +192,6 @@ const Recommendation = () => {
       fetchRecommendations(selectedFarmLocation);
     }
   }, [selectedFarmLocation]);
-
-  const getWeatherIcon = (code) => {
-    const icons = {
-      0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
-      51: "🌦️", 53: "🌧️", 55: "🌧️", 61: "🌦️", 63: "🌧️", 65: "🌧️",
-      66: "🌧️", 67: "🌧️", 71: "❄️", 73: "❄️", 75: "❄️", 77: "❄️",
-      80: "🌧️", 81: "🌧️", 82: "🌧️", 95: "⛈️", 96: "⛈️", 99: "⛈️"
-    };
-    return icons[code] || "❓";
-  };
 
   if (loading) {
     return (
@@ -273,27 +276,17 @@ const Recommendation = () => {
         </Picker>
       </View>
 
-      {season && <Text style={styles.seasonText}>Current Season: {season}</Text>}
-
-      {forecast && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.forecastScroll}>
-          {forecast.time.map((date, index) => (
-            <View key={index} style={styles.forecastCard}>
-              <Text style={styles.forecastDate}>{date}</Text>
-              <Text style={styles.forecastIcon}>{getWeatherIcon(forecast.weathercode[index])}</Text>
-              <Text style={styles.forecastTemp}>🌡️ {forecast.temperature_2m_max[index]}° / {forecast.temperature_2m_min[index]}°</Text>
-              <Text style={styles.forecastRain}>🌧️ {forecast.precipitation_sum[index]}mm</Text>
-            </View>
-          ))}
-        </ScrollView>
+      {apiError && (
+        <Text style={styles.errorText}>Error: {apiError}</Text>
       )}
 
       {recommendations ? (
         <View style={styles.recommendationsContainer}>
           <Text style={styles.recommendationTitle}>Your Personalized Recommendations</Text>
           {recommendations.split("\n").map((rec, idx) => (
-            <View key={idx} style={styles.recommendationCard}>
-              <Text style={styles.recommendationCardText}>{rec.trim()}</Text>
+            <View key={idx} style={styles.recommendationItem}>
+              <Text style={styles.bullet}>•</Text>
+              <Text style={styles.recommendationText}>{rec.trim()}</Text>
             </View>
           ))}
         </View>
@@ -341,6 +334,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
   },
   input: {
@@ -351,6 +348,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingHorizontal: 15,
     fontSize: 16,
+    backgroundColor: '#fff',
   },
   locationContainer: {
     marginBottom: 15,
@@ -376,46 +374,18 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+    width: '100%',
     backgroundColor: '#fff',
-  },
-  seasonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1976D2',
-    marginBottom: 10,
-  },
-  forecastScroll: {
-    marginBottom: 20,
-  },
-  forecastCard: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 10,
-    marginRight: 10,
-    width: 120,
-    alignItems: 'center',
-    elevation: 3,
-  },
-  forecastDate: {
-    fontWeight: '600',
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  forecastIcon: {
-    fontSize: 28,
-    marginBottom: 5,
-  },
-  forecastTemp: {
-    fontSize: 14,
-    marginBottom: 4,
-    color: '#333',
-  },
-  forecastRain: {
-    fontSize: 13,
-    color: '#007AFF',
   },
   recommendationsContainer: {
-    marginTop: 10,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   recommendationTitle: {
     fontSize: 18,
@@ -423,16 +393,20 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: '#2E7D32',
   },
-  recommendationCard: {
-    backgroundColor: '#e8f5e9',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    elevation: 2,
+  recommendationItem: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    alignItems: 'flex-start',
   },
-  recommendationCardText: {
+  bullet: {
+    marginRight: 8,
     fontSize: 16,
-    color: '#2e7d32',
+    color: '#4A90E2',
+  },
+  recommendationText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
   },
   placeholderText: {
     fontSize: 16,
