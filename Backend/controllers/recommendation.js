@@ -68,7 +68,8 @@ Provide 5 short, clear farming recommendations based on season and forecast. Foc
 
     if (!geminiResponse) throw new Error("Empty response from Gemini.");
 
-    res.status(200).json({
+    // Final response object
+    const responseObject = {
       season,
       location: farmer.location,
       forecast: {
@@ -80,7 +81,12 @@ Provide 5 short, clear farming recommendations based on season and forecast. Foc
         weathercode: forecast.weathercode
       },
       recommendations: geminiResponse,
-    });
+    };
+
+    // Log the final response object before sending it
+    console.log("Final Response Object:", JSON.stringify(responseObject, null, 2));
+
+    res.status(200).json(responseObject);
   } catch (error) {
     console.error("Recommendation error:", error);
     res.status(500).json({
