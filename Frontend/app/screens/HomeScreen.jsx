@@ -1,25 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert, Button } from 'react-native';
-import Recommendation from '../components/Recommendation'; // Import the renamed component
+import Recommendation from '../components/Recommendation';
 import WeatherForecastScroller from '../components/WeatherForecastScroller';
 import CurrentSeason from '../components/CurrentSeason';
 import axios from 'axios';
 import baseUrl from '@/baseUrl/baseUrl';
 import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from '@react-navigation/native'; // for navigation
+import { useNavigation } from '@react-navigation/native';
 import { useUser } from '@/context/UserContext';
+import { useLanguage } from '@/context/LanguageContexts'; // Import useLanguage
 
 const HomeScreen = () => {
   const { user, token } = useUser();
-  const navigation = useNavigation(); // initialize navigation hook
+  const { language } = useLanguage(); // Access current language from context
+  const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const [forecast, setForecast] = useState(null);
   const [season, setSeason] = useState(null);
   const [farmLocations, setFarmLocations] = useState([]);
   const [selectedFarmLocation, setSelectedFarmLocation] = useState("");
-  const [recommendations, setRecommendations] = useState([]); // For storing the recommendations
+  const [recommendations, setRecommendations] = useState([]);
   const [apiError, setApiError] = useState(null);
 
+  // Fetch farm locations when the user is available
   useEffect(() => {
     if (user) {
       fetchFarmLocations();
@@ -61,11 +64,11 @@ const HomeScreen = () => {
         {
           farmerId: user._id,
           farmId: farmId,
-          language: 'en', // Adjust language if necessary
+          language: language, // Use the selected language from context
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 15000, // 15 seconds for Gemini API
+          timeout: 15000,
         }
       );
 
@@ -85,11 +88,12 @@ const HomeScreen = () => {
     }
   };
 
+  // Fetch recommendations when selected farm location or language changes
   useEffect(() => {
     if (selectedFarmLocation) {
       fetchRecommendations(selectedFarmLocation);
     }
-  }, [selectedFarmLocation]);
+  }, [selectedFarmLocation, language]); // Trigger the re-fetch when language or selected farm location changes
 
   if (loading) {
     return (
@@ -106,11 +110,9 @@ const HomeScreen = () => {
         <View style={styles.formContainer}>
           <Text style={styles.title}>Add Your First Farm Location</Text>
           <Text style={styles.subtitle}>You need to add at least one farm location to proceed</Text>
-
-          {/* Button to navigate to manage farm locations screen */}
           <Button
             title="Go to Manage Farm Locations"
-            onPress={() => navigation.navigate('ManageFarmLocations')} // Navigate to farm location management screen
+            onPress={() => navigation.navigate('ManageFarmLocations')}
             color="#4CAF50"
           />
         </View>
@@ -124,10 +126,10 @@ const HomeScreen = () => {
           >
             <Picker.Item label="Select a farm..." value="" />
             {farmLocations.map((farm) => (
-              <Picker.Item 
-                key={farm._id} 
-                label={`${farm.name} (${farm.lat?.toFixed(2)}, ${farm.lon?.toFixed(2)})`} 
-                value={farm._id} 
+              <Picker.Item
+                key={farm._id}
+                label={`${farm.name} (${farm.lat?.toFixed(2)}, ${farm.lon?.toFixed(2)})`}
+                value={farm._id}
               />
             ))}
           </Picker>
@@ -139,7 +141,6 @@ const HomeScreen = () => {
             </>
           )}
 
-          {/* Show Recommendations */}
           {recommendations.length > 0 && (
             <Recommendation recommendations={recommendations} />
           )}
