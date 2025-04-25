@@ -1,15 +1,21 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import WeatherIcon from 'react-native-weather-icons'; // Ensure this package is installed
+// You can integrate a weather icon library later
+// import WeatherIcon from 'react-native-weather-icons';
 
-const WeatherForecastScroller = ({ forecastData }) => {
+const WeatherForecastScroller = ({ forecast }) => {
+  if (!forecast?.time) return null;
+
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-      {forecastData.map((day, index) => (
+      {forecast.time.map((date, index) => (
         <View key={index} style={styles.dayContainer}>
-          <WeatherIcon name={day.icon} size={40} color="#000" />
-          <Text style={styles.dayText}>{day.date}</Text>
-          <Text style={styles.tempText}>{day.temp}°C</Text>
+          {/* Replace below with an actual icon if needed */}
+          <Text style={styles.icon}>🌤️</Text>
+          <Text style={styles.dayText}>{date}</Text>
+          <Text style={styles.tempText}>↑ {forecast.temperature_2m_max[index]}°C</Text>
+          <Text style={styles.tempText}>↓ {forecast.temperature_2m_min[index]}°C</Text>
+          <Text style={styles.humidityText}>💧 {forecast.relative_humidity_2m_mean[index]}%</Text>
         </View>
       ))}
     </ScrollView>
@@ -22,16 +28,27 @@ const styles = StyleSheet.create({
   },
   dayContainer: {
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: 12,
+    backgroundColor: '#f9f9f9',
+    padding: 8,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  icon: {
+    fontSize: 24,
+    marginBottom: 4,
   },
   dayText: {
     fontSize: 12,
-    color: '#000',
+    color: '#444',
   },
   tempText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 13,
+    color: '#222',
+  },
+  humidityText: {
+    fontSize: 12,
+    color: '#2e7d32',
   },
 });
 

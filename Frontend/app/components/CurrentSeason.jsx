@@ -1,18 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const getCurrentSeason = () => {
-  const month = new Date().getMonth() + 1;
-  if ([12, 1, 2].includes(month)) return 'Bega (Dry Season)';
-  if ([3, 4, 5].includes(month)) return 'Belg (Short Rainy Season)';
-  if ([6, 7, 8, 9].includes(month)) return 'Kiremt (Main Rainy Season)';
-  return 'Meher (Harvest/Post-Rainy Season)';
-};
-
-const CurrentSeason = () => {
+const CurrentSeason = ({ season }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.seasonText}>Current Season: {getCurrentSeason()}</Text>
+      <Text style={styles.seasonText}>Current Season: {season}</Text>
     </View>
   );
 };
