@@ -14,6 +14,7 @@ import DiseaseDetector from "../screens/DiseaseDetectionScreen";
 import PostDetailScreen from "@/app/screens/PostDetailScreen";
 import UpdatePostScreen from "./../screens/EditPostScreen";
 import { useTranslation } from "react-i18next";
+import ManageFarmLocationsScreen from "../screens/ManageFarmLocationsScreen";
 
 export default function AuthNavigator() {
   const { t } = useTranslation();
@@ -117,6 +118,18 @@ export default function AuthNavigator() {
           headerShown: true, // Show header for back navigation
         }}
       />
+        <Stack.Screen
+              name="ManageFarmLocations"
+              component={ManageFarmLocationsScreen}  // Register the new screen
+              options={{
+                headerStyle: {
+                  backgroundColor: headerBackgroundColor,
+                },
+                headerTintColor: headerTintColor,
+                headerTitle: t("manage_farm_locations"),
+              }}
+            />
+          {/* </Stack.Navigator> */}
     </Stack.Navigator>
   );
 }
