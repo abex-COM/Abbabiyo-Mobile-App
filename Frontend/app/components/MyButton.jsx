@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { Text, Pressable, ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "../../context/ThemeContext"; // Assuming you have theme context
 
 export default function MyButton({
@@ -12,7 +12,7 @@ export default function MyButton({
   const { isDarkMode } = useTheme(); // Get theme state (light/dark)
 
   return (
-    <Pressable
+    <TouchableOpacity
       onPress={onPress}
       style={[
         styles.button,
@@ -26,13 +26,13 @@ export default function MyButton({
         <Text
           style={[
             textStyle,
-            { color: isDarkMode ? "#fff" : "#fff" }, // Text color for both light and dark modes
+            { color: isDarkMode ? "#fff" : "#fff" ,minWidth:'100%',textAlign:'center'}, // Text color for both light and dark modes
           ]}
         >
           {title}
         </Text>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
@@ -43,6 +43,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     maxWidth: 160,
-    width: "100%", // Makes sure the button stretches across the width
+    // width: "100%", // Makes sure the button stretches across the width
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

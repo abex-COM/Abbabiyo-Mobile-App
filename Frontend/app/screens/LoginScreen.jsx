@@ -140,7 +140,7 @@ export default function LoginScreen({ navigation }) {
                 onPress={handleSubmit} // No unnecessary re-renders due to `useCallback`
                 title="Login"
                 isSubmitting={isSubmitting}
-                style={{ margin: "auto", width: 200, height: 50 }}
+                style={{ margin: "auto", height: 50 ,}}
               />
             </View>
           )}
