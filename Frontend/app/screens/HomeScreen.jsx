@@ -1,14 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert, Button } from 'react-native';
-import Recommendation from '../components/Recommendation';
-import WeatherForecastScroller from '../components/WeatherForecastScroller';
-import CurrentSeason from '../components/CurrentSeason';
-import axios from 'axios';
-import baseUrl from '@/baseUrl/baseUrl';
-import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from '@react-navigation/native';
-import { useUser } from '@/context/UserContext';
-import { useLanguage } from '@/context/LanguageContexts'; // Import useLanguage
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  Button,
+} from "react-native";
+import Recommendation from "../components/Recommendation";
+import WeatherForecastScroller from "../components/WeatherForecastScroller";
+import CurrentSeason from "../components/CurrentSeason";
+import axios from "axios";
+import baseUrl from "@/baseUrl/baseUrl";
+import { Picker } from "@react-native-picker/picker";
+import { useNavigation } from "@react-navigation/native";
+import { useUser } from "@/context/UserContext";
+import { useLanguage } from "@/context/LanguageContexts"; // Import useLanguage
 
 const HomeScreen = () => {
   const { user, token } = useUser();
@@ -27,21 +35,35 @@ const HomeScreen = () => {
     if (user) {
       fetchFarmLocations();
     }
-  }, [user]);
+  }, [user, token]);
 
   const fetchFarmLocations = async () => {
+    if (!user || !token) return; // 💥 Early return if no user/token
+
     setLoading(true);
     try {
-      const res = await axios.get(`${baseUrl}/api/farm-locations/all/${user._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 10000,
-      });
+      const res = await axios.get(
+        `${baseUrl}/api/farm-locations/all/${user._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000,
+        }
+      );
       setFarmLocations(res.data.farmLocations || []);
       setApiError(null);
     } catch (err) {
-      console.error('Farm locations fetch error:', err);
-      setApiError(err.response?.data?.error || err.message || 'Failed to fetch farm locations');
-      Alert.alert('Error', apiError);
+      console.error("Farm locations fetch error:", err);
+      setApiError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to fetch farm locations"
+      );
+      console.log(apiError);
+      Toast.show({
+        type: "error",
+        text1: `Error occured`,
+        text2: apiError,
+      });
     } finally {
       setLoading(false);
     }
@@ -77,12 +99,12 @@ const HomeScreen = () => {
         setForecast(response.data.forecast);
         setSeason(response.data.season);
       } else {
-        throw new Error('Received empty data from the server');
+        throw new Error("Received empty data from the server");
       }
     } catch (error) {
-      console.error('Recommendation fetch error:', error);
-      setApiError(error.message || 'Failed to fetch forecast data');
-      Alert.alert('Error', error.message);
+      console.error("Recommendation fetch error:", error);
+      setApiError(error.message || "Failed to fetch forecast data");
+      console.log("Error", error.message);
     } finally {
       setLoading(false);
     }
@@ -109,10 +131,12 @@ const HomeScreen = () => {
       {farmLocations.length === 0 ? (
         <View style={styles.formContainer}>
           <Text style={styles.title}>Add Your First Farm Location</Text>
-          <Text style={styles.subtitle}>You need to add at least one farm location to proceed</Text>
+          <Text style={styles.subtitle}>
+            You need to add at least one farm location to proceed
+          </Text>
           <Button
             title="Go to Manage Farm Locations"
-            onPress={() => navigation.navigate('ManageFarmLocations')}
+            onPress={() => navigation.navigate("ManageFarmLocations")}
             color="#4CAF50"
           />
         </View>
@@ -147,9 +171,7 @@ const HomeScreen = () => {
         </>
       )}
 
-      {apiError && (
-        <Text style={styles.errorText}>Error: {apiError}</Text>
-      )}
+      {apiError && <Text style={styles.errorText}>Error: {apiError}</Text>}
     </ScrollView>
   );
 };
@@ -161,31 +183,31 @@ const styles = StyleSheet.create({
   },
   center: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 10,
-    color: '#666',
+    color: "#666",
   },
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    color: '#333',
-    textAlign: 'center',
+    color: "#333",
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   formContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -193,18 +215,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 10,
-    color: '#333',
+    color: "#333",
   },
   picker: {
     height: 50,
-    width: '100%',
-    backgroundColor: '#fff',
+    width: "100%",
+    backgroundColor: "#fff",
   },
   errorText: {
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
     marginTop: 20,
   },
 });

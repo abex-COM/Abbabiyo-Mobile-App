@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  ScrollView,
-  Alert,
-  StyleSheet,
-} from "react-native";
+import { View, ScrollView, Alert, StyleSheet } from "react-native";
 import {
   Text,
   TextInput,
@@ -18,7 +13,6 @@ import * as Location from "expo-location";
 import axios from "axios";
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
-
 const ManageFarmLocationsScreen = () => {
   const { user, token } = useUser();
   const [newFarmName, setNewFarmName] = useState("");
@@ -32,17 +26,33 @@ const ManageFarmLocationsScreen = () => {
 
   useEffect(() => {
     if (user) fetchFarmLocations();
-  }, [user]);
+  }, [user, token]);
 
   const fetchFarmLocations = async () => {
+    if (!user || !token) return; // 💥 Early return if no user/token
+
     try {
       setLoading(true);
-      const res = await axios.get(`${baseUrl}/api/farm-locations/all/${user._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFarmLocations(res.data.farmLocations || []);
+      const res = await axios.get(
+        `${baseUrl}/api/farm-locations/all/${user._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setFarmLocations(res.data?.farmLocations || []);
     } catch (err) {
-      Alert.alert("Error", err.response?.data?.error || "Could not load farm locations");
+      console.log(err);
+      if (err.response?.status !== 401) {
+        // Only show toast for non-401 errors
+        Toast.show({
+          type: "error",
+          text1:
+            typeof err.response?.data?.error === "string"
+              ? err.response.data.error
+              : err.response?.data?.error?.message ||
+                "Could not load farm locations",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -63,7 +73,9 @@ const ManageFarmLocationsScreen = () => {
       if (!granted) return;
 
       setDetectingLocation(true);
-      const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const { coords } = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
       setCurrentLat(coords.latitude);
       setCurrentLon(coords.longitude);
 
@@ -73,7 +85,14 @@ const ManageFarmLocationsScreen = () => {
         text2: `Lat: ${coords.latitude.toFixed(4)}, Lon: ${coords.longitude.toFixed(4)}`,
       });
     } catch (err) {
-      Alert.alert("Error", "Failed to detect location");
+      console.log(err);
+      Toast.show({
+        type: "error",
+        text1:
+          typeof err.response?.data?.error === "string"
+            ? err.response.data.error
+            : err.response?.data?.error?.message || "Failed to detect location",
+      });
     } finally {
       setDetectingLocation(false);
     }
@@ -121,7 +140,14 @@ const ManageFarmLocationsScreen = () => {
       resetForm();
       setShowForm(false);
     } catch (err) {
-      Alert.alert("Error", err.response?.data?.error || "Operation failed.");
+      console.log(err);
+      Toast.show({
+        type: "error",
+        text1:
+          typeof err.response?.data?.error === "string"
+            ? err.response.data.error
+            : err.response?.data?.error?.message || "Operation failed",
+      });
     } finally {
       setLoading(false);
     }
@@ -144,13 +170,20 @@ const ManageFarmLocationsScreen = () => {
         onPress: async () => {
           try {
             setLoading(true);
-            await axios.delete(`${baseUrl}/api/farm-locations/${user._id}/${farmId}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+            await axios.delete(
+              `${baseUrl}/api/farm-locations/${user._id}/${farmId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
             await fetchFarmLocations();
             Toast.show({ type: "success", text1: "Deleted successfully!" });
           } catch (err) {
-            Alert.alert("Error", err.response?.data?.message || "Failed to delete farm.");
+            console.log(err);
+            Toast.show({
+              type: "error",
+              text1: "Failed to delete farm.",
+            });
           } finally {
             setLoading(false);
           }
@@ -168,7 +201,9 @@ const ManageFarmLocationsScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text variant="headlineSmall" style={styles.header}>Manage Farm Locations</Text>
+      <Text variant="headlineSmall" style={styles.header}>
+        Manage Farm Locations
+      </Text>
 
       {!showForm && (
         <Button
@@ -227,7 +262,9 @@ const ManageFarmLocationsScreen = () => {
         </View>
       )}
 
-      <Text variant="titleMedium" style={styles.subHeader}>Your Farms</Text>
+      <Text variant="titleMedium" style={styles.subHeader}>
+        Your Farms
+      </Text>
 
       {loading ? (
         <ActivityIndicator animating={true} size="large" />
@@ -239,8 +276,16 @@ const ManageFarmLocationsScreen = () => {
               subtitle={`Lat: ${farm.lat?.toFixed(4)} | Lon: ${farm.lon?.toFixed(4)}`}
               right={() => (
                 <View style={{ flexDirection: "row" }}>
-                  <IconButton icon="pencil" iconColor="#007BFF" onPress={() => handleEditFarm(farm)} />
-                  <IconButton icon="delete" iconColor="#FF6347" onPress={() => handleDeleteFarmLocation(farm._id)} />
+                  <IconButton
+                    icon="pencil"
+                    iconColor="#007BFF"
+                    onPress={() => handleEditFarm(farm)}
+                  />
+                  <IconButton
+                    icon="delete"
+                    iconColor="#FF6347"
+                    onPress={() => handleDeleteFarmLocation(farm._id)}
+                  />
                 </View>
               )}
             />
