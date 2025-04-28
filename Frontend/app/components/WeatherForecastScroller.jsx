@@ -1,5 +1,7 @@
+import { useTheme } from "@/context/ThemeContext";
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { Colors } from "../constants/Colors";
 
 const getWeatherIcon = (code) => {
   const iconMap = {
@@ -70,8 +72,20 @@ const getWeatherDescription = (code) => {
 };
 
 const WeatherForecastScroller = ({ forecast: data }) => {
+  const { isDarkMode } = useTheme(); // FIX typo here!
+  const backgroundColor = isDarkMode ? "#394a61" : "#e9e9e9";
+  const textColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : Colors.lightTheme.textColor;
+
   if (!data?.time) {
-    return <Text style={styles.noDataText}>No forecast data available</Text>;
+    return (
+      <View style={{ padding: 20 }}>
+        <Text style={{ color: textColor, textAlign: "center" }}>
+          No forecast data available
+        </Text>
+      </View>
+    );
   }
 
   return (
@@ -81,8 +95,11 @@ const WeatherForecastScroller = ({ forecast: data }) => {
       contentContainerStyle={styles.scrollContainer}
     >
       {data.time.map((date, index) => (
-        <View key={index} style={styles.dayCard}>
-          <Text style={styles.dateText}>
+        <View
+          key={index}
+          style={[styles.dayCard, { backgroundColor: backgroundColor }]} // Dynamic background color
+        >
+          <Text style={[styles.dateText, { color: textColor }]}>
             {new Date(date).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
@@ -93,15 +110,15 @@ const WeatherForecastScroller = ({ forecast: data }) => {
             {getWeatherIcon(data.weathercode[index])}
           </Text>
 
-          <Text style={styles.weatherDescription}>
+          <Text style={[styles.weatherDescription, { color: textColor }]}>
             {getWeatherDescription(data.weathercode[index])}
           </Text>
 
           <View style={styles.temperatures}>
-            <Text style={styles.maxTemp}>
+            <Text style={[styles.maxTemp, { color: textColor }]}>
               {data.temperature_2m_max[index]?.toFixed(0)}°
             </Text>
-            <Text style={styles.minTemp}>
+            <Text style={[styles.minTemp, { color: textColor }]}>
               {data.temperature_2m_min[index]?.toFixed(0)}°
             </Text>
           </View>
@@ -109,13 +126,13 @@ const WeatherForecastScroller = ({ forecast: data }) => {
           <View style={styles.details}>
             <View style={styles.detailContainer}>
               <Text style={styles.emoji}>💧</Text>
-              <Text style={styles.detailText}>
+              <Text style={[styles.detailText, { color: textColor }]}>
                 {data.relative_humidity_2m_mean[index]} %
               </Text>
             </View>
             <View style={styles.detailContainer}>
               <Text style={styles.emoji}>🌧</Text>
-              <Text style={styles.detailText}>
+              <Text style={[styles.detailText, { color: textColor }]}>
                 {data.precipitation_sum[index]?.toFixed(1)} mm
               </Text>
             </View>
@@ -131,14 +148,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 10,
   },
-  noDataText: {
-    textAlign: "center",
-    padding: 20,
-    color: "#666",
-  },
   dayCard: {
-    width: 120,
-    backgroundColor: "#fff",
+    width: 150,
     borderRadius: 12,
     padding: 12,
     marginRight: 12,
@@ -152,7 +163,6 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
     marginBottom: 8,
   },
   weatherIcon: {
@@ -161,7 +171,6 @@ const styles = StyleSheet.create({
   },
   weatherDescription: {
     fontSize: 12,
-    color: "#555",
     textAlign: "center",
     marginBottom: 12,
     height: 32,
@@ -174,12 +183,10 @@ const styles = StyleSheet.create({
   maxTemp: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#222",
   },
   minTemp: {
     fontSize: 18,
     fontWeight: "500",
-    color: "#666",
     marginLeft: 8,
   },
   details: {
@@ -198,7 +205,6 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
-    color: "#000",
   },
 });
 

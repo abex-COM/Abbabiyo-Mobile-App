@@ -17,14 +17,15 @@ import baseUrl from "@/baseUrl/baseUrl";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
 import { useUser } from "@/context/UserContext";
-import { useLanguage } from "@/context/LanguageContexts"; // Import useLanguage
-import Toast from "react-native-toast-message"; // Assuming you're using this for Toasts
+import { useLanguage } from "@/context/LanguageContexts";
+import Toast from "react-native-toast-message";
 import { useTheme } from "@/context/ThemeContext";
 import { Colors } from "../constants/Colors";
+import { getSocket, initiateSocketConnection } from "../utils/socket";
 
 const HomeScreen = () => {
   const { user, token } = useUser();
-  const { language } = useLanguage(); // Access current language from context
+  const { language } = useLanguage();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const [forecast, setForecast] = useState(null);
@@ -34,17 +35,27 @@ const HomeScreen = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [apiError, setApiError] = useState(null);
   const { isDarkMode } = useTheme();
-  // Fetch farm locations when the user is available
+
+  const backgroundColor = isDarkMode
+    ? Colors.darkTheme.backgroundColor
+    : Colors.lightTheme.backgroundColor;
+  const textColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : Colors.lightTheme.textColor;
+  const cardColor = isDarkMode ? Colors.darkTheme.cardBackground : "#fff";
+  const inputBackgroundColor = isDarkMode ? "#444" : "#e9e9e9";
+
   useEffect(() => {
-    if (user) {
+    if (user._id && token) {
       fetchFarmLocations();
     }
-  }, [user]);
+  }, [user, token]);
 
   const fetchFarmLocations = async () => {
-    if (!user || !token) return; // Early return if no user/token
+    if (!user._id || !token) return;
 
     setLoading(true);
+
     try {
       const res = await axios.get(
         `${baseUrl}/api/farm-locations/all/${user._id}`,
@@ -56,7 +67,7 @@ const HomeScreen = () => {
       setFarmLocations(res.data.farmLocations || []);
       setApiError(null);
     } catch (err) {
-      console.log("Farm locations fetch error:", err);
+      console.error("Farm locations fetch error:", err);
 
       const errorMessage =
         err.response?.data?.error ||
@@ -102,7 +113,8 @@ const HomeScreen = () => {
         throw new Error("Received empty data from the server");
       }
     } catch (error) {
-      console.log("Recommendation fetch error:", error);
+      console.log(error);
+      console.error("Recommendation fetch error:", error);
 
       const errorMessage =
         error.response?.data?.error ||
@@ -121,32 +133,55 @@ const HomeScreen = () => {
     }
   };
 
-  // Fetch recommendations when selected farm location or language changes
   useEffect(() => {
     if (selectedFarmLocation) {
       fetchRecommendations(selectedFarmLocation);
     }
   }, [selectedFarmLocation, language]);
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#4A90E2" />
-        <Text style={styles.loadingText}>Loading weather data...</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    if (!user._id || !token) return;
 
+    initiateSocketConnection(user._id);
+    const socket = getSocket();
+
+    socket.on("newFarm", (newFarmLocations) => {
+      console.log("Received updated farm locations:", newFarmLocations);
+      setFarmLocations(newFarmLocations);
+    });
+
+    socket.on("farmUpdated", (newFarmLocations) => {
+      console.log("updated  farm locations:", newFarmLocations);
+      setFarmLocations(newFarmLocations);
+    });
+    socket.on("farmDeleted", (newFarmLocations) => {
+      console.log("updated  farm locations:", newFarmLocations);
+      setFarmLocations(newFarmLocations);
+    });
+    return () => {
+      socket.off("newFarm");
+    };
+  }, [user, token]);
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
       <StatusBar
         barStyle={isDarkMode ? "light-content" : "dark-content"}
         backgroundColor={isDarkMode ? Colors.darkTheme.statusbarColor : "white"}
       />
-      {farmLocations.length === 0 ? (
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Add Your First Farm Location</Text>
-          <Text style={styles.subtitle}>
+
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#4A90E2" />
+          <Text style={[styles.loadingText, { color: textColor }]}>
+            Loading weather data...
+          </Text>
+        </View>
+      ) : farmLocations.length === 0 ? (
+        <View style={[styles.formContainer, { backgroundColor: cardColor }]}>
+          <Text style={[styles.title, { color: textColor }]}>
+            Add Your First Farm Location
+          </Text>
+          <Text style={[styles.subtitle, { color: textColor }]}>
             You need to add at least one farm location to proceed
           </Text>
           <Button
@@ -157,11 +192,17 @@ const HomeScreen = () => {
         </View>
       ) : (
         <>
-          <Text style={styles.sectionTitle}>Select Farm Location</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            Select Farm Location
+          </Text>
           <Picker
             selectedValue={selectedFarmLocation}
             onValueChange={(value) => setSelectedFarmLocation(value)}
-            style={styles.picker}
+            style={[
+              styles.picker,
+              { backgroundColor: inputBackgroundColor, color: textColor },
+            ]}
+            dropdownIconColor={textColor} // optional for Android
           >
             <Picker.Item label="Select a farm..." value="" />
             {farmLocations.map((farm) => (
@@ -201,23 +242,20 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: "#666",
+    fontSize: 16,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 10,
-    color: "#333",
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
     marginBottom: 20,
     textAlign: "center",
   },
   formContainer: {
-    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
     shadowColor: "#000",
@@ -230,12 +268,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 10,
-    color: "#333",
   },
   picker: {
     height: 50,
     width: "100%",
-    backgroundColor: "#fff",
+    marginBottom: 20,
+    borderRadius: 8,
   },
   errorText: {
     color: "red",

@@ -11,6 +11,7 @@ import {
 import Toast from "react-native-toast-message";
 import * as Location from "expo-location";
 import axios from "axios";
+import { getSocket, initiateSocketConnection } from "../utils/socket";
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
 const ManageFarmLocationsScreen = () => {
@@ -199,6 +200,21 @@ const ManageFarmLocationsScreen = () => {
     setCurrentLon(null);
   };
 
+  useEffect(() => {
+    const socket = getSocket();
+    if (!user || !token) return; // Early return if no user
+    {
+      initiateSocketConnection(user._id);
+    }
+    socket.on("newFarm", (newFarmLocations) => {
+      console.log("Received new farm locations:", newFarmLocations);
+      setFarmLocations(newFarmLocations);
+    });
+
+    return () => {
+      socket.off("newFarm");
+    };
+  }, [user, token]);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineSmall" style={styles.header}>

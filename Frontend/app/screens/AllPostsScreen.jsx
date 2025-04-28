@@ -146,47 +146,7 @@ export default function ChatScreen() {
     }
   };
 
-  // const handleNewComment = async (postId, commentText) => {
-  //   if (!commentText.trim()) {
-  //     Toast.show({
-  //       type: "error",
-  //       text1: "Error",
-  //       text2: "Comment cannot be empty",
-  //     });
-  //     return;
-  //   }
-  //   await postsQuery.refetch();
-  //   await queryClient.refetchQueries(["comments"]);
-  //   setCommentLoadingMap((prev) => ({ ...prev, [postId]: true }));
-
-  //   try {
-  //     await axios.post(
-  //       `${baseUrl}/api/comments/createComment`,
-  //       { text: commentText, postId },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-  //     await postsQuery.refetch();
-
-  //     Toast.show({
-  //       type: "success",
-  //       text1: "Comment Posted",
-  //     });
-  //   } catch (error) {
-  //     console.log("Error posting comment:", error);
-  //     Toast.show({
-  //       type: "error",
-  //       text1: "Error",
-  //       text2: "Failed to post comment.",
-  //     });
-  //   } finally {
-  //     setCommentLoadingMap((prev) => ({ ...prev, [postId]: false }));
-  //   }
-  // };
-
+  
   const handleLike = async (postId) => {
     likePost(postId);
     console.log(postId);

@@ -17,11 +17,9 @@ const LanguageDropdown = ({
   const { isDarkMode } = useTheme();
 
   const backgroundColor = isDarkMode
-    ? Colors.darkTheme.statusbarColor
+    ? "#98831c"
     : Colors.lightTheme.backgroundColor;
-  const textColor = isDarkMode
-    ? Colors.darkTheme.textColor
-    : Colors.lightTheme.textColor;
+  const textColor = isDarkMode ? "#151204" : Colors.lightTheme.textColor;
 
   return (
     <DropDownPicker
@@ -37,8 +35,9 @@ const LanguageDropdown = ({
         width: 350,
       }} // dropdown list container style
       textStyle={{
-        fontSize: 11,
+        fontSize: 16,
         color: textColor, // selected item text
+        fontWeight: 900,
       }}
       listItemLabelStyle={{
         color: textColor, // list items text color
@@ -52,6 +51,7 @@ const styles = StyleSheet.create({
     width: 350,
     height: 50,
     borderRadius: 5,
+    borderColor: "#84910e",
   },
 });
 

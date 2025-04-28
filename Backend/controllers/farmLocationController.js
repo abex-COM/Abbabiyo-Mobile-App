@@ -1,4 +1,5 @@
 const User = require("../models/userModel"); // Adjust the path as necessary
+const { getIO } = require("../socket/webSocket");
 
 // Add a new farm location
 exports.addFarmLocation = async (req, res) => {
@@ -19,9 +20,16 @@ exports.addFarmLocation = async (req, res) => {
     // Save the updated user
     await user.save();
 
-    return res.status(200).json({ message: "Farm location added successfully", farmLocations: user.farmLocations });
+    const io = getIO();
+    io.emit("newFarm", user.farmLocations);
+    return res.status(200).json({
+      message: "Farm location added successfully",
+      farmLocations: user.farmLocations,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Error adding farm location", error });
+    return res
+      .status(500)
+      .json({ message: "Error adding farm location", error });
   }
 };
 
@@ -53,21 +61,28 @@ exports.updateFarmLocation = async (req, res) => {
 
     // Save the updated user
     await user.save();
-
-    return res.status(200).json({ message: "Farm location updated successfully", farmLocations: user.farmLocations });
+    const io = getIO();
+    io.emit("farmUpdated", user.farmLocations);
+    return res.status(200).json({
+      message: "Farm location updated successfully",
+      farmLocations: user.farmLocations,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Error updating farm location", error });
+    return res
+      .status(500)
+      .json({ message: "Error updating farm location", error });
   }
 };
 
 // Delete a farm location
 exports.deleteFarmLocation = async (req, res) => {
-  console.log("Deleting farm location...");
   try {
     const { userId, farmLocationId } = req.params;
 
     if (!userId || !farmLocationId) {
-      return res.status(400).json({ message: "Missing userId or farmLocationId in params" });
+      return res
+        .status(400)
+        .json({ message: "Missing userId or farmLocationId in params" });
     }
 
     const user = await User.findById(userId);
@@ -84,14 +99,17 @@ exports.deleteFarmLocation = async (req, res) => {
     }
 
     await user.save();
-
+    const io = getIO();
+    io.emit("farmDeleted", user.farmLocations);
     return res.status(200).json({
       message: "Farm location deleted successfully",
       farmLocations: user.farmLocations,
     });
   } catch (error) {
     console.error("Server error deleting farm:", error);
-    return res.status(500).json({ message: "Error deleting farm location", error });
+    return res
+      .status(500)
+      .json({ message: "Error deleting farm location", error });
   }
 };
 
@@ -111,6 +129,8 @@ exports.getAllFarmLocations = async (req, res) => {
     // Return the user's farm locations
     return res.status(200).json({ farmLocations: user.farmLocations });
   } catch (error) {
-    return res.status(500).json({ message: "Error fetching farm locations", error });
+    return res
+      .status(500)
+      .json({ message: "Error fetching farm locations", error });
   }
 };

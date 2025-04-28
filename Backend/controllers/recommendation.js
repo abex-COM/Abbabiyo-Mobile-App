@@ -10,40 +10,52 @@ const getRecommendations = async (req, res) => {
   const { farmerId, farmId, language = "en" } = req.body;
 
   if (!farmerId || !farmId) {
-    return res.status(400).json({ error: "Farmer ID and Farm ID are required." });
+    return res
+      .status(400)
+      .json({ error: "Farmer ID and Farm ID are required." });
   }
 
   try {
     const farmer = await User.findById(farmerId);
     if (!farmer) return res.status(404).json({ error: "Farmer not found." });
 
-    const farm = farmer.farmLocations.find(f => f._id.toString() === farmId);
+    const farm = farmer.farmLocations.find((f) => f._id.toString() === farmId);
     if (!farm || farm.lat == null || farm.lon == null) {
-      return res.status(400).json({ error: "Farm location is invalid or missing." });
+      return res
+        .status(400)
+        .json({ error: "Farm location is invalid or missing." });
     }
 
-    const forecastRes = await axios.get("https://api.open-meteo.com/v1/forecast", {
-      params: {
-        latitude: farm.lat,
-        longitude: farm.lon,
-        daily: "temperature_2m_max,temperature_2m_min,precipitation_sum,relative_humidity_2m_mean,weathercode",
-        forecast_days: 16,
-        timezone: "auto",
-      },
-    });
+    const forecastRes = await axios.get(
+      "https://api.open-meteo.com/v1/forecast",
+      {
+        params: {
+          latitude: farm.lat,
+          longitude: farm.lon,
+          daily:
+            "temperature_2m_max,temperature_2m_min,precipitation_sum,relative_humidity_2m_mean,weathercode",
+          forecast_days: 16,
+          timezone: "auto",
+        },
+      }
+    );
 
     const forecast = forecastRes.data.daily;
     const season = getCurrentSeason();
 
     // Generate readable forecast summary for Gemini
-    const weatherSummary = forecast.time.map((date, i) => {
-      const weather = getWeatherDescription(forecast.weathercode[i]);
-      const maxT = forecast.temperature_2m_max[i];
-      const minT = forecast.temperature_2m_min[i];
-      const rain = forecast.precipitation_sum[i];
-      const humidity = forecast.relative_humidity_2m_mean[i];
-      return `Day ${i + 1} (${date}): ${weather}, Max ${maxT}°C, Min ${minT}°C, Humidity ${humidity}%, Rain ${rain}mm`;
-    }).join("\n");
+    const weatherSummary = forecast.time
+      .map((date, i) => {
+        const weather = getWeatherDescription(forecast.weathercode[i]);
+        const maxT = forecast.temperature_2m_max[i];
+        const minT = forecast.temperature_2m_min[i];
+        const rain = forecast.precipitation_sum[i];
+        const humidity = forecast.relative_humidity_2m_mean[i];
+        return `Day ${
+          i + 1
+        } (${date}): ${weather}, Max ${maxT}°C, Min ${minT}°C, Humidity ${humidity}%, Rain ${rain}mm`;
+      })
+      .join("\n");
 
     let prompt = `
 You are an agricultural advisor for Ethiopian farmers.
@@ -64,7 +76,10 @@ Provide 5 short, clear farming recommendations based on season and forecast. Foc
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent([{ text: prompt }]);
     const parts = result?.response?.candidates?.[0]?.content?.parts;
-    const geminiResponse = parts?.map(p => p.text).join("\n").trim();
+    const geminiResponse = parts
+      ?.map((p) => p.text)
+      .join("\n")
+      .trim();
 
     if (!geminiResponse) throw new Error("Empty response from Gemini.");
 
@@ -78,13 +93,12 @@ Provide 5 short, clear farming recommendations based on season and forecast. Foc
         temperature_2m_min: forecast.temperature_2m_min,
         relative_humidity_2m_mean: forecast.relative_humidity_2m_mean,
         precipitation_sum: forecast.precipitation_sum,
-        weathercode: forecast.weathercode
+        weathercode: forecast.weathercode,
       },
       recommendations: geminiResponse,
     };
 
     // Log the final response object before sending it
-    console.log("Final Response Object:", JSON.stringify(responseObject, null, 2));
 
     res.status(200).json(responseObject);
   } catch (error) {
@@ -124,7 +138,7 @@ function getWeatherDescription(code) {
     86: "Heavy snow showers",
     95: "Thunderstorm",
     96: "Thunderstorm with slight hail",
-    99: "Thunderstorm with heavy hail"
+    99: "Thunderstorm with heavy hail",
   };
   return weatherMap[code] || "Unknown weather";
 }

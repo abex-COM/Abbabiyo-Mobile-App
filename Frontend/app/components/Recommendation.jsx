@@ -1,28 +1,58 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useTheme } from "@/context/ThemeContext";
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import { Colors } from "../constants/Colors";
 
 const Recommendation = ({ recommendations }) => {
-  // Check if recommendations are provided and if it's a valid string
-  if (!recommendations || typeof recommendations !== 'string' || recommendations.trim() === "") {
+  const { isDarkMode } = useTheme();
+
+  const backgroundColor = isDarkMode ? "#394a61" : "#e9e9e9";
+  const textColor = isDarkMode
+    ? Colors.darkTheme.textColor
+    : Colors.lightTheme.textColor;
+
+  if (
+    !recommendations ||
+    typeof recommendations !== "string" ||
+    recommendations.trim() === ""
+  ) {
     return (
-      <View style={styles.container}>
-        <Text>No recommendations available at the moment.</Text>
+      <View style={[styles.container, { backgroundColor }]}>
+        <Text style={{ color: textColor }}>
+          No recommendations available at the moment.
+        </Text>
       </View>
     );
   }
 
-  // Split the string by newline or bullet point (•)
   const recommendationList = recommendations
-    .split('\n')  // Split by newline character
+    .split("\n")
     .map((rec) => rec.trim())
-    .filter(Boolean);  // Remove any empty strings
+    .filter(Boolean);
 
   return (
-    <View style={styles.container}>
-      <ScrollView>
+    <View style={[styles.container, { backgroundColor }]}>
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {recommendationList.map((rec, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.cardDescription}>{rec}</Text>
+          <View
+            key={index}
+            style={[
+              styles.card,
+              { backgroundColor: isDarkMode ? "#506680" : "#fff" },
+            ]}
+          >
+            <Text style={[styles.cardDescription, { color: textColor }]}>
+              {rec}
+            </Text>
           </View>
         ))}
       </ScrollView>
@@ -37,34 +67,36 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 20,
     paddingHorizontal: 15,
-  },
-  card: {
-    backgroundColor: '#fff',
+    paddingVertical: 10,
     borderRadius: 10,
-    shadowColor: '#000',
+  },
+
+  card: {
+    borderRadius: 10,
+    marginBottom: 10,
+    padding: 15,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    marginBottom: 15,
-    padding: 10,
   },
   cardDescription: {
     fontSize: 14,
-    color: '#555',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   button: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-    marginTop: 15,
+    marginTop: 10,
+    alignSelf: "center",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 
