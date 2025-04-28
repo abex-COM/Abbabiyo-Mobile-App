@@ -29,8 +29,8 @@ const ManageFarmLocationsScreen = () => {
   }, [user, token]);
 
   const fetchFarmLocations = async () => {
-    if (!user || !token) return; // 💥 Early return if no user/token
-
+    if (!user || !token) return; // arly return if no user/token
+    console.log(user._id);
     try {
       setLoading(true);
       const res = await axios.get(
@@ -272,7 +272,7 @@ const ManageFarmLocationsScreen = () => {
         farmLocations.map((farm) => (
           <Card key={farm._id} style={styles.card} mode="outlined">
             <Card.Title
-              title={farm.name}
+              title={String(farm.name)}
               subtitle={`Lat: ${farm.lat?.toFixed(4)} | Lon: ${farm.lon?.toFixed(4)}`}
               right={() => (
                 <View style={{ flexDirection: "row" }}>

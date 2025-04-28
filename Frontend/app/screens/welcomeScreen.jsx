@@ -5,7 +5,7 @@ import {
   View,
   StyleSheet,
 } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import background from "../../assets/images/farmer-b.jpg";
 import MyButton from "../components/MyButton";
 import { useUser } from "@/context/UserContext";
@@ -14,15 +14,19 @@ import LanguageDropdown from "../components/LanguageSelector";
 import { useLanguage } from "@/context/LanguageContexts";
 
 export default function Welcome({ navigation }) {
-  const { token } = useUser();
+  const { token, user } = useUser();
   const { setLanguage } = useLanguage();
 
   const { t } = useTranslation();
   const handleLogin = () => {
-    if (token) {
-      navigation.navigate("bottomNavigator");
-    } else navigation.navigate("loginScreen");
+    navigation.navigate("loginScreen");
   };
+
+  useEffect(() => {
+    if (token) {
+      navigation.replace("bottomNavigator");
+    }
+  }, [token]);
   return (
     <ImageBackground
       source={background}

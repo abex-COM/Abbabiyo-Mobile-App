@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Button,
+  StatusBar,
 } from "react-native";
 import Recommendation from "../components/Recommendation";
 import WeatherForecastScroller from "../components/WeatherForecastScroller";
@@ -17,6 +18,9 @@ import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
 import { useUser } from "@/context/UserContext";
 import { useLanguage } from "@/context/LanguageContexts"; // Import useLanguage
+import Toast from "react-native-toast-message"; // Assuming you're using this for Toasts
+import { useTheme } from "@/context/ThemeContext";
+import { Colors } from "../constants/Colors";
 
 const HomeScreen = () => {
   const { user, token } = useUser();
@@ -29,16 +33,16 @@ const HomeScreen = () => {
   const [selectedFarmLocation, setSelectedFarmLocation] = useState("");
   const [recommendations, setRecommendations] = useState([]);
   const [apiError, setApiError] = useState(null);
-
+  const { isDarkMode } = useTheme();
   // Fetch farm locations when the user is available
   useEffect(() => {
-    if (user) {
+    if (token && user) {
       fetchFarmLocations();
     }
-  }, [user, token]);
+  }, [token, user]);
 
   const fetchFarmLocations = async () => {
-    if (!user || !token) return; // 💥 Early return if no user/token
+    if (!user || !token) return; // Early return if no user/token
 
     setLoading(true);
     try {
@@ -52,18 +56,14 @@ const HomeScreen = () => {
       setFarmLocations(res.data.farmLocations || []);
       setApiError(null);
     } catch (err) {
-      console.error("Farm locations fetch error:", err);
-      setApiError(
+      console.log("Farm locations fetch error:", err);
+
+      const errorMessage =
         err.response?.data?.error ||
-          err.message ||
-          "Failed to fetch farm locations"
-      );
-      console.log(apiError);
-      Toast.show({
-        type: "error",
-        text1: `Error occured`,
-        text2: apiError,
-      });
+        err.message ||
+        "Failed to fetch farm locations";
+
+      setApiError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ const HomeScreen = () => {
         {
           farmerId: user._id,
           farmId: farmId,
-          language: language, // Use the selected language from context
+          language: language,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -102,9 +102,20 @@ const HomeScreen = () => {
         throw new Error("Received empty data from the server");
       }
     } catch (error) {
-      console.error("Recommendation fetch error:", error);
-      setApiError(error.message || "Failed to fetch forecast data");
-      console.log("Error", error.message);
+      console.log("Recommendation fetch error:", error);
+
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to fetch forecast data";
+
+      setApiError(errorMessage);
+
+      Toast.show({
+        type: "error",
+        text1: "Error occurred",
+        text2: String(errorMessage),
+      });
     } finally {
       setLoading(false);
     }
@@ -115,7 +126,7 @@ const HomeScreen = () => {
     if (selectedFarmLocation) {
       fetchRecommendations(selectedFarmLocation);
     }
-  }, [selectedFarmLocation, language]); // Trigger the re-fetch when language or selected farm location changes
+  }, [selectedFarmLocation, language]);
 
   if (loading) {
     return (
@@ -128,6 +139,10 @@ const HomeScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <StatusBar
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
+        backgroundColor={isDarkMode ? Colors.darkTheme.statusbarColor : "white"}
+      />
       {farmLocations.length === 0 ? (
         <View style={styles.formContainer}>
           <Text style={styles.title}>Add Your First Farm Location</Text>
@@ -171,7 +186,9 @@ const HomeScreen = () => {
         </>
       )}
 
-      {apiError && <Text style={styles.errorText}>Error: {apiError}</Text>}
+      {apiError && (
+        <Text style={styles.errorText}>Error: {String(apiError)}</Text>
+      )}
     </ScrollView>
   );
 };

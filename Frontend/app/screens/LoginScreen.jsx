@@ -29,7 +29,7 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function LoginScreen({ navigation }) {
-  const { storeToken, token } = useUser();
+  const { storeToken } = useUser();
   const { isDarkMode } = useTheme();
   const backgroundColor = isDarkMode
     ? Colors.darkTheme.backgroundColor
@@ -93,7 +93,7 @@ export default function LoginScreen({ navigation }) {
     >
       <View style={[styles.form, { backgroundColor: backgroundColor }]}>
         <Formik
-          initialValues={{ 
+          initialValues={{
             phoneNumber: "",
             password: "",
           }}
@@ -140,7 +140,7 @@ export default function LoginScreen({ navigation }) {
                 onPress={handleSubmit} // No unnecessary re-renders due to `useCallback`
                 title="Login"
                 isSubmitting={isSubmitting}
-                style={{ margin: "auto", height: 50 ,}}
+                style={{ margin: "auto", height: 50 }}
               />
             </View>
           )}
