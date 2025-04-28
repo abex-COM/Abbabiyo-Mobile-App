@@ -44,7 +44,7 @@ export default function AuthNavigator() {
         name="loginScreen"
         component={LoginScreen}
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: t("login"),
           headerTintColor: headerTintColor,
           headerStyle: {
             backgroundColor: headerBackgroundColor, // Dynamic background color for header
@@ -55,7 +55,7 @@ export default function AuthNavigator() {
         name="signupScreen"
         component={SignupScreen}
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: t("signup"),
           headerTintColor: headerTintColor,
           headerStyle: {
             backgroundColor: headerBackgroundColor, // Dynamic background color for header
@@ -118,18 +118,18 @@ export default function AuthNavigator() {
           headerShown: true, // Show header for back navigation
         }}
       />
-        <Stack.Screen
-              name="ManageFarmLocations"
-              component={ManageFarmLocationsScreen}  // Register the new screen
-              options={{
-                headerStyle: {
-                  backgroundColor: headerBackgroundColor,
-                },
-                headerTintColor: headerTintColor,
-                headerTitle: t("manage_farm_locations"),
-              }}
-            />
-          {/* </Stack.Navigator> */}
+      <Stack.Screen
+        name="ManageFarmLocations"
+        component={ManageFarmLocationsScreen} // Register the new screen
+        options={{
+          headerStyle: {
+            backgroundColor: headerBackgroundColor,
+          },
+          headerTintColor: headerTintColor,
+          headerTitle: t("manage_farm_locations"),
+        }}
+      />
+      {/* </Stack.Navigator> */}
     </Stack.Navigator>
   );
 }

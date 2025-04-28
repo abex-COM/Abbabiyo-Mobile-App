@@ -36,10 +36,10 @@ const HomeScreen = () => {
   const { isDarkMode } = useTheme();
   // Fetch farm locations when the user is available
   useEffect(() => {
-    if (token && user) {
+    if (user) {
       fetchFarmLocations();
     }
-  }, [token, user]);
+  }, [user]);
 
   const fetchFarmLocations = async () => {
     if (!user || !token) return; // Early return if no user/token
@@ -184,10 +184,6 @@ const HomeScreen = () => {
             <Recommendation recommendations={recommendations} />
           )}
         </>
-      )}
-
-      {apiError && (
-        <Text style={styles.errorText}>Error: {String(apiError)}</Text>
       )}
     </ScrollView>
   );

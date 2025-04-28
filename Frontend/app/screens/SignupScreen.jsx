@@ -23,6 +23,7 @@ import { useUser } from "@/context/UserContext";
 import Toast from "react-native-toast-message";
 import { useTheme } from "@/context/ThemeContext";
 import { Colors } from "../constants/Colors";
+import { t } from "i18next";
 
 export default function SignupScreen() {
   const navigation = useNavigation();
@@ -131,7 +132,7 @@ export default function SignupScreen() {
               <View style={styles.form}>
                 {/* Input Fields */}
                 <MyTextInput
-                  placeholder="Name"
+                  placeholder={t("name")}
                   value={values.name}
                   onChangeText={handleChange("name")}
                   onBlur={handleBlur("name")}
@@ -143,7 +144,7 @@ export default function SignupScreen() {
 
                 {/* Phone Number Input */}
                 <MyTextInput
-                  placeholder="Phone Number"
+                  placeholder={t("phone_number")} // Changed to phoneNumber
                   value={values.phoneNumber} // Changed to phoneNumber
                   onChangeText={handleChange("phoneNumber")} // Changed to phoneNumber
                   onBlur={handleBlur("phoneNumber")} // Changed to phoneNumber
@@ -155,7 +156,7 @@ export default function SignupScreen() {
                 )}
 
                 <MyTextInput
-                  placeholder="Password"
+                  placeholder={t("password")}
                   value={values.password}
                   onChangeText={handleChange("password")}
                   onBlur={handleBlur("password")}
@@ -167,7 +168,7 @@ export default function SignupScreen() {
                 )}
 
                 <MyTextInput
-                  placeholder="Confirm Password"
+                  placeholder={t("confirm_password")}
                   value={values.passwordConfirm}
                   onChangeText={handleChange("passwordConfirm")}
                   onBlur={handleBlur("passwordConfirm")}
@@ -185,7 +186,7 @@ export default function SignupScreen() {
                   value={regionValue}
                   items={ethiopianRegions}
                   setValue={setRegionValue}
-                  placeholder="Select your region"
+                  placeholder={t("select_your_region")}
                   style={[styles.picker, { backgroundColor }]}
                   textStyle={{ color: textColor }}
                   dropDownContainerStyle={{ backgroundColor }}
@@ -204,7 +205,7 @@ export default function SignupScreen() {
                   value={zoneValue}
                   items={ethiopianZones[regionValue] || []}
                   setValue={setZoneValue}
-                  placeholder="Select your zone"
+                  placeholder={t("select_your_zone")}
                   disabled={!regionValue}
                   style={[styles.picker, { backgroundColor }]}
                   textStyle={{ color: textColor }}
@@ -223,7 +224,7 @@ export default function SignupScreen() {
                   value={woredaValue}
                   items={ethiopianWoredas[zoneValue] || []}
                   setValue={setWoredaValue}
-                  placeholder="Select your woreda"
+                  placeholder={t("select_your_woreda")}
                   disabled={!zoneValue}
                   style={[styles.picker, { backgroundColor }]}
                   textStyle={{ color: textColor }}
@@ -235,7 +236,7 @@ export default function SignupScreen() {
                 {/* Submit Button */}
                 <MyButton
                   onPress={handleSubmit}
-                  title="Sign Up"
+                  title={t("register")}
                   isSubmitting={isSubmitting}
                   style={{ margin: "auto", width: 200 }}
                 />

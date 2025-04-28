@@ -40,5 +40,21 @@
   "delete_post": "የልጥፍ ሰርዝ",
   "view_post": "የልጥፍ እይታ",
   "add_post": "የልጥፍ አክል",
-  "ask_abbabiyo": "አባቢዮን ጠይቅ"
+  "ask_abbabiyo": "አባቢዮን ጠይቅ",
+  "signup": "ይመዝገቡ",
+  "name": "ስም",
+  "email": "ኢሜይል",
+  "password": "የይለፍ ቃል",
+  "confirm_password": "የይለፍ ቃልን አረጋግጥ",
+  "forgot_password": "የይለፍ ቃል አለመወዳደር",
+  "phone_number": "ስልክ ቁጥር",
+  "address": "አድራሻ",
+  "state": "ክልል",
+  "country": "አገር",
+  "woreda": "ወረዳ",
+  "zone": "ዞን",
+  "region": "ክልል",
+  "select_your_region": "ክልል ይምረጡ",
+  "select_your_zone": "ዞን ይምረጡ",
+  "select_your_woreda": "ወረዳ ይምረጡ"
 }

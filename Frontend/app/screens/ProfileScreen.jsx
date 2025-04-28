@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, Image, StyleSheet, ActivityIndicator } from "react-native";
 import MyButton from "../components/MyButton";
 import { useUser } from "@/context/UserContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -19,12 +13,11 @@ import { useLanguage } from "@/context/LanguageContexts";
 export default function ProfileScreen({ navigation }) {
   const { logout, user, isLoading } = useUser();
   const { isDarkMode, toggleTheme } = useTheme();
-  const { setLanguage } = useLanguage();
+  const { setLanguage, language } = useLanguage();
   const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
-    navigation.replace("welcomeScreen");
   };
 
   const themeColors = isDarkMode ? Colors.darkTheme : Colors.lightTheme;
@@ -76,7 +69,7 @@ export default function ProfileScreen({ navigation }) {
       />
 
       {/* Language Selector */}
-      <LanguageDropdown onChange={setLanguage} />
+      <LanguageDropdown onChange={setLanguage} value={language} />
 
       {/* Edit Profile */}
       <Pressable onPress={() => navigation.navigate("EditProfile")}>

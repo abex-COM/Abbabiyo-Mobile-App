@@ -41,5 +41,22 @@
   "view_post": "View Post",
   "add_post": "Add Post",
   "post": "post",
-  "ask_abbabiyo": "Ask Abbabiyo"
+  "ask_abbabiyo": "Ask Abbabiyo",
+  "signup": "Sign Up",
+  "name": "Name",
+  "email": "Email",
+  "password": "Password",
+  "confirm_password": "Confirm Password",
+  "phone_number": "Phone Number",
+  "location": "Location",
+  "select_your_location": "Select Your Location",
+  "location_description": "Location description",
+  "country": "Country",
+  "select_your_country": "Select Your Country",
+  "woreda": "Woreda",
+  "zone": "Zone",
+  "select_your_woreda": "Select Your Woreda",
+  "region": "Region",
+  "select_your_region": "Select Your Region",
+  "select_your_zone": "Select Your Zone"
 }

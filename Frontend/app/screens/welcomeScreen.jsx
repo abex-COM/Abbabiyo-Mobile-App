@@ -15,7 +15,7 @@ import { useLanguage } from "@/context/LanguageContexts";
 
 export default function Welcome({ navigation }) {
   const { token, user } = useUser();
-  const { setLanguage } = useLanguage();
+  const { setLanguage, language } = useLanguage();
 
   const { t } = useTranslation();
   const handleLogin = () => {
@@ -24,7 +24,7 @@ export default function Welcome({ navigation }) {
 
   useEffect(() => {
     if (token) {
-      navigation.replace("bottomNavigator");
+      navigation.navigate("bottomNavigator");
     }
   }, [token]);
   return (
@@ -40,7 +40,7 @@ export default function Welcome({ navigation }) {
           Baga Gara Abbabiyo AI tti Nagaan Dhufta
         </Text>
         <Text style={styles.welcomeText}>ወደ አባቢዮ AI ረዳት እንኳን በደህና መጡ</Text>
-        <LanguageDropdown onChange={setLanguage} />
+        <LanguageDropdown onChange={setLanguage} value={language} />
       </View>
       <View style={styles.buttonContainer}>
         <MyButton

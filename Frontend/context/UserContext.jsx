@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 import { io } from "socket.io-client"; // Import socket.io-client
 import baseUrl from "@/baseUrl/baseUrl";
+import { useNavigation } from "expo-router";
 
 const UserContext = createContext();
 
@@ -31,7 +32,7 @@ export const UserProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [isEnabled, setIsEnabled] = useState(false);
   const [language, setLanguage] = useState("en");
-
+  const navigation = useNavigation();
   const {
     data: user = {},
     isLoading,
@@ -56,7 +57,14 @@ export const UserProvider = ({ children }) => {
   const logout = async () => {
     try {
       await AsyncStorage.removeItem("token");
+
       setToken(null);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "welcomeScreen" }],
+      });
+      console.log("logged out");
+
       if (socket) socket.disconnect(); // Disconnect socket on logout
     } catch (error) {
       console.log(error);

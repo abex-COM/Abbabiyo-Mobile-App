@@ -17,6 +17,7 @@ import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
 import { Colors } from "../constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
+import { t } from "i18next";
 
 // Validation Schema using Yup for phone number
 const validationSchema = Yup.object().shape({
@@ -112,7 +113,7 @@ export default function LoginScreen({ navigation }) {
             <View style={{ gap: 16, width: "80%", alignSelf: "center" }}>
               {/* Phone Number Field */}
               <MyTextInput
-                placeholder="Phone Number"
+                placeholder={t("phone_number")}
                 value={values.phoneNumber}
                 onChangeText={handleChange("phoneNumber")}
                 onBlur={handleBlur("phoneNumber")}
@@ -125,7 +126,7 @@ export default function LoginScreen({ navigation }) {
 
               {/* Password Field */}
               <MyTextInput
-                placeholder="Password"
+                placeholder={t("password")}
                 value={values.password}
                 onChangeText={handleChange("password")}
                 onBlur={handleBlur("password")}
@@ -138,7 +139,7 @@ export default function LoginScreen({ navigation }) {
 
               <MyButton
                 onPress={handleSubmit} // No unnecessary re-renders due to `useCallback`
-                title="Login"
+                title={t("login")}
                 isSubmitting={isSubmitting}
                 style={{ margin: "auto", height: 50 }}
               />
