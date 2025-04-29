@@ -20,7 +20,7 @@ import { useUser } from "@/context/UserContext";
 import { useLanguage } from "@/context/LanguageContexts";
 import Toast from "react-native-toast-message";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 import { getSocket, initiateSocketConnection } from "../utils/socket";
 
 const HomeScreen = () => {
@@ -52,8 +52,6 @@ const HomeScreen = () => {
   }, [user, token]);
 
   const fetchFarmLocations = async () => {
-    if (!user._id || !token) return;
-
     setLoading(true);
 
     try {
@@ -113,7 +111,7 @@ const HomeScreen = () => {
         throw new Error("Received empty data from the server");
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       console.error("Recommendation fetch error:", error);
 
       const errorMessage =
@@ -146,16 +144,13 @@ const HomeScreen = () => {
     const socket = getSocket();
 
     socket.on("newFarm", (newFarmLocations) => {
-      console.log("Received updated farm locations:", newFarmLocations);
       setFarmLocations(newFarmLocations);
     });
 
     socket.on("farmUpdated", (newFarmLocations) => {
-      console.log("updated  farm locations:", newFarmLocations);
       setFarmLocations(newFarmLocations);
     });
     socket.on("farmDeleted", (newFarmLocations) => {
-      console.log("updated  farm locations:", newFarmLocations);
       setFarmLocations(newFarmLocations);
     });
     return () => {

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { TextInput, View, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons"; // or use another icon library
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 
 export default function MyTextInput({
   placeholder,

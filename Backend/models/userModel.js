@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema({
       name: { type: String },
       lat: { type: Number },
       lon: { type: Number },
-    }
+    },
   ],
   createdAt: { type: Date, default: Date.now },
 });

@@ -1,7 +1,6 @@
 import React, { useEffect, useCallback } from "react";
 import {
   View,
-  StatusBar,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -15,7 +14,7 @@ import axios from "axios";
 import Toast from "react-native-toast-message"; // Ensure correct import
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { t } from "i18next";
 

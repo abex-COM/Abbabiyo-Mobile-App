@@ -22,7 +22,6 @@ import baseUrl from "@/baseUrl/baseUrl";
 import ErrorText from "../components/ErrorText";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useNavigation } from "expo-router";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ethiopianRegions, {
   ethiopianZones,
   ethiopianWoredas,
@@ -32,7 +31,7 @@ import { useUser } from "@/context/UserContext";
 import { t } from "i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 export default function EditProfileScreen() {
   const { language } = useUser();
   const navigation = useNavigation();

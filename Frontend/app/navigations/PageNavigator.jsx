@@ -4,9 +4,9 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { useTranslation } from "react-i18next";
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfile from "../screens/EditProfileScreen";
-import ManageFarmLocationsScreen from "../screens/ManageFarmLocationsScreen";  // Import the new screen
+import ManageFarmLocationsScreen from "../screens/ManageFarmLocationsScreen"; // Import the new screen
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 
 const Stack = createStackNavigator();
 
@@ -45,7 +45,7 @@ const PageStack = () => {
           },
           headerTintColor: headerTintColor,
           headerTitle: t("edit_profile"),
-          animation: "scale_from_center",
+          animation: "reveal_from_bottom",
           headerShown: true,
         }}
       />
@@ -53,13 +53,15 @@ const PageStack = () => {
       {/* Add the Manage Farm Locations screen here */}
       <Stack.Screen
         name="ManageFarmLocations"
-        component={ManageFarmLocationsScreen}  // Register the new screen
+        component={ManageFarmLocationsScreen} // Register the new screen
         options={{
           headerStyle: {
             backgroundColor: headerBackgroundColor,
           },
           headerTintColor: headerTintColor,
           headerTitle: t("manage_farm_locations"),
+
+          animation: "reveal_from_bottom",
         }}
       />
     </Stack.Navigator>

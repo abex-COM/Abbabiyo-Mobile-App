@@ -60,7 +60,7 @@ const createComment = async (req, res) => {
 const getCommentsByPost = async (req, res) => {
   try {
     const { postId } = req.params;
-    
+    console.log("post Id", postId);
     const comments = await Comment.find({ postId })
       .populate("author", "name profilePicture")
       .sort({ createdAt: -1 });

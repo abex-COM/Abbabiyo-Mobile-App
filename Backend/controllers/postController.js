@@ -1,8 +1,7 @@
 const Post = require("../models/postModel");
+const { getIO } = require("../socket/webSocket");
 
-const { getIO } = require("../socket/webSocket"); // Adjust the path as needed
-
-//  Create a Post
+// Create a Post
 exports.createPost = async (req, res) => {
   try {
     const { text } = req.body;
@@ -12,8 +11,12 @@ exports.createPost = async (req, res) => {
       imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
         req.file.filename
       }`;
+      if (process.env.NODE_ENV === "production") {
+        imageUrl = imageUrl.replace("http://", "https://");
+      }
     }
 
+    console.log("image uri", imageUrl);
     const newPost = await Post.create({
       text,
       image: imageUrl,
@@ -33,7 +36,7 @@ exports.createPost = async (req, res) => {
   }
 };
 
-//  Get All Posts
+// Get All Posts
 exports.getAllPosts = async (req, resp) => {
   try {
     const posts = await Post.find()
@@ -53,7 +56,7 @@ exports.getAllPosts = async (req, resp) => {
   }
 };
 
-//  Get Post by ID
+// Get Post by ID
 exports.getPostById = async (req, resp) => {
   try {
     const { postId } = req.params;
@@ -75,7 +78,7 @@ exports.getPostById = async (req, resp) => {
   }
 };
 
-//  Delete a Post
+// Delete a Post
 exports.deletePost = async (req, resp) => {
   try {
     const { postId } = req.params;
@@ -95,6 +98,8 @@ exports.deletePost = async (req, resp) => {
     resp.status(500).json({ status: "fail", error: err.message });
   }
 };
+
+// Like/Unlike a Post
 exports.likePost = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -117,14 +122,14 @@ exports.likePost = async (req, res) => {
     await post.save();
 
     const updatedPost = await Post.findById(postId)
-      .populate("author", "-password") // Optional: populate author
-      .populate("likes", "-password"); // Optional: populate liked users
+      .populate("author", "-password")
+      .populate("likes", "-password");
 
     const io = getIO();
     io.emit("newLike", {
       postId: updatedPost._id,
       likeCount: updatedPost.likes.length,
-      likedBy: updatedPost.likes.map((user) => user._id), // just IDs
+      likedBy: updatedPost.likes.map((user) => user._id),
       userId,
       liked: !hasLiked,
     });
@@ -148,13 +153,12 @@ exports.likePost = async (req, res) => {
 exports.getPostsByAuthor = async (req, resp) => {
   try {
     const author = req.user.id;
-    // Fetch all posts by the author
-    const posts = await Post.find({ author: author }) //  Use find() instead of findOne()
+
+    const posts = await Post.find({ author })
       .populate("author", "name email")
       .sort({ createdAt: -1 });
 
     if (!posts || posts.length === 0) {
-      //  Properly check if no posts exist
       return resp
         .status(404)
         .json({ status: "fail", message: "No posts found for this author" });
@@ -163,13 +167,10 @@ exports.getPostsByAuthor = async (req, resp) => {
     resp.status(200).json({ status: "success", posts });
   } catch (err) {
     console.log("Error fetching posts by author:", err.message);
-    resp.status(500).json({
-      status: "fail",
-      error: err.message,
-    });
+    resp.status(500).json({ status: "fail", error: err.message });
   }
 };
-// Update a Post
+
 // Update a Post (Only if current user is the author)
 exports.updatePost = async (req, res) => {
   try {
@@ -182,7 +183,6 @@ exports.updatePost = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Ensure the logged-in user is the author of the post
     if (post.author.toString() !== userId) {
       return res
         .status(403)
@@ -192,11 +192,13 @@ exports.updatePost = async (req, res) => {
     let updatedData = {};
     if (text) updatedData.text = text;
 
-    // Handle new image if uploaded
     if (req.file) {
-      const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
+      let imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
         req.file.filename
       }`;
+      if (process.env.NODE_ENV === "production") {
+        imageUrl = imageUrl.replace("http://", "https://");
+      }
       updatedData.image = imageUrl;
     }
 

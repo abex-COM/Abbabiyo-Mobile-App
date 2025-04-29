@@ -6,7 +6,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, Switch } from "react-native-gesture-handler";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../context/ThemeContext";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 import LanguageDropdown from "../components/LanguageSelector";
 import { useLanguage } from "@/context/LanguageContexts";
 

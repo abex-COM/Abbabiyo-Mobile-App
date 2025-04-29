@@ -31,7 +31,6 @@ const ManageFarmLocationsScreen = () => {
 
   const fetchFarmLocations = async () => {
     if (!user || !token) return; // arly return if no user/token
-    console.log(user._id);
     try {
       setLoading(true);
       const res = await axios.get(
@@ -42,7 +41,7 @@ const ManageFarmLocationsScreen = () => {
       );
       setFarmLocations(res.data?.farmLocations || []);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       if (err.response?.status !== 401) {
         // Only show toast for non-401 errors
         Toast.show({
@@ -86,7 +85,7 @@ const ManageFarmLocationsScreen = () => {
         text2: `Lat: ${coords.latitude.toFixed(4)}, Lon: ${coords.longitude.toFixed(4)}`,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       Toast.show({
         type: "error",
         text1:
@@ -141,7 +140,7 @@ const ManageFarmLocationsScreen = () => {
       resetForm();
       setShowForm(false);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       Toast.show({
         type: "error",
         text1:

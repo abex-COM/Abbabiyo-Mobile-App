@@ -14,7 +14,7 @@ import { useUser } from "@/context/UserContext";
 import useLikePost from "../hooks/useLike";
 import { usePosts } from "@/context/PostContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 import { Dimensions } from "react-native";
 
 export default function PostDetailScreen({ route }) {

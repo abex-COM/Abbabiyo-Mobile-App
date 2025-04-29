@@ -15,7 +15,7 @@ import Toast from "react-native-toast-message";
 import TypingIndicator from "@/app/components/TypingIndicator";
 import { useLanguage } from "@/context/LanguageContexts";
 import baseUrl from "@/baseUrl/baseUrl";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 
 export default function GeminiScreen() {
   const { t } = useTranslation();

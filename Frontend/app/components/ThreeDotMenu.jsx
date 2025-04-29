@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { Menu, MenuItem, MenuDivider } from "react-native-material-menu";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 import useDeletePost from "@/app/hooks/useDelete"; // Assuming this is a hook
 import { useUser } from "@/context/UserContext";
 import { usePosts } from "@/context/PostContext";

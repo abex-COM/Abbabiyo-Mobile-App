@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatInput from "./ChatInput";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 import ThreeDotMenu from "../components/ThreeDotMenu";
 import { useNavigation } from "expo-router";
 
@@ -53,7 +53,6 @@ const PostCard = ({
     });
   };
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-
   useEffect(() => {
     if (imageUri) {
       Image.getSize(

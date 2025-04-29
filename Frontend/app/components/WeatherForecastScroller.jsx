@@ -1,7 +1,7 @@
 import { useTheme } from "@/context/ThemeContext";
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 
 const getWeatherIcon = (code) => {
   const iconMap = {

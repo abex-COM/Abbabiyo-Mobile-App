@@ -1,4 +1,4 @@
-export const Colors = {
+const Colors = {
   darkTheme: {
     textColor: "#c0c0c0",
     backgroundColor: "#1F2937",
@@ -9,3 +9,4 @@ export const Colors = {
     backgroundColor: "#FFFFFF", // White for light mode
   },
 };
+export default Colors;

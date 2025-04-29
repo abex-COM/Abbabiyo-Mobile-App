@@ -3,13 +3,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
-  ActivityIndicator,
-  Text,
   StyleSheet,
   RefreshControl,
   Alert,
 } from "react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   initiateSocketConnection,
   getSocket,
@@ -38,13 +36,12 @@ export default function ChatScreen() {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const flatlist = useRef(null);
-  const { token } = useUser();
+  const { token, user } = useUser();
   const {
     posts,
     comments,
     postsQuery,
     refetchAll,
-    user,
     handleNewComment,
     commentLoadingMap,
   } = usePosts();
@@ -146,7 +143,6 @@ export default function ChatScreen() {
     }
   };
 
-  
   const handleLike = async (postId) => {
     likePost(postId);
     console.log(postId);
@@ -154,6 +150,7 @@ export default function ChatScreen() {
   // I set this because comment is net being fetched on the first time when comment mounts
   useEffect(() => {
     const refetch = async () => {
+      // if (!user?._id && posts.length === 0) return;
       try {
         await queryClient.refetchQueries(["comments"]);
         console.log(" Comments refetched on mount");
@@ -171,7 +168,6 @@ export default function ChatScreen() {
     const socket = getSocket();
 
     const handleNewComment = ({ postId, comment }) => {
-      console.log("Received newComment via socket:", comment);
       queryClient.setQueryData(["comments"], (oldCommentsData = []) => {
         return oldCommentsData.map((entry) =>
           entry.postId === postId
@@ -185,7 +181,6 @@ export default function ChatScreen() {
     };
 
     const handleNewPost = (newPost) => {
-      console.log("Received newPost via socket:", newPost);
       queryClient.setQueryData(["posts"], (oldPosts = []) => {
         return [newPost, ...oldPosts]; // Add new post to the top
       });
@@ -203,8 +198,6 @@ export default function ChatScreen() {
       );
     };
     socket.on("postUpdated", (updatedPost) => {
-      console.log("Post updated in real time:", updatedPost);
-
       // Update React Query cache if you're using it
       queryClient.setQueryData(["posts"], (oldData) => {
         if (!oldData) return oldData;

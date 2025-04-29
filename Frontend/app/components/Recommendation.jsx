@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 
 const Recommendation = ({ recommendations }) => {
   const { isDarkMode } = useTheme();

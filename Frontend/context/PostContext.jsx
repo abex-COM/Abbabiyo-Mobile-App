@@ -9,7 +9,7 @@ import baseUrl from "@/baseUrl/baseUrl";
 import { initiateSocketConnection, getSocket } from "@/app/utils/socket";
 const PostsContext = createContext();
 export const PostsProvider = ({ children }) => {
-  const { token, user } = useUser();
+  const { token } = useUser();
   const queryClient = useQueryClient();
   const [commentLoadingMap, setCommentLoadingMap] = useState({});
 
@@ -40,7 +40,10 @@ export const PostsProvider = ({ children }) => {
       );
       return { postId, comments: resp.data?.comments || [] };
     } catch (error) {
-      console.log(`Failed to fetch comments for post ${postId}`, error.message);
+      console.error(
+        `Failed to fetch comments for post ${postId}`,
+        error.message
+      );
       return { postId, comments: [] };
     }
   };
@@ -49,19 +52,20 @@ export const PostsProvider = ({ children }) => {
     queries: [
       {
         queryKey: ["posts"],
-        queryFn: () => getAllPosts(),
+        queryFn: getAllPosts,
+        enabled: !!token, // Only run if token is ready
         refetchOnWindowFocus: false,
       },
       {
         queryKey: ["comments"],
         queryFn: async () => {
-          const posts = await getAllPosts();
-          if (!Array.isArray(posts)) return []; // Fallback to empty array
+          if (!postsQuery.data) return [];
           const comments = await Promise.all(
-            posts.map((post) => getCommentsForPost(post._id))
+            postsQuery.data.map((post) => getCommentsForPost(post._id))
           );
           return comments;
         },
+        enabled: !!token, // Wait for posts to load first
         refetchOnWindowFocus: false,
       },
     ],
@@ -135,7 +139,6 @@ export const PostsProvider = ({ children }) => {
         refetchAll,
         handleNewComment,
         commentLoadingMap,
-        user,
       }}
     >
       {children}

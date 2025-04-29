@@ -1,13 +1,7 @@
 const { Image, View, Text, Pressable } = require("react-native");
 
-export default function Card({
-  title,
-  subTitle,
-  price,
-  imageUrl,
-  onPress,
-  thumbnailUrl,
-}) {
+export default function Card({ title, subTitle, price, imageUrl, onPress }) {
+  
   return (
     <Pressable onPress={onPress}>
       <View className="rounded-md mt-2  bg-slate-50 mb-5  shadow-md">

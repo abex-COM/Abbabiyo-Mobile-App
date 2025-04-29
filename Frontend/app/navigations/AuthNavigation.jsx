@@ -7,8 +7,7 @@ import SignupScreen from "../screens/SignupScreen";
 import FeedNavigator from "../navigations/BottomNavigation";
 import welcomeScreen from "../screens/welcomeScreen";
 import MyPosts from "../screens/MyPosts";
-import { t } from "i18next";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import DiseaseDetector from "../screens/DiseaseDetectionScreen";
 import PostDetailScreen from "@/app/screens/PostDetailScreen";
@@ -127,6 +126,7 @@ export default function AuthNavigator() {
           },
           headerTintColor: headerTintColor,
           headerTitle: t("manage_farm_locations"),
+          animation: 'none',
         }}
       />
       {/* </Stack.Navigator> */}

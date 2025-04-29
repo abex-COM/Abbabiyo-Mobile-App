@@ -22,7 +22,7 @@ import ethiopianRegions, {
 import { useUser } from "@/context/UserContext";
 import Toast from "react-native-toast-message";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "../constants/Colors";
+import Colors from "../constants/Colors";
 import { t } from "i18next";
 
 export default function SignupScreen() {
