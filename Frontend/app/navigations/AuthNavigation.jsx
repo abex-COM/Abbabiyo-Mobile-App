@@ -78,6 +78,7 @@ export default function AuthNavigator() {
             backgroundColor: headerBackgroundColor, // Dynamic background color for header
           },
           headerShown: true, // Show header for back navigation
+          animation: "reveal_from_bottom",
         }}
       />
       <Stack.Screen
@@ -101,7 +102,7 @@ export default function AuthNavigator() {
           headerStyle: {
             backgroundColor: headerBackgroundColor,
           },
-          animation: "slide_from_bottom", // Animation for the screen transition",
+          animation: "reveal_from_bottom", // Animation for the screen transition",
           headerShown: true,
         })}
       />
@@ -126,10 +127,9 @@ export default function AuthNavigator() {
           },
           headerTintColor: headerTintColor,
           headerTitle: t("manage_farm_locations"),
-          animation: 'none',
+          animation: "none",
         }}
       />
-      {/* </Stack.Navigator> */}
     </Stack.Navigator>
   );
 }

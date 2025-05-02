@@ -58,5 +58,7 @@
   "select_your_woreda": "Select Your Woreda",
   "region": "Region",
   "select_your_region": "Select Your Region",
-  "select_your_zone": "Select Your Zone"
+  "select_your_zone": "Select Your Zone",
+  "disease": "Disease",
+  "account": "Account"
 }

@@ -12,8 +12,7 @@ const authenticateUser = async (req, res, next) => {
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.userId).select("-password"); // Attach user to request
-    console.log(req.user);
+    req.user = await User.findById(decoded.userId); // Attach user to request
 
     if (!req.user) {
       return res

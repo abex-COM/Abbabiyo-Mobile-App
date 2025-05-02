@@ -21,9 +21,8 @@ export default function Welcome({ navigation }) {
   const handleLogin = () => {
     navigation.navigate("loginScreen");
   };
-
   useEffect(() => {
-    if (token) {
+    if (token && user) {
       navigation.navigate("bottomNavigator");
     }
   }, [token]);

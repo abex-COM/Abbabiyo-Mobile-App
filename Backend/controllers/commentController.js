@@ -2,9 +2,8 @@ const Comment = require("../models/commentModel");
 
 //  Create a Comment
 const Post = require("../models/postModel");
-const { getIO } = require("../socket/webSocket"); // 👈 import socket helper
+const { getIO } = require("../socket/webSocket"); //import socket helper
 
-//  Create a Comment
 const createComment = async (req, res) => {
   try {
     const { postId, text } = req.body;
@@ -34,20 +33,21 @@ const createComment = async (req, res) => {
       "name profilePicture"
     );
 
-    // 🔥 Emit real-time event to all clients
     const io = getIO();
+
+    //  Broadcast comment to everyone (for UI updates)
     io.emit("newComment", {
       postId,
       comment: populatedComment,
     });
 
+    //  Send comment notification to post author if not the commenter
     res.status(201).json({
       success: true,
       message: "Comment added!",
       comment: populatedComment,
     });
   } catch (error) {
-    console.log("Error creating comment:", error);
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -55,19 +55,16 @@ const createComment = async (req, res) => {
     });
   }
 };
-
-//  Get all Comments for a Post
+// /  Get all Comments for a Post
 const getCommentsByPost = async (req, res) => {
   try {
     const { postId } = req.params;
-    console.log("post Id", postId);
     const comments = await Comment.find({ postId })
       .populate("author", "name profilePicture")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, comments });
   } catch (error) {
-    console.log("Error fetching comments:", error);
     res
       .status(500)
       .json({ success: false, message: "Server error", error: error.message });
@@ -79,17 +76,16 @@ const deleteComment = async (req, res) => {
   try {
     const { commentId } = req.params;
     const userId = req.user.id; // Get logged-in user
-    const userRole = req.user.role; // Get user role
 
     const comment = await Comment.findById(commentId);
+
     if (!comment) {
       return res
         .status(404)
         .json({ success: false, message: "Comment not found" });
     }
 
-    // Check if the user is the author or an admin
-    if (comment.author.toString() !== userId && userRole !== "admin") {
+    if (!comment.author.equals(userId)) {
       return res.status(403).json({
         success: false,
         message: "Unauthorized to delete this comment",
@@ -97,11 +93,15 @@ const deleteComment = async (req, res) => {
     }
 
     await comment.deleteOne(); // More efficient than `findByIdAndDelete`
-    res
-      .status(200)
-      .json({ success: true, message: "Comment deleted successfully" });
+
+    const io = getIO();
+    io.emit("commentDeleted", comment);
+    res.status(200).json({
+      success: true,
+      message: "Comment deleted successfully",
+      comment,
+    });
   } catch (error) {
-    console.log("Error deleting comment:", error);
     res
       .status(500)
       .json({ success: false, message: "Server error", error: error.message });

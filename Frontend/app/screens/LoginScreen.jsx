@@ -1,10 +1,5 @@
 import React, { useEffect, useCallback } from "react";
-import {
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-} from "react-native";
+import { View, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import MyButton from "../components/MyButton";
@@ -17,6 +12,7 @@ import baseUrl from "@/baseUrl/baseUrl";
 import Colors from "../constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { t } from "i18next";
+import { registerForPushNotificationsAsync } from "../utils/natification";
 
 // Validation Schema using Yup for phone number
 const validationSchema = Yup.object().shape({
@@ -29,7 +25,7 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function LoginScreen({ navigation }) {
-  const { storeToken } = useUser();
+  const { storeToken, user } = useUser();
   const { isDarkMode } = useTheme();
   const backgroundColor = isDarkMode
     ? Colors.darkTheme.backgroundColor

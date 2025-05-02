@@ -5,7 +5,6 @@ import {
   FlatList,
   StyleSheet,
   RefreshControl,
-  Alert,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -21,13 +20,13 @@ import * as ImageManipulator from "expo-image-manipulator";
 import ItemSepartor from "../components/ItemSepartor";
 import Toast from "react-native-toast-message";
 import { usePosts } from "@/context/PostContext";
-import useLikePost from "../hooks/useLike";
 import axios from "axios";
 import { useUser } from "@/context/UserContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useTranslation } from "react-i18next";
 import baseUrl from "@/baseUrl/baseUrl";
 import useDeletePost from "@/app/hooks/useDelete";
+import useLikePost from "../hooks/useLike";
 export default function ChatScreen() {
   const [message, setMessage] = useState("");
   const [imageUri, setImageUri] = useState(null);
@@ -145,7 +144,6 @@ export default function ChatScreen() {
 
   const handleLike = async (postId) => {
     likePost(postId);
-    console.log(postId);
   };
   // I set this because comment is net being fetched on the first time when comment mounts
   useEffect(() => {
@@ -153,7 +151,6 @@ export default function ChatScreen() {
       // if (!user?._id && posts.length === 0) return;
       try {
         await queryClient.refetchQueries(["comments"]);
-        console.log(" Comments refetched on mount");
       } catch (error) {
         console.error(" Error refetching comments:", error);
       }
@@ -211,6 +208,19 @@ export default function ChatScreen() {
     socket.on("newComment", handleNewComment);
     socket.on("newPost", handleNewPost);
     socket.on("newLike", handleNewLike);
+    socket.on("commentDeleted", refetchAll);
+    socket.emit("authenticate", user._id);
+
+    // Listen for comment notifications
+    socket.on("commentNotification", (notification) => {
+      // Show a toast with the notification message
+      Toast.show({
+        type: "info", // or any other type you use in your Toast package
+        text1: "New Comment",
+        text2: `${notification.comment.author.name} commented on your post`,
+      });
+    });
+
     socket.on("disconnect", () => console.log("Disconnected from socket"));
     return () => {
       socket.off("newComment", handleNewComment);

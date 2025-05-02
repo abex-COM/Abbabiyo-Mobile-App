@@ -1,4 +1,11 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import React, { memo, useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatInput from "./ChatInput";
@@ -9,6 +16,11 @@ import ThreeDotMenu from "../components/ThreeDotMenu";
 import { useNavigation } from "expo-router";
 
 import { Dimensions } from "react-native";
+import axios from "axios";
+import baseUrl from "@/baseUrl/baseUrl";
+import Toast from "react-native-toast-message";
+import { useUser } from "@/context/UserContext";
+import { usePosts } from "@/context/PostContext";
 
 const PostCard = ({
   imageUri,
@@ -29,8 +41,7 @@ const PostCard = ({
   const [showFullContent, setShowFullContent] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const { isDarkMode } = useTheme();
-  const navigation = useNavigation();
-
+  const { token, user } = useUser();
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
@@ -45,13 +56,36 @@ const PostCard = ({
     onCommentSubmit(comment);
   };
 
-  const handleViewPost = () => {
-    navigation.navigate("PostDetail", {
-      post: post,
-      comments: comments,
-      likes: likes,
-    });
+  const handleDeleteComment = async (comment) => {
+    if (user._id !== comment.author._id) return;
+    Alert.alert("Delete", "Are you sure you want to delete?", [
+      {
+        text: "Cancel",
+        onPress: null,
+      },
+      {
+        text: "Okay",
+        onPress: async () => {
+          try {
+            await axios.delete(
+              `${baseUrl}/api/comments/delete/${comment._id}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            Toast.show({
+              type: "success",
+              text1: "Success",
+              text2: "Comment deleted",
+            });
+          } catch (error) {
+            console.log(error);
+          }
+        },
+      },
+    ]);
   };
+
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
     if (imageUri) {
@@ -70,8 +104,9 @@ const PostCard = ({
   const imageAspectRatio = imageSize.width / imageSize.height;
   const displayWidth = screenWidth - 32; // subtract padding/margin if needed
   const displayHeight = displayWidth / imageAspectRatio;
+
   return (
-    <Pressable onLongPress={onLongPress} delayLongPress={300} activeOpacity={1}>
+    <TouchableOpacity delayLongPress={300} activeOpacity={1}>
       <View style={[styles.cardContainer, { backgroundColor: cardBackground }]}>
         <ThreeDotMenu
           post={post}
@@ -108,19 +143,17 @@ const PostCard = ({
         </View>
 
         {imageUri && imageSize.width > 0 && (
-          <Pressable onPress={handleViewPost}>
-            <View style={styles.imageContainer}>
-              <Image
-                source={{ uri: imageUri }}
-                style={{
-                  width: displayWidth,
-                  height: displayHeight,
-                  borderRadius: 9,
-                }}
-                resizeMode="cover"
-              />
-            </View>
-          </Pressable>
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              style={{
+                width: displayWidth,
+                height: displayHeight,
+                borderRadius: 9,
+              }}
+              resizeMode="cover"
+            />
+          </View>
         )}
 
         <View style={styles.likesContainer}>
@@ -132,7 +165,10 @@ const PostCard = ({
               ]}
               onPress={onLike}
             >
-              <Text>Likes: {likes}</Text>
+              <Text style={{ textAlign: "center", width: 80 }}>
+                {" "}
+                Likes: {likes}
+              </Text>
               <MaterialCommunityIcons name="thumb-up" size={20} />
             </TouchableOpacity>
           </View>
@@ -145,7 +181,9 @@ const PostCard = ({
             ]}
             onPress={() => setIsCommentVisible(!isCommentVisible)}
           >
-            <Text>Comments: {comments.length}</Text>
+            <Text style={{ width: 110, textAlign: "center" }}>
+              Comments: {comments.length}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -157,7 +195,8 @@ const PostCard = ({
             ]}
           >
             {comments.map((comment, index) => (
-              <View
+              <TouchableOpacity
+                onLongPress={() => handleDeleteComment(comment)}
                 key={`${comment._id || index}`}
                 style={[styles.commentItem, { backgroundColor: commentItemBg }]}
               >
@@ -169,7 +208,7 @@ const PostCard = ({
                 <Text style={{ color: commentAuthorColor }}>
                   {comment.text}
                 </Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         )}
@@ -183,11 +222,11 @@ const PostCard = ({
           onSend={handleCommentSubmit}
         />
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
-export default PostCard;
+export default memo(PostCard);
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -258,6 +297,8 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 8,
     marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: "#7f7c7c",
   },
   commentAuthor: {
     fontWeight: "bold",

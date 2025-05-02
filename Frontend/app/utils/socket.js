@@ -10,7 +10,7 @@ export const initiateSocketConnection = (userId) => {
 
   socket.on("connect", () => {
     console.log("Connected to socket:", socket.id);
-    socket.emit("authenticate", userId); // 👈 send userId to server
+    socket.emit("authenticate", userId); //  send userId to server
   });
 };
 

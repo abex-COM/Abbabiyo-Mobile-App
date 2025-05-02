@@ -6,6 +6,11 @@ const { authenticateUser } = require("../middleWare/authmiddleWare"); // Ensure 
 // Public routes
 router.post("/signup", userController.signup);
 router.post("/login", userController.login);
+router.post(
+  "/push-token",
+  authenticateUser,
+  userController.updateExpoPushToken
+);
 
 // Protected routes (Requires authentication)
 router.get("/profile", authenticateUser, userController.getUser); // Get user profile

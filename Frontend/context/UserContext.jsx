@@ -17,13 +17,14 @@ const fetchUser = async (token) => {
     });
     return resp.data.user || [];
   } catch (error) {
-    if (error.response) {
-      Toast.show({
-        type: "error",
-        text1: "Failed while Fetching",
-        text2: error?.response?.data?.message,
-      });
-    }
+    // if (error.response) {
+    //   Toast.show({
+    //     type: "error",
+    //     text1: "Failed while Fetching",
+    //     text2: error?.response?.data?.message,
+    //   });
+    // }
+    throw error; // This will trigger `onError` inside useQuery
   }
 };
 
@@ -42,6 +43,23 @@ export const UserProvider = ({ children }) => {
     queryKey: ["user", token],
     queryFn: () => fetchUser(token),
     enabled: !!token,
+    retry: false,
+    onError: (error) => {
+      if (error?.response?.status === 401) {
+        Toast.show({
+          type: "error",
+          text1: "Unauthorized",
+          text2: "Your session has expired or account was deleted.",
+        });
+        logout();
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Error fetching user",
+          text2: error?.response?.data?.message || "Something went wrong",
+        });
+      }
+    },
   });
   // Function to store token
   const storeToken = async (token) => {
@@ -86,8 +104,8 @@ export const UserProvider = ({ children }) => {
       const newSocket = io(baseUrl, { transports: ["websocket"] });
 
       newSocket.on("connect", () => {
-        console.log("Connected to WebSocket:", newSocket.id);
-        newSocket.emit("authenticate", user._id); // Send user ID for authentication
+        console.log("Connected to WebSocket:", newSocket?.id);
+        newSocket.emit("authenticate", user?._id); // Send user ID for authentication
       });
 
       // Listen for user updates from the backend

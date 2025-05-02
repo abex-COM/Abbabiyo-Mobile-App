@@ -23,7 +23,9 @@ exports.signup = async (req, resp) => {
 
     const newUser = new User(req.body);
     await newUser.save();
-    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
     resp.status(201).json({ status: "success", newUser, token });
   } catch (err) {
@@ -37,33 +39,18 @@ exports.signup = async (req, resp) => {
     resp.status(500).json({ status: "fail", err: err.message });
   }
 };
-
 exports.login = async (req, resp) => {
-  try {
-    const { phoneNumber, password } = req.body;
+  const { phoneNumber, password } = req.body;
 
-    const user = await User.findOne({ phoneNumber });
+  const user = await User.findOne({ phoneNumber });
+  if (!user) return resp.status(400).json({ message: "Invalid phoneNumber" });
 
-    if (!user) {
-      return resp
-        .status(400)
-        .json({ status: "fail", message: "Invalid phoneNumber" });
-    }
+  const isMatch = await user.comparePassword(password);
+  if (!isMatch) return resp.status(400).json({ message: "Wrong password" });
 
-    const isMatch = await user.comparePassword(password);
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
 
-    if (!isMatch) {
-      return resp
-        .status(400)
-        .json({ status: "fail", message: "Wrong password" });
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
-
-    resp.status(200).json({ status: "success", user, token });
-  } catch (err) {
-    return resp.status(404).json({ status: "fail", error: err.message });
-  }
+  resp.status(200).json({ status: "success", user, token });
 };
 
 // Get profile information (Authenticated User)
@@ -127,5 +114,26 @@ exports.updateUser = async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to update profile.", error: err.message });
+  }
+};
+// POST /api/users/push-token
+exports.updateExpoPushToken = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { expoPushToken } = req.body;
+
+    if (!expoPushToken) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Token is required" });
+    }
+
+    await User.findByIdAndUpdate(userId, { expoPushToken });
+
+    res.json({ success: true, message: "Push token saved" });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message });
   }
 };

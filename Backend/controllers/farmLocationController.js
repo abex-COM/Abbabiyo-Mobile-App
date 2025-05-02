@@ -106,7 +106,6 @@ exports.deleteFarmLocation = async (req, res) => {
       farmLocations: user.farmLocations,
     });
   } catch (error) {
-    console.error("Server error deleting farm:", error);
     return res
       .status(500)
       .json({ message: "Error deleting farm location", error });
@@ -126,6 +125,8 @@ exports.getAllFarmLocations = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const io = getIO();
+    io.emit("farmLocations", user.farmLocations);
     // Return the user's farm locations
     return res.status(200).json({ farmLocations: user.farmLocations });
   } catch (error) {

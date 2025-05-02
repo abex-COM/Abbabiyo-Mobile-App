@@ -25,8 +25,8 @@ import {
 import axios from "axios";
 
 export default function MyPosts() {
-  const { posts, comments, postsQuery, refetchAll, user } = usePosts();
-  const { token } = useUser();
+  const { posts, comments, postsQuery, refetchAll } = usePosts();
+  const { token, user } = useUser();
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
@@ -131,7 +131,7 @@ export default function MyPosts() {
     <View style={[styles.container, { backgroundColor }]}>
       {userPosts.length === 0 ? (
         <Text style={[styles.noPostsText, { color: textColor }]}>
-          {t("no_posts_yet")}
+          {t("No Post Yet")}
         </Text>
       ) : (
         <FlatList

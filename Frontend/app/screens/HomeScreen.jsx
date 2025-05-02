@@ -22,19 +22,21 @@ import Toast from "react-native-toast-message";
 import { useTheme } from "@/context/ThemeContext";
 import Colors from "../constants/Colors";
 import { getSocket, initiateSocketConnection } from "../utils/socket";
+import useFarmLocations from "../hooks/useFarmLocation";
 
 const HomeScreen = () => {
   const { user, token } = useUser();
   const { language } = useLanguage();
   const navigation = useNavigation();
-  const [loading, setLoading] = useState(false);
   const [forecast, setForecast] = useState(null);
   const [season, setSeason] = useState(null);
-  const [farmLocations, setFarmLocations] = useState([]);
   const [selectedFarmLocation, setSelectedFarmLocation] = useState("");
   const [recommendations, setRecommendations] = useState([]);
-  const [apiError, setApiError] = useState(null);
+  const [recommendationLoading, setRecommendationLoading] = useState(false);
+
   const { isDarkMode } = useTheme();
+  const { loading, farmLocations, refetch, setFarmLocations } =
+    useFarmLocations();
 
   const backgroundColor = isDarkMode
     ? Colors.darkTheme.backgroundColor
@@ -42,41 +44,8 @@ const HomeScreen = () => {
   const textColor = isDarkMode
     ? Colors.darkTheme.textColor
     : Colors.lightTheme.textColor;
-  const cardColor = isDarkMode ? Colors.darkTheme.cardBackground : "#fff";
+  const cardColor = isDarkMode ? Colors.darkTheme.backgroundColor : "#fff";
   const inputBackgroundColor = isDarkMode ? "#444" : "#e9e9e9";
-
-  useEffect(() => {
-    if (user._id && token) {
-      fetchFarmLocations();
-    }
-  }, [user, token]);
-
-  const fetchFarmLocations = async () => {
-    setLoading(true);
-
-    try {
-      const res = await axios.get(
-        `${baseUrl}/api/farm-locations/all/${user._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 10000,
-        }
-      );
-      setFarmLocations(res.data.farmLocations || []);
-      setApiError(null);
-    } catch (err) {
-      console.error("Farm locations fetch error:", err);
-
-      const errorMessage =
-        err.response?.data?.error ||
-        err.message ||
-        "Failed to fetch farm locations";
-
-      setApiError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchRecommendations = async (farmId) => {
     if (!farmId) {
@@ -84,16 +53,16 @@ const HomeScreen = () => {
       return;
     }
 
-    setLoading(true);
-    setForecast(null);
-    setSeason(null);
-    setApiError(null);
+    setForecast("");
+    setSeason("");
+    setRecommendationLoading(true);
 
+    if (!user?._id || !token) return;
     try {
       const response = await axios.post(
         `${baseUrl}/api/recommendations/personalized`,
         {
-          farmerId: user._id,
+          farmerId: user?._id,
           farmId: farmId,
           language: language,
         },
@@ -111,23 +80,14 @@ const HomeScreen = () => {
         throw new Error("Received empty data from the server");
       }
     } catch (error) {
-      console.error(error);
       console.error("Recommendation fetch error:", error);
-
-      const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        "Failed to fetch forecast data";
-
-      setApiError(errorMessage);
 
       Toast.show({
         type: "error",
-        text1: "Error occurred",
-        text2: String(errorMessage),
+        text1: "Error occurred while fetching recommendations",
       });
     } finally {
-      setLoading(false);
+      setRecommendationLoading(false);
     }
   };
 
@@ -140,23 +100,37 @@ const HomeScreen = () => {
   useEffect(() => {
     if (!user._id || !token) return;
 
-    initiateSocketConnection(user._id);
+    initiateSocketConnection(user?._id);
     const socket = getSocket();
 
     socket.on("newFarm", (newFarmLocations) => {
       setFarmLocations(newFarmLocations);
     });
 
-    socket.on("farmUpdated", (newFarmLocations) => {
-      setFarmLocations(newFarmLocations);
+    socket.on("farmUpdated", (farmUpdated) => {
+      setFarmLocations(farmUpdated);
     });
-    socket.on("farmDeleted", (newFarmLocations) => {
-      setFarmLocations(newFarmLocations);
+
+    socket.on("farmDeleted", (farmDeleted) => {
+      setFarmLocations(farmDeleted);
     });
+
     return () => {
       socket.off("newFarm");
+      socket.off("farmUpdated");
+      socket.off("farmDeleted");
     };
   }, [user, token]);
+
+  if (loading) {
+    return (
+      <View style={[styles.center, { backgroundColor }]}>
+        <ActivityIndicator size="large" color="#4A90E2" />
+        <Text style={{ color: textColor }}>Loading farm locations...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
       <StatusBar
@@ -164,14 +138,7 @@ const HomeScreen = () => {
         backgroundColor={isDarkMode ? Colors.darkTheme.statusbarColor : "white"}
       />
 
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#4A90E2" />
-          <Text style={[styles.loadingText, { color: textColor }]}>
-            Loading weather data...
-          </Text>
-        </View>
-      ) : farmLocations.length === 0 ? (
+      {farmLocations.length === 0 ? (
         <View style={[styles.formContainer, { backgroundColor: cardColor }]}>
           <Text style={[styles.title, { color: textColor }]}>
             Add Your First Farm Location
@@ -197,7 +164,8 @@ const HomeScreen = () => {
               styles.picker,
               { backgroundColor: inputBackgroundColor, color: textColor },
             ]}
-            dropdownIconColor={textColor} // optional for Android
+            enabled={!recommendationLoading}
+            dropdownIconColor={textColor}
           >
             <Picker.Item label="Select a farm..." value="" />
             {farmLocations.map((farm) => (
@@ -209,15 +177,25 @@ const HomeScreen = () => {
             ))}
           </Picker>
 
-          {selectedFarmLocation && (
+          {recommendationLoading ? (
+            <View style={styles.center}>
+              <ActivityIndicator size="large" color="#4A90E2" />
+              <Text style={[styles.loadingText, { color: textColor }]}>
+                Fetching recommendations...
+              </Text>
+            </View>
+          ) : (
             <>
-              <CurrentSeason season={season} />
-              <WeatherForecastScroller forecast={forecast} />
+              {selectedFarmLocation && (
+                <>
+                  <CurrentSeason season={season} />
+                  <WeatherForecastScroller forecast={forecast} />
+                </>
+              )}
+              {recommendations.length > 0 && (
+                <Recommendation recommendations={recommendations} />
+              )}
             </>
-          )}
-
-          {recommendations.length > 0 && (
-            <Recommendation recommendations={recommendations} />
           )}
         </>
       )}
@@ -234,10 +212,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    marginVertical: 20,
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
+    textAlign: "center",
   },
   title: {
     fontSize: 22,

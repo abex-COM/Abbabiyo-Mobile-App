@@ -22,7 +22,25 @@ export default function DiseaseDetector() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { isDarkMode } = useTheme();
+  const takePhoto = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permission to access camera is required!");
+      return;
+    }
 
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      base64: false,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+      setResult(null);
+      setError(""); // Clear previous errors
+    }
+  };
   const pickImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -79,7 +97,7 @@ export default function DiseaseDetector() {
 
     try {
       const res = await axios.post(
-        `http://192.168.137.1:8000/predict`,
+        `http://http://192.168.95.196:8000/predict`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -124,10 +142,17 @@ export default function DiseaseDetector() {
             🌿 Plant Disease Detector
           </Text>
 
-          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-            <Feather name="upload-cloud" size={20} color="green" />
-            <Text style={styles.uploadText}>Choose Image</Text>
-          </TouchableOpacity>
+          <View style={{ gap: 10 }}>
+            <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+              <Feather name="upload-cloud" size={20} color="green" />
+              <Text style={styles.uploadText}>Upload from Gallery</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.uploadButton} onPress={takePhoto}>
+              <Feather name="camera" size={20} color="green" />
+              <Text style={styles.uploadText}>Take a Photo</Text>
+            </TouchableOpacity>
+          </View>
 
           {image && (
             <Image

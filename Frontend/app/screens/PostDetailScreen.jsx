@@ -11,11 +11,11 @@ import {
   FlatList,
 } from "react-native";
 import { useUser } from "@/context/UserContext";
-import useLikePost from "../hooks/useLike";
 import { usePosts } from "@/context/PostContext";
 import { useTheme } from "@/context/ThemeContext";
 import Colors from "../constants/Colors";
 import { Dimensions } from "react-native";
+import useLikePost from "./../hooks/useLike";
 
 export default function PostDetailScreen({ route }) {
   const { post = {}, comments = [] } = route.params || {};

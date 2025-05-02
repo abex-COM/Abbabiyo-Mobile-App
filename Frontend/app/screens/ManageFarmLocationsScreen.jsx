@@ -14,49 +14,18 @@ import axios from "axios";
 import { getSocket, initiateSocketConnection } from "../utils/socket";
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
+import useFarmLocations from "../hooks/useFarmLocation";
+
 const ManageFarmLocationsScreen = () => {
   const { user, token } = useUser();
   const [newFarmName, setNewFarmName] = useState("");
   const [currentLat, setCurrentLat] = useState(null);
   const [currentLon, setCurrentLon] = useState(null);
-  const [farmLocations, setFarmLocations] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [editingFarmId, setEditingFarmId] = useState(null);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [showForm, setShowForm] = useState(false);
-
-  useEffect(() => {
-    if (user) fetchFarmLocations();
-  }, [user, token]);
-
-  const fetchFarmLocations = async () => {
-    if (!user || !token) return; // arly return if no user/token
-    try {
-      setLoading(true);
-      const res = await axios.get(
-        `${baseUrl}/api/farm-locations/all/${user._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setFarmLocations(res.data?.farmLocations || []);
-    } catch (err) {
-      console.error(err);
-      if (err.response?.status !== 401) {
-        // Only show toast for non-401 errors
-        Toast.show({
-          type: "error",
-          text1:
-            typeof err.response?.data?.error === "string"
-              ? err.response.data.error
-              : err.response?.data?.error?.message ||
-                "Could not load farm locations",
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { loading, farmLocations, refetch, setFarmLocations } =
+    useFarmLocations();
 
   const requestLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -109,7 +78,6 @@ const ManageFarmLocationsScreen = () => {
     }
 
     try {
-      setLoading(true);
       if (editingFarmId) {
         await axios.put(
           `${baseUrl}/api/farm-locations/update`,
@@ -136,7 +104,7 @@ const ManageFarmLocationsScreen = () => {
         );
         Toast.show({ type: "success", text1: "Farm Added!" });
       }
-      await fetchFarmLocations();
+      await refetch(); // FIXED: this must be called as a function
       resetForm();
       setShowForm(false);
     } catch (err) {
@@ -148,8 +116,6 @@ const ManageFarmLocationsScreen = () => {
             ? err.response.data.error
             : err.response?.data?.error?.message || "Operation failed",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -169,14 +135,13 @@ const ManageFarmLocationsScreen = () => {
         style: "destructive",
         onPress: async () => {
           try {
-            setLoading(true);
             await axios.delete(
               `${baseUrl}/api/farm-locations/${user._id}/${farmId}`,
               {
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
-            await fetchFarmLocations();
+            await refetch(); // ✅ FIXED
             Toast.show({ type: "success", text1: "Deleted successfully!" });
           } catch (err) {
             console.log(err);
@@ -184,8 +149,6 @@ const ManageFarmLocationsScreen = () => {
               type: "error",
               text1: "Failed to delete farm.",
             });
-          } finally {
-            setLoading(false);
           }
         },
       },
@@ -200,13 +163,12 @@ const ManageFarmLocationsScreen = () => {
   };
 
   useEffect(() => {
+    if (!user?._id || !token) return;
+
+    initiateSocketConnection(user._id);
     const socket = getSocket();
-    if (!user || !token) return; // Early return if no user
-    {
-      initiateSocketConnection(user._id);
-    }
+
     socket.on("newFarm", (newFarmLocations) => {
-      console.log("Received new farm locations:", newFarmLocations);
       setFarmLocations(newFarmLocations);
     });
 
@@ -214,6 +176,10 @@ const ManageFarmLocationsScreen = () => {
       socket.off("newFarm");
     };
   }, [user, token]);
+
+  // useEffect(() => {
+  //   refetch();
+  // }, []);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineSmall" style={styles.header}>

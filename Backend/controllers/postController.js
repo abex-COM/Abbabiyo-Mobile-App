@@ -16,7 +16,6 @@ exports.createPost = async (req, res) => {
       }
     }
 
-    console.log("image uri", imageUrl);
     const newPost = await Post.create({
       text,
       image: imageUrl,
@@ -94,7 +93,6 @@ exports.deletePost = async (req, resp) => {
       .status(200)
       .json({ status: "success", message: "Post deleted successfully" });
   } catch (err) {
-    console.log("Error deleting post:", err);
     resp.status(500).json({ status: "fail", error: err.message });
   }
 };

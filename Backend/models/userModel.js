@@ -6,6 +6,7 @@ const UserSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   profilePicture: { type: String, default: "" },
+  expoPushToken: { type: String },
   location: {
     region: { type: String, required: [true, "Region required"] },
     zone: { type: String, required: [true, "Zone required"] },

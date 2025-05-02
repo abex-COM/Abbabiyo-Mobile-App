@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "1ce911c9-b066-4426-9067-3389530c9923"
+      }
+    },
+    "android": {
+      "package": "com.abdulaki.abbabiyo"
+    }
+  }
+}
