@@ -1,12 +1,9 @@
-// context/PostsContext.js
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
-import { initiateSocketConnection, getSocket } from "@/app/utils/socket";
 const PostsContext = createContext();
 export const PostsProvider = ({ children }) => {
   const { token } = useUser();

@@ -9,15 +9,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  Dimensions,
 } from "react-native";
 import { useUser } from "@/context/UserContext";
 import { usePosts } from "@/context/PostContext";
 import { useTheme } from "@/context/ThemeContext";
 import Colors from "../constants/Colors";
-import { Dimensions } from "react-native";
 import useLikePost from "./../hooks/useLike";
+import { getSocket, initiateSocketConnection } from "../utils/socket";
 
-export default function PostDetailScreen({ route }) {
+export default function PostDetailScreen({ route, navigation }) {
   const { post = {}, comments = [] } = route.params || {};
   const { user } = useUser();
   const { handleNewComment } = usePosts();
@@ -27,6 +28,7 @@ export default function PostDetailScreen({ route }) {
   const [commentText, setCommentText] = useState("");
   const [likes, setLikes] = useState(post.likes || []);
   const [showAllComments, setShowAllComments] = useState(false);
+  const [commentsState, setCommentsState] = useState(comments || []);
 
   const { mutate: likePost } = useLikePost();
   const hasLiked = likes.includes(user?._id);
@@ -44,13 +46,18 @@ export default function PostDetailScreen({ route }) {
     setCommentText("");
   };
 
-  const visibleComments = showAllComments ? comments : comments.slice(-6);
+  const visibleComments = showAllComments
+    ? commentsState
+    : commentsState.slice(-6);
+
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const screenWidth = Dimensions.get("window").width;
-  const imageAspectRatio = imageSize.width / imageSize.height;
-  const displayWidth = screenWidth - 32; // subtract padding/margin if needed
+  const imageAspectRatio =
+    imageSize.height !== 0 ? imageSize.width / imageSize.height : 1;
+  const displayWidth = screenWidth - 32;
   const displayHeight = displayWidth / imageAspectRatio;
 
+  // Fetch image size for display scaling
   useEffect(() => {
     if (post.image) {
       Image.getSize(
@@ -64,6 +71,20 @@ export default function PostDetailScreen({ route }) {
       );
     }
   }, [post.image]);
+
+  // Listen for new comments in real-time
+  useEffect(() => {
+    if (!user._id) return;
+
+    initiateSocketConnection(user._id);
+    const socket = getSocket();
+    socket.on("newComment", () => navigation.goBack());
+
+    return () => {
+      socket.off("newComment");
+    };
+  }, [user, post._id]);
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -100,9 +121,11 @@ export default function PostDetailScreen({ route }) {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.CommentTitle}>Comments: {comments.length}</Text>
+            <Text style={styles.CommentTitle}>
+              Comments: {commentsState.length}
+            </Text>
 
-            {comments.length > 6 && !showAllComments && (
+            {commentsState.length > 6 && !showAllComments && (
               <TouchableOpacity
                 onPress={() => setShowAllComments(true)}
                 style={styles.seeMoreBtn}

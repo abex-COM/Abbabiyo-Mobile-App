@@ -3,7 +3,6 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  StatusBar,
   StyleSheet,
 } from "react-native";
 import axios from "axios";

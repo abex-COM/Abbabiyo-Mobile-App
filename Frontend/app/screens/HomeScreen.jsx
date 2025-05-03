@@ -103,6 +103,7 @@ const HomeScreen = () => {
     initiateSocketConnection(user?._id);
     const socket = getSocket();
 
+    console.log("spcket", socket);
     socket.on("newFarm", (newFarmLocations) => {
       setFarmLocations(newFarmLocations);
     });
@@ -114,13 +115,12 @@ const HomeScreen = () => {
     socket.on("farmDeleted", (farmDeleted) => {
       setFarmLocations(farmDeleted);
     });
-
     return () => {
       socket.off("newFarm");
       socket.off("farmUpdated");
       socket.off("farmDeleted");
     };
-  }, [user, token]);
+  }, [token]);
 
   if (loading) {
     return (

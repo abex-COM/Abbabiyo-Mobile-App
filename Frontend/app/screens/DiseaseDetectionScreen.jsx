@@ -97,7 +97,7 @@ export default function DiseaseDetector() {
 
     try {
       const res = await axios.post(
-        `http://http://192.168.95.196:8000/predict`,
+        `http://192.168.95.196:8000/predict`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

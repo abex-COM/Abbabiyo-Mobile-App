@@ -1,5 +1,5 @@
 // src/api/config.js
 // baseUrl.js
-const baseUrl = "http://192.168.95.196:6000"; // your deployed API URL  //192.168.194.196
+const baseUrl = "https://farmeriko.abdiko.com"; // your deployed API URL  //192.168.95.196 //https://farmeriko.abdiko.com
 
 export default baseUrl;

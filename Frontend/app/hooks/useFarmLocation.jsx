@@ -10,13 +10,18 @@ const useFarmLocations = () => {
   const [farmLocations, setFarmLocations] = useState([]);
   const [loading, setLoading] = useState(false);
   const fetchFarmLocations = async () => {
-    if (!user?._id || !token) return;
+    if (!user?._id || !token) {
+      setFarmLocations([]);
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await axios.get(
         `${baseUrl}/api/farm-locations/all/${user._id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
+          timeout: 15000,
         }
       );
       setFarmLocations(res.data?.farmLocations || []);
@@ -26,20 +31,25 @@ const useFarmLocations = () => {
         JSON.stringify(err, null, 2)
       );
 
+      const message =
+        typeof err?.response?.data?.error === "string"
+          ? err.response.data.error
+          : err?.response?.data?.error?.message ||
+            err.message ||
+            "Could not load farm locations";
+
       if (err.response?.status !== 401) {
         Toast.show({
           type: "error",
-          text1:
-            typeof err.response?.data?.error === "string"
-              ? err.response.data.error
-              : err.response?.data?.error?.message ||
-                "Could not load farm locations",
+          text1: message,
         });
       }
+      setFarmLocations([]); // fallback to empty
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (token && user?._id) {

@@ -3,8 +3,6 @@ import {
   View,
   Text,
   KeyboardAvoidingView,
-  Platform,
-  StatusBar,
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
@@ -33,7 +31,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
 import Colors from "../constants/Colors";
 export default function EditProfileScreen() {
-  const { language } = useUser();
   const navigation = useNavigation();
 
   const [selectedRegion, setSelectedRegion] = useState(null);

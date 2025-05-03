@@ -9,10 +9,8 @@ import { LanguageProvider } from "@/context/LanguageContexts";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { PostsProvider } from "@/context/PostContext";
 import { Stack } from "expo-router";
-import { registerForPushNotificationsAsync } from "../app/utils/natification";
 export default function RootLayout() {
   const queryClient = new QueryClient();
-  registerForPushNotificationsAsync();
   return (
     <LanguageProvider>
       <QueryClientProvider client={queryClient}>

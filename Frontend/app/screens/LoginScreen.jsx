@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import { View, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -12,7 +12,6 @@ import baseUrl from "@/baseUrl/baseUrl";
 import Colors from "../constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { t } from "i18next";
-import { registerForPushNotificationsAsync } from "../utils/natification";
 
 // Validation Schema using Yup for phone number
 const validationSchema = Yup.object().shape({

@@ -211,16 +211,6 @@ export default function ChatScreen() {
     socket.on("commentDeleted", refetchAll);
     socket.emit("authenticate", user._id);
 
-    // Listen for comment notifications
-    socket.on("commentNotification", (notification) => {
-      // Show a toast with the notification message
-      Toast.show({
-        type: "info", // or any other type you use in your Toast package
-        text1: "New Comment",
-        text2: `${notification.comment.author.name} commented on your post`,
-      });
-    });
-
     socket.on("disconnect", () => console.log("Disconnected from socket"));
     return () => {
       socket.off("newComment", handleNewComment);
@@ -297,11 +287,6 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   content: {
     flex: 1,
     paddingHorizontal: 8,

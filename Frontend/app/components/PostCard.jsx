@@ -149,7 +149,7 @@ const PostCard = ({
               style={{
                 width: displayWidth,
                 height: displayHeight,
-                borderRadius: 9,
+                borderRadius: 14,
               }}
               resizeMode="cover"
             />
@@ -243,10 +243,12 @@ const styles = StyleSheet.create({
   posterName: {
     fontSize: 20,
     fontWeight: "bold",
+    marginLeft: 10,
   },
   content: {
     marginTop: 8,
     fontSize: 16,
+    marginLeft: 10,
   },
   imageContainer: {
     overflow: "hidden",
@@ -256,7 +258,6 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    // height: 300,
   },
   image: {
     width: "100%",
@@ -271,6 +272,7 @@ const styles = StyleSheet.create({
   likesButtonContainer: {
     justifyContent: "center",
     alignItems: "center",
+    marginLeft: 10,
   },
   likesButton: {
     flexDirection: "row",
