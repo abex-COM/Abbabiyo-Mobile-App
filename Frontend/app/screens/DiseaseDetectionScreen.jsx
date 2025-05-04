@@ -15,12 +15,14 @@ import { Feather } from "@expo/vector-icons";
 import { useTheme } from "@/context/ThemeContext";
 import Toast from "react-native-toast-message";
 import { Audio } from "expo-av";
+import { useTranslation } from "react-i18next";
 
 export default function DiseaseDetector() {
   const [image, setImage] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const takePhoto = async () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -130,16 +132,14 @@ export default function DiseaseDetector() {
     <ScrollView style={{ height: "100%" }}>
       <View style={[styles.container, theme.bg]}>
         <Text style={[styles.description, theme.text]}>
-          <Text style={{ fontWeight: "bold", color: "green" }}>
-            Abbaa Biyyo
-          </Text>{" "}
-          is an agricultural assistant for Ethiopian farmers. Upload a plant
-          image to detect disease.
+          {t(
+            "abbabiyo_is_an_agricultural_assistant_for_Ethiopian_farmers_Upload_a_plant_image_to_detect_disease"
+          )}
         </Text>
 
         <View style={[styles.card, theme.card]}>
           <Text style={[styles.subtitle, { color: "green" }]}>
-            🌿 Plant Disease Detector
+            🌿 {t("plant_disease_detector")}
           </Text>
 
           <View style={{ gap: 10 }}>

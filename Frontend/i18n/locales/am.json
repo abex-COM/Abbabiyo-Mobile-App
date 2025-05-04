@@ -59,5 +59,7 @@
   "select_your_woreda": "ወረዳ ይምረጡ",
   "manage_farm_locations": "የአርባይ አካባቢ አስተዳደር",
   "disease": "በሽታ",
-  "account": "መለያ"
+  "account": "መለያ",
+  "plant_disease_detector": "የእፅዋ በሽታ መርማሪ",
+  "abbabiyo_is_an_agricultural_assistant_for_Ethiopian_farmers_Upload_a_plant_image_to_detect_disease": "አባቢዮ ለኢትዮጵያዊ አርባይ ረዳት ነው። የተነሱትን ምስል ወደ አባቢዮ አስገባ"
 }

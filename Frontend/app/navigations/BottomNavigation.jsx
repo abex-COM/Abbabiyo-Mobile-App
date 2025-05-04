@@ -110,7 +110,7 @@ export default function BottomNavigator() {
         component={DiseaseDetector}
         options={{
           title: t("disease"),
-          headerTitle: "Detect Disease",
+          headerTitle: t("disease_detector"),
           headerStyle: {
             backgroundColor: headerBackgroundColor,
             shadowColor: "transparent",

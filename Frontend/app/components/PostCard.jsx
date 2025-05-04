@@ -48,12 +48,9 @@ const PostCard = ({
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
-  const cardBackground = isDarkMode ? "#0f141c" : "#E5E7EB";
+  const cardBackground = isDarkMode ? "#0d1829" : "#E5E7EB";
   const commentBackground = isDarkMode ? "#101a28" : "#cad6e1";
   const commentItemBg = isDarkMode ? "#141c28" : "#E5E7EB";
-  const commentAuthorColor = isDarkMode
-    ? Colors.darkTheme.textColor
-    : "#1F2937";
   const handleCommentSubmit = () => {
     setComment("");
     onCommentSubmit(comment);
@@ -116,7 +113,7 @@ const PostCard = ({
           likes={likes}
         />
         <View>
-          <View style={styles.avatarContainer}>
+          <View style={[styles.avatarContainer, { marginLeft: 20 }]}>
             <Image
               source={
                 posterImageUri
@@ -221,7 +218,7 @@ const PostCard = ({
                           ? { uri: comment?.author?.profilePicture }
                           : require("../../assets/images/user.png")
                       }
-                      style={styles.profilePicture}
+                      style={styles.commentAuthorAvatar}
                     />
                     <Text style={[styles.commentAuthor, { color: textColor }]}>
                       {comment?.author?.name}
@@ -266,9 +263,12 @@ const styles = StyleSheet.create({
   posterName: {
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 10,
   },
-
+  commentAuthorAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
   content: {
     marginTop: 8,
     fontSize: 16,
@@ -316,18 +316,18 @@ const styles = StyleSheet.create({
     maxHeight: 240,
     padding: 8,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   commentItem: {
     padding: 8,
     width: "100%",
     borderRadius: 8,
     marginBottom: 8,
-    borderWidth: 0.5,
   },
   commentAuthor: {
     fontWeight: "bold",
     marginBottom: 4,
+    marginLeft: 20,
   },
   chatInput: {
     backgroundColor: "#F9FAFB",
@@ -342,6 +342,7 @@ const styles = StyleSheet.create({
   avatarContainer: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 10,
   },
   profilePicture: {
     width: 70,

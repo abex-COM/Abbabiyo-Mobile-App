@@ -80,5 +80,7 @@
   "select_your_city": "Magalaa Kee Filadhu",
   "disease": "Dhukkuba",
   "account": "Akkaawuntii",
-  "manage_farm_locations": "Iddoo Qonnaa Keessatti Bulchuu"
+  "plant_disease_detector": "Qorataa Dhukkuba Biqilaa",
+  "manage_farm_locations": "Iddoo Qonnaa Keessatti Bulchuu",
+  "abbabiyo_is_an_agricultural_assistant_for_Ethiopian_farmers_Upload_a_plant_image_to_detect_disease": "Abbabiyo, qonnaan bultoota Itoophiyaaaf gargaaraa qonnaa ta'ee, suuraa biqilaa olka'aa dhukkuba adda baasuuf"
 }

@@ -82,18 +82,6 @@ export default function AuthNavigator() {
         }}
       />
       <Stack.Screen
-        name="DiseaseDetector"
-        component={DiseaseDetector}
-        options={{
-          headerTitle: t("disease_detector"), // Automatically handles translation based on current language
-          headerTintColor: headerTintColor,
-          headerStyle: {
-            backgroundColor: headerBackgroundColor, // Dynamic background color for header
-          },
-          headerShown: true, // Show header for back navigation
-        }}
-      />
-      <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}
         options={({ route }) => ({

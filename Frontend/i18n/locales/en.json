@@ -61,5 +61,8 @@
   "select_your_zone": "Select Your Zone",
   "disease": "Disease",
   "account": "Account",
-  "manage_farm_locations": "Manage Farm Locations"
+  "manage_farm_locations": "Manage Farm Locations",
+  "abbabiyo_is_an_agricultural_assistant_for_Ethiopian_farmers_Upload_a_plant_image_to_detect_disease": "Abbabiyo is an agricultural assistant for Ethiopian farmers. Upload a plant image to detect disease",
+  "forgot_password": "Forgot Password",
+  "plant_disease_detector": "Plant Disease Detector"
 }
