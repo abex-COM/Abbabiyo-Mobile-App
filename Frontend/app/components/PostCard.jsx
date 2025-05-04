@@ -30,6 +30,7 @@ const PostCard = ({
   createdAt,
   comments = [],
   content,
+  posterImageUri,
   poster,
   liked,
   onCommentSubmit,
@@ -47,7 +48,7 @@ const PostCard = ({
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
-  const cardBackground = isDarkMode ? "#1F2937" : "#E5E7EB";
+  const cardBackground = isDarkMode ? "#0f141c" : "#E5E7EB";
   const commentBackground = isDarkMode ? "#101a28" : "#cad6e1";
   const commentItemBg = isDarkMode ? "#141c28" : "#E5E7EB";
   const commentAuthorColor = isDarkMode
@@ -115,12 +116,22 @@ const PostCard = ({
           likes={likes}
         />
         <View>
-          <Text style={[styles.posterName, { color: textColor }]}>
-            {poster}
-          </Text>
-          <Text style={{ color: textColor, marginLeft: 30, marginTop: 10 }}>
-            {dayjs(createdAt).fromNow()}
-          </Text>
+          <View style={styles.avatarContainer}>
+            <Image
+              source={
+                posterImageUri
+                  ? { uri: posterImageUri }
+                  : require("../../assets/images/user.png")
+              }
+              style={styles.profilePicture}
+            />
+            <View>
+              <Text style={{ color: textColor }}>{poster}</Text>
+              <Text style={{ color: textColor }}>
+                {dayjs(createdAt).fromNow()}
+              </Text>
+            </View>
+          </View>
           <Text
             onTextLayout={(e) => {
               if (e.nativeEvent.lines.length > 2 && !showFullContent) {
@@ -257,6 +268,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 10,
   },
+
   content: {
     marginTop: 8,
     fontSize: 16,
@@ -332,9 +344,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profilePicture: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     marginRight: 8,
     borderWidth: 1,
     borderColor: "#226e18",

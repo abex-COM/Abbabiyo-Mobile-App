@@ -88,42 +88,6 @@ export default function MyPosts() {
       setIsCommentLoading(false);
     }
   };
-  // handle delete
-
-  useEffect(() => {
-    if (user?._id) {
-      // Initialize socket connection for the user
-      initiateSocketConnection(user._id);
-      const socket = getSocket();
-
-      socket.on("connect", () => {
-        console.log("Connected to socket:", socket.id);
-      });
-
-      // Listen for new posts from WebSocket
-      socket.on("newPost", (newPost) => {
-        console.log("Received newPost via socket:", newPost);
-        postsQuery.setData(["posts"], (oldPosts) => [
-          newPost,
-          ...(oldPosts || []),
-        ]);
-      });
-
-      // Cleanup: disconnect socket when component is unmounted
-      return () => {
-        disconnectSocket();
-      };
-    }
-  }, [user?._id]);
-
-  if (postsQuery.isLoading) {
-    return (
-      <View style={[styles.centered, { backgroundColor }]}>
-        <ActivityIndicator size="large" color={textColor} />
-        <Text style={{ color: textColor }}>Loading your posts...</Text>
-      </View>
-    );
-  }
 
   // Filter user posts
   const userPosts = posts.filter((post) => post?.author?._id === user?._id);
@@ -143,6 +107,7 @@ export default function MyPosts() {
               onLike={() => handleLike(item._id)}
               postId={item.author?._id}
               post={item}
+              posterImageUri={item.author?.profilePicture}
               imageUri={item.image}
               poster={item.author?.name || "Unknown"}
               likes={item.likes?.length || 0}

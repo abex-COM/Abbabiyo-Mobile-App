@@ -239,7 +239,6 @@ export default function ChatScreen() {
   const uniquePosts = Array.from(
     new Map(posts.map((post) => [post._id, post])).values()
   );
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -259,6 +258,7 @@ export default function ChatScreen() {
                   : undefined
               }
               postId={item.author?._id}
+              posterImageUri={item.author?.profilePicture}
               imageUri={item.image}
               poster={item.author?.name || "Unknown"}
               likes={item.likes?.length || 0}
