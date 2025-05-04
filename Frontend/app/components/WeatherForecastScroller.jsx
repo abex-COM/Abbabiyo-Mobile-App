@@ -72,8 +72,6 @@ const getWeatherDescription = (code) => {
 };
 
 const WeatherForecastScroller = ({ forecast: data }) => {
-  if (!data || !Array.isArray(data.daily)) return null;
-
   const { isDarkMode } = useTheme(); // FIX typo here!
   const backgroundColor = isDarkMode ? "#394a61" : "#e9e9e9";
   const textColor = isDarkMode

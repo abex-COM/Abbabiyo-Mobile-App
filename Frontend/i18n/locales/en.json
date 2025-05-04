@@ -60,5 +60,6 @@
   "select_your_region": "Select Your Region",
   "select_your_zone": "Select Your Zone",
   "disease": "Disease",
-  "account": "Account"
+  "account": "Account",
+  "manage_farm_locations": "Manage Farm Locations"
 }

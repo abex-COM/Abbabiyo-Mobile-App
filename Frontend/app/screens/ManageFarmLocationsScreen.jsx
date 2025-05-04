@@ -15,9 +15,11 @@ import { getSocket, initiateSocketConnection } from "../utils/socket";
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
 import useFarmLocations from "../hooks/useFarmLocation";
+import { useTheme } from "@/context/ThemeContext"; // Add the theme context
 
 const ManageFarmLocationsScreen = () => {
   const { user, token } = useUser();
+  const { isDarkMode } = useTheme(); // Access the theme context
   const [newFarmName, setNewFarmName] = useState("");
   const [currentLat, setCurrentLat] = useState(null);
   const [currentLon, setCurrentLon] = useState(null);
@@ -26,6 +28,10 @@ const ManageFarmLocationsScreen = () => {
   const [showForm, setShowForm] = useState(false);
   const { loading, farmLocations, refetch, setFarmLocations } =
     useFarmLocations();
+
+  const backgroundColor = isDarkMode ? "#333" : "#FAFAFA"; // Background color
+  const textColor = isDarkMode ? "#FFF" : "#000"; // Text color
+  const cardColor = isDarkMode ? "#444" : "#FFF"; // Card background color
 
   const requestLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -177,18 +183,19 @@ const ManageFarmLocationsScreen = () => {
     };
   }, [user, token]);
 
-  // useEffect(() => {
-  //   refetch();
-  // }, []);
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text variant="headlineSmall" style={styles.header}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+      <Text
+        variant="headlineSmall"
+        style={[styles.header, { color: textColor }]}
+      >
         Manage Farm Locations
       </Text>
 
       {!showForm && (
         <Button
           mode="outlined"
+          textColor="#1070ff"
           onPress={() => setShowForm(true)}
           style={styles.addFarmButton}
         >
@@ -197,13 +204,14 @@ const ManageFarmLocationsScreen = () => {
       )}
 
       {showForm && (
-        <View style={styles.form}>
+        <View style={[styles.form, { backgroundColor: cardColor }]}>
           <TextInput
             label="Farm Name"
             mode="outlined"
             value={newFarmName}
             onChangeText={setNewFarmName}
-            style={styles.input}
+            style={[styles.input, { backgroundColor, color: textColor }]}
+            textColor={textColor}
           />
 
           <Button
@@ -212,6 +220,8 @@ const ManageFarmLocationsScreen = () => {
             onPress={getCurrentLocation}
             disabled={detectingLocation}
             style={styles.detectLocationButton}
+            background={backgroundColor}
+            textColor={textColor}
           >
             {detectingLocation ? (
               <ActivityIndicator size={20} color="#1070ff" />
@@ -221,7 +231,7 @@ const ManageFarmLocationsScreen = () => {
           </Button>
 
           {currentLat && currentLon && (
-            <Text style={styles.coords}>
+            <Text style={[styles.coords, { color: textColor }]}>
               📍 {currentLat.toFixed(4)}, {currentLon.toFixed(4)}
             </Text>
           )}
@@ -229,6 +239,8 @@ const ManageFarmLocationsScreen = () => {
           <Button
             mode="contained"
             onPress={handleAddOrUpdateFarmLocation}
+            background={backgroundColor}
+            textColor={textColor}
             disabled={!newFarmName.trim() || !currentLat || !currentLon}
             style={{ marginTop: 10 }}
           >
@@ -243,7 +255,10 @@ const ManageFarmLocationsScreen = () => {
         </View>
       )}
 
-      <Text variant="titleMedium" style={styles.subHeader}>
+      <Text
+        variant="titleMedium"
+        style={[styles.subHeader, { color: textColor }]}
+      >
         Your Farms
       </Text>
 
@@ -251,9 +266,15 @@ const ManageFarmLocationsScreen = () => {
         <ActivityIndicator animating={true} size="large" />
       ) : farmLocations.length > 0 ? (
         farmLocations.map((farm) => (
-          <Card key={farm._id} style={styles.card} mode="outlined">
+          <Card
+            key={farm._id}
+            style={[styles.card, { backgroundColor: cardColor }]}
+            mode="outlined"
+          >
             <Card.Title
               title={String(farm.name)}
+              titleStyle={{ color: textColor }}
+              subtitleStyle={{ color: textColor }}
               subtitle={`Lat: ${farm.lat?.toFixed(4)} | Lon: ${farm.lon?.toFixed(4)}`}
               right={() => (
                 <View style={{ flexDirection: "row" }}>
@@ -273,7 +294,9 @@ const ManageFarmLocationsScreen = () => {
           </Card>
         ))
       ) : (
-        <Text style={styles.noFarms}>No farms added yet.</Text>
+        <Text style={[styles.noFarms, { color: textColor }]}>
+          No farms added yet.
+        </Text>
       )}
     </ScrollView>
   );
@@ -282,7 +305,6 @@ const ManageFarmLocationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#FAFAFA",
     flexGrow: 1,
   },
   header: {
@@ -290,7 +312,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   form: {
-    backgroundColor: "#fff",
     padding: 15,
     borderRadius: 10,
     marginBottom: 25,
@@ -302,19 +323,16 @@ const styles = StyleSheet.create({
   coords: {
     textAlign: "center",
     marginVertical: 10,
-    color: "#555",
   },
   subHeader: {
     marginBottom: 10,
     fontWeight: "bold",
-    color: "#555",
   },
   card: {
     marginBottom: 12,
   },
   noFarms: {
     textAlign: "center",
-    color: "#999",
     marginTop: 20,
   },
   addFarmButton: {

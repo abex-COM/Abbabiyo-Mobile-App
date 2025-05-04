@@ -12,7 +12,7 @@ import Colors from "../constants/Colors";
 const Recommendation = ({ recommendations }) => {
   const { isDarkMode } = useTheme();
 
-  const backgroundColor = isDarkMode ? "#394a61" : "#e9e9e9";
+  const backgroundColor = isDarkMode ? "#232d3a" : "#e9e9e9";
   const textColor = isDarkMode
     ? Colors.darkTheme.textColor
     : Colors.lightTheme.textColor;
@@ -47,7 +47,7 @@ const Recommendation = ({ recommendations }) => {
             key={index}
             style={[
               styles.card,
-              { backgroundColor: isDarkMode ? "#506680" : "#fff" },
+              { backgroundColor: isDarkMode ? "#364354" : "#fff" },
             ]}
           >
             <Text style={[styles.cardDescription, { color: textColor }]}>
@@ -56,9 +56,9 @@ const Recommendation = ({ recommendations }) => {
           </View>
         ))}
       </ScrollView>
-      <TouchableOpacity style={styles.button}>
+      {/* <TouchableOpacity style={[styles.button]}>
         <Text style={styles.buttonText}>Learn More</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
@@ -66,11 +66,13 @@ const Recommendation = ({ recommendations }) => {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 20,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     paddingVertical: 10,
-    borderRadius: 10,
+    paddingBottom: 100,
   },
-
+  scrollContainer: {
+    height: 300,
+  },
   card: {
     borderRadius: 10,
     marginBottom: 10,
@@ -90,8 +92,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-    marginTop: 10,
+    marginBottom: 100,
     alignSelf: "center",
+    marginTop: 10,
   },
   buttonText: {
     color: "#fff",
