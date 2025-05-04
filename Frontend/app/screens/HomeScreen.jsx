@@ -112,8 +112,6 @@ const HomeScreen = () => {
   }, [selectedFarmLocation, language]);
 
   useEffect(() => {
-    if (!user._id || !token) return;
-
     initiateSocketConnection(user?._id);
     const socket = getSocket();
 
@@ -123,7 +121,6 @@ const HomeScreen = () => {
     socket.on("farmUpdated", (farmUpdated) => {
       setFarmLocations(farmUpdated);
     });
-    socket.on("newFarm", () => console.log("new farm arrived"));
 
     socket.on("farmDeleted", (farmDeleted) => {
       setFarmLocations(farmDeleted);

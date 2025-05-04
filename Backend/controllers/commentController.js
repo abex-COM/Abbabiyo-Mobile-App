@@ -95,7 +95,11 @@ const deleteComment = async (req, res) => {
     await comment.deleteOne(); // More efficient than `findByIdAndDelete`
 
     const io = getIO();
-    io.emit("commentDeleted", comment);
+    io.emit("commentDeleted", {
+      postId: comment.postId.toString(),
+      commentId: comment._id.toString(),
+    });
+
     res.status(200).json({
       success: true,
       message: "Comment deleted successfully",

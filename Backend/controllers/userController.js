@@ -79,10 +79,12 @@ exports.updateUser = async (req, res) => {
     let profilePicture = req.user.profilePicture; // Default to existing profile picture
 
     if (req.file) {
-      // If a new profile image is uploaded
       profilePicture = `${req.protocol}://${req.get("host")}/uploads/${
         req.file.filename
       }`;
+      if (process.env.NODE_ENV === "production") {
+        profilePicture = profilePicture.replace("http://", "https://");
+      }
     }
 
     const user = await User.findById(req.user._id);

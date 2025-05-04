@@ -182,7 +182,7 @@ export default function ChatScreen() {
         return [newPost, ...oldPosts]; // Add new post to the top
       });
     };
-    const handleNewLike = ({ postId, likeCount, likedBy }) => {
+    const handleNewLike = ({ postId, likedBy }) => {
       queryClient.setQueryData(["posts"], (oldPosts = []) =>
         oldPosts.map((post) =>
           post._id === postId
@@ -204,11 +204,24 @@ export default function ChatScreen() {
         );
       });
     });
+    socket.on("commentDeleted", ({ postId, commentId }) => {
+      queryClient.setQueryData(["comments"], (oldData = []) => {
+        return oldData.map((entry) =>
+          entry.postId === postId
+            ? {
+                ...entry,
+                comments: entry.comments.filter((c) => c._id !== commentId),
+              }
+            : entry
+        );
+      });
+    });
+
     socket.on("connect", () => console.log("Connected to socket:", socket.id));
     socket.on("newComment", handleNewComment);
     socket.on("newPost", handleNewPost);
     socket.on("newLike", handleNewLike);
-    socket.on("commentDeleted", refetchAll);
+    // socket.on("commentDeleted",refetchAll);
     socket.emit("authenticate", user._id);
 
     socket.on("disconnect", () => console.log("Disconnected from socket"));
@@ -247,6 +260,7 @@ export default function ChatScreen() {
               likes={item.likes?.length || 0}
               content={item.text}
               post={item}
+              createdAt={item?.createdAt}
               liked={item.likes?.includes(user?._id)}
               isLoading={commentLoadingMap[item._id] || false}
               comments={comments[item._id] || []}

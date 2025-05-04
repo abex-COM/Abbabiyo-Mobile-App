@@ -2,20 +2,7 @@ const express = require("express");
 const router = express.Router();
 const postController = require("../controllers/postController");
 const { authenticateUser } = require("../middleWare/authmiddleWare");
-const multer = require("multer");
-const path = require("path");
-
-// Storage config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
+const upload = require("../middleWare/upload");
 
 router.post(
   "/createPost",

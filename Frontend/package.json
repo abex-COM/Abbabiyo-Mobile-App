@@ -15,6 +15,7 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@expo-google-fonts/montserrat": "^0.3.0",
     "@expo/vector-icons": "^14.0.2",
     "@gorhom/bottom-sheet": "^5.1.2",
     "@react-native-async-storage/async-storage": "^1.23.1",
@@ -26,6 +27,7 @@
     "@react-navigation/stack": "^7.1.2",
     "@tanstack/react-query": "^5.67.3",
     "axios": "^1.8.2",
+    "dayjs": "^1.11.13",
     "expo": "~52.0.38",
     "expo-av": "~15.0.2",
     "expo-blur": "~14.0.3",

@@ -3,11 +3,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatScreen from "../screens/AllPostsScreen";
 import HomeScreen from "../screens/HomeScreen";
-import LanguageDropdown from "../components/LanguageSelector";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { useFonts, Montserrat_900Black } from "@expo-google-fonts/montserrat";
+import { Pressable, Text, View } from "react-native";
 import { useUser } from "@/context/UserContext";
 import PageStack from "../navigations/PageNavigator";
-import { useLanguage } from "@/context/LanguageContexts";
 import { useTranslation } from "react-i18next";
 import GeminiScreen from "@/app/screens/GeminiScreen";
 import { useTheme } from "@/context/ThemeContext";
@@ -17,7 +16,6 @@ import DiseaseDetector from "../screens/DiseaseDetectionScreen";
 const Tab = createBottomTabNavigator();
 
 export default function BottomNavigator() {
-  const { language } = useLanguage();
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const navigation = useNavigation();
@@ -26,6 +24,9 @@ export default function BottomNavigator() {
   const tabBarActiveBackgroundColor = isDarkMode ? "#111227" : "#006400";
   const headerBackgroundColor = isDarkMode ? "#111827" : "#f3f4f6";
   const textColor = isDarkMode ? "#F9FAFB" : "#1f2937";
+  const [fontsLoaded] = useFonts({
+    Montserrat_900Black,
+  });
 
   return (
     <Tab.Navigator
@@ -146,9 +147,7 @@ const HeaderWelcome = () => {
       <Text style={{ fontWeight: "500", color: textColor }}>
         {t("welcome_back") + ","}
       </Text>
-      <Text style={{ fontWeight: "900", color: "green" }}>
-        {user?.name ? user?.name : <ActivityIndicator />}
-      </Text>
+      <Text style={{ fontWeight: "900", color: "green" }}>{user?.name}</Text>
     </View>
   );
 };

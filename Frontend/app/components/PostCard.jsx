@@ -9,23 +9,25 @@ import {
 import React, { memo, useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatInput from "./ChatInput";
-import { Pressable, ScrollView } from "react-native-gesture-handler";
+import { ScrollView } from "react-native-gesture-handler";
 import { useTheme } from "@/context/ThemeContext";
 import Colors from "../constants/Colors";
 import ThreeDotMenu from "../components/ThreeDotMenu";
-import { useNavigation } from "expo-router";
 
 import { Dimensions } from "react-native";
 import axios from "axios";
 import baseUrl from "@/baseUrl/baseUrl";
 import Toast from "react-native-toast-message";
 import { useUser } from "@/context/UserContext";
-import { usePosts } from "@/context/PostContext";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
+dayjs.extend(relativeTime);
 const PostCard = ({
   imageUri,
   likes,
   post,
+  createdAt,
   comments = [],
   content,
   poster,
@@ -47,7 +49,7 @@ const PostCard = ({
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
   const cardBackground = isDarkMode ? "#1F2937" : "#E5E7EB";
   const commentBackground = isDarkMode ? "#101a28" : "#cad6e1";
-  const commentItemBg = isDarkMode ? "#08101b" : "#E5E7EB";
+  const commentItemBg = isDarkMode ? "#141c28" : "#E5E7EB";
   const commentAuthorColor = isDarkMode
     ? Colors.darkTheme.textColor
     : "#1F2937";
@@ -55,7 +57,6 @@ const PostCard = ({
     setComment("");
     onCommentSubmit(comment);
   };
-
   const handleDeleteComment = async (comment) => {
     if (user._id !== comment.author._id) return;
     Alert.alert("Delete", "Are you sure you want to delete?", [
@@ -104,7 +105,6 @@ const PostCard = ({
   const imageAspectRatio = imageSize.width / imageSize.height;
   const displayWidth = screenWidth - 32; // subtract padding/margin if needed
   const displayHeight = displayWidth / imageAspectRatio;
-
   return (
     <TouchableOpacity delayLongPress={300} activeOpacity={1}>
       <View style={[styles.cardContainer, { backgroundColor: cardBackground }]}>
@@ -118,7 +118,9 @@ const PostCard = ({
           <Text style={[styles.posterName, { color: textColor }]}>
             {poster}
           </Text>
-
+          <Text style={{ color: textColor, marginLeft: 30, marginTop: 10 }}>
+            {dayjs(createdAt).fromNow()}
+          </Text>
           <Text
             onTextLayout={(e) => {
               if (e.nativeEvent.lines.length > 2 && !showFullContent) {
@@ -200,14 +202,24 @@ const PostCard = ({
                 key={`${comment._id || index}`}
                 style={[styles.commentItem, { backgroundColor: commentItemBg }]}
               >
-                <Text
-                  style={[styles.commentAuthor, { color: commentAuthorColor }]}
-                >
-                  {comment.author?.name || "Anonymous"}
-                </Text>
-                <Text style={{ color: commentAuthorColor }}>
-                  {comment.text}
-                </Text>
+                <View style={styles.comment}>
+                  <View style={styles.avatarContainer}>
+                    <Image
+                      source={
+                        comment?.author?.profilePicture
+                          ? { uri: item?.author?.profilePicture }
+                          : require("../../assets/images/user.png")
+                      }
+                      style={styles.profilePicture}
+                    />
+                    <Text style={[styles.commentAuthor, { color: textColor }]}>
+                      {comment?.author?.name}
+                    </Text>
+                  </View>
+                  <Text style={[styles.commentText, { color: textColor }]}>
+                    {comment?.text}
+                  </Text>
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -300,7 +312,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
     borderWidth: 0.5,
-    borderColor: "#7f7c7c",
   },
   commentAuthor: {
     fontWeight: "bold",
@@ -311,5 +322,29 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 8,
     paddingHorizontal: 12,
+  },
+  comment: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
+  avatarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profilePicture: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#226e18",
+    padding: 2,
+  },
+  commentAuthor: {
+    fontWeight: "bold",
+  },
+  commentText: {
+    marginLeft: 48,
+    marginTop: 4,
   },
 });

@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-} from "react-native";
+import { View, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import axios from "axios";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -105,7 +100,11 @@ export default function SignupScreen() {
             passwordConfirm: "",
           }}
           validationSchema={Yup.object({
-            name: Yup.string().required("Name is required"),
+            name: Yup.string()
+              .required("Name is required")
+              .test("full-name", "Please enter your full name", (value) => {
+                return value && value.trim().split(" ").length >= 2;
+              }),
             phoneNumber: Yup.string()
               .matches(/^[0-9]{10}$/, "Phone number must be 10 digits") // Validating phone number format
               .required("Phone number is required"),
