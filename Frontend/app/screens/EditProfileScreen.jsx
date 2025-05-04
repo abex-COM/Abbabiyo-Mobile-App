@@ -68,21 +68,30 @@ export default function EditProfileScreen() {
 
   const handleSubmit = async (values) => {
     try {
-      const formattedData = {
-        name: values.name,
-        phoneNumber: values.phoneNumber, // Include phoneNumber instead of email
-        password: values.password,
-        profilePicture: imageUri,
-        location: {
-          region: values.region,
-          zone: values.zone,
-          woreda: values.woreda,
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("phoneNumber", values.phoneNumber);
+      formData.append("password", values.password);
+      formData.append("region", values.region);
+      formData.append("zone", values.zone);
+      formData.append("woreda", values.woreda);
+
+      if (imageUri) {
+        formData.append("profilePicture", {
+          uri: imageUri,
+          name: "profile.jpg",
+          type: "image/jpeg",
+        });
+      }
+
+      await axios.put(`${baseUrl}/api/users/profile/update`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-      };
-      await axios.patch(`${baseUrl}/api/users/profile/update`, formattedData, {
-        headers: { Authorization: `Bearer ${token}` },
       });
-      refetch();
+
+      await refetch();
       navigation.goBack();
       Toast.show({
         type: "success",
@@ -125,27 +134,8 @@ export default function EditProfileScreen() {
         const imageUri = pickerResult.assets[0].uri;
 
         // Convert to FormData
-        const formData = new FormData();
-        formData.append("image", {
-          uri: imageUri,
-          name: "profile.jpg",
-          type: "image/jpeg",
-        });
 
-        // Upload to server
-        const res = await axios.post(
-          `${baseUrl}/api/users/upload`, // adjust your endpoint
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        // Set uploaded image URL
-        setImageUri(res.data.url); // `res.data.url` should be the hosted image URL
+        setImageUri(imageUri);
       }
     } catch (error) {
       console.log("Error uploading image:", error);
@@ -189,7 +179,9 @@ export default function EditProfileScreen() {
                 <MaterialCommunityIcons name="camera" size={20} color="#fff" />
               </View>
             </TouchableOpacity>
-            <Text style={styles.text}>{user?.name}</Text>
+            <Text style={[styles.text, { color: textColor }]}>
+              {user?.name}
+            </Text>
           </View>
 
           <View contentContainerStyle={styles.scrollContainer}>
@@ -431,7 +423,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
   },
 
   button: {

@@ -108,7 +108,7 @@ exports.updateUser = async (req, res) => {
 
     // Send WebSocket event after updating user data
     const io = req.app.get("socketio");
-    io.to(user._id).emit("userUpdated", user); // Emit the updated user data
+    io.emit("userUpdated", user); // Emit the updated user data
 
     res.status(200).json({ message: "Profile updated successfully", user });
   } catch (err) {

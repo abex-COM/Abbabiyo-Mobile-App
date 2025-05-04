@@ -6,6 +6,7 @@ import Toast from "react-native-toast-message";
 import { io } from "socket.io-client"; // Import socket.io-client
 import baseUrl from "@/baseUrl/baseUrl";
 import { useNavigation } from "expo-router";
+import { getSocket, initiateSocketConnection } from "@/app/utils/socket";
 
 const UserContext = createContext();
 
@@ -100,33 +101,27 @@ export const UserProvider = ({ children }) => {
 
   // Initialize WebSocket when token is set
   useEffect(() => {
-    if (token && user?._id) {
-      const newSocket = io(baseUrl, { transports: ["websocket"] });
+    initiateSocketConnection(user._id); // Initialize connection
+    const socket = getSocket();
 
-      newSocket.on("connect", () => {
-        console.log("Connected to WebSocket:", newSocket?.id);
-        newSocket.emit("authenticate", user?._id); // Send user ID for authentication
+    const handleUserUpdated = () => {
+      refetch();
+      Toast.show({
+        type: "info",
+        text1: "Profile Updated",
+        text2: "Your profile was changed on another device.",
       });
+    };
 
-      // Listen for user updates from the backend
-      newSocket.on("userUpdated", () => {
-        console.log("User updated on another device, refetching...");
-        refetch();
-        Toast.show({
-          type: "info",
-          text1: "Profile Updated",
-          text2: "Your profile was changed on another device.",
-        });
-      });
+    socket.on("userUpdated", handleUserUpdated);
 
-      setSocket(newSocket);
-
-      // Cleanup socket connection when component unmounts or token changes
-      return () => {
-        newSocket.disconnect(); // Clean up socket on unmount
-      };
-    }
-  }, [token, user?._id, refetch]);
+    return () => {
+      socket.off("userUpdated", handleUserUpdated); // Remove only this listener
+      if (socket.connected) {
+        socket.disconnect(); // Disconnect only if connected
+      }
+    };
+  }, [token, user._id, refetch]);
 
   return (
     <UserContext.Provider

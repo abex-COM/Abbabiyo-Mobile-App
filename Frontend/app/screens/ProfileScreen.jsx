@@ -127,9 +127,9 @@ const styles = StyleSheet.create({
   },
   image: {
     borderWidth: 1,
-    width: 80,
-    height: 80,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
   },
   text: {
     fontSize: 20,

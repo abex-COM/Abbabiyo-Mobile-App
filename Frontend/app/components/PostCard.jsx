@@ -207,7 +207,7 @@ const PostCard = ({
                     <Image
                       source={
                         comment?.author?.profilePicture
-                          ? { uri: item?.author?.profilePicture }
+                          ? { uri: comment?.author?.profilePicture }
                           : require("../../assets/images/user.png")
                       }
                       style={styles.profilePicture}

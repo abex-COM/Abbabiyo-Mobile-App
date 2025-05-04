@@ -35,7 +35,7 @@ export default function ChatScreen() {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const flatlist = useRef(null);
-  const { token, user } = useUser();
+  const { token, user, refetch } = useUser();
   const {
     posts,
     comments,
@@ -220,14 +220,18 @@ export default function ChatScreen() {
     socket.on("connect", () => console.log("Connected to socket:", socket.id));
     socket.on("newComment", handleNewComment);
     socket.on("newPost", handleNewPost);
+    socket.on("userUpdated", refetch);
     socket.on("newLike", handleNewLike);
-    // socket.on("commentDeleted",refetchAll);
     socket.emit("authenticate", user._id);
 
     socket.on("disconnect", () => console.log("Disconnected from socket"));
     return () => {
       socket.off("newComment", handleNewComment);
       socket.off("newPost", handleNewPost);
+      socket.off("userUpdated", refetch);
+      socket.off("newLike", handleNewLike);
+      socket.off("disconnect");
+      socket.off("connect");
       disconnectSocket();
     };
   }, [user?._id]);
