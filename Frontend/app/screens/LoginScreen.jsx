@@ -24,7 +24,7 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function LoginScreen({ navigation }) {
-  const { storeToken, user } = useUser();
+  const { storeToken } = useUser();
   const { isDarkMode } = useTheme();
   const backgroundColor = isDarkMode
     ? Colors.darkTheme.backgroundColor

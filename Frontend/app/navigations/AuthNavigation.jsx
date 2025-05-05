@@ -9,7 +9,6 @@ import welcomeScreen from "../screens/welcomeScreen";
 import MyPosts from "../screens/MyPosts";
 import Colors from "../constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
-import DiseaseDetector from "../screens/DiseaseDetectionScreen";
 import PostDetailScreen from "@/app/screens/PostDetailScreen";
 import UpdatePostScreen from "./../screens/EditPostScreen";
 import { useTranslation } from "react-i18next";

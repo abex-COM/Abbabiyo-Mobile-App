@@ -3,38 +3,35 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
-import { io } from "socket.io-client"; // Import socket.io-client
 import baseUrl from "@/baseUrl/baseUrl";
-import { useNavigation } from "expo-router";
+// import { useNavigation } from "expo-router";
 import { getSocket, initiateSocketConnection } from "@/app/utils/socket";
-
+// import useNavigation from '@react-navigation/native';
+import { useNavigation } from "@react-navigation/native";
 const UserContext = createContext();
 
-// Fetch user function
 const fetchUser = async (token) => {
   try {
     const resp = await axios.get(`${baseUrl}/api/users/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return resp.data.user || [];
+    return resp.data.user || {};
   } catch (error) {
-    // if (error.response) {
-    //   Toast.show({
-    //     type: "error",
-    //     text1: "Failed while Fetching",
-    //     text2: error?.response?.data?.message,
-    //   });
-    // }
-    throw error; // This will trigger `onError` inside useQuery
+    Toast.show({
+      type: "error",
+      text1: "Fetch Error",
+      text2: error?.response?.data?.message || "An error occurred",
+    });
+    throw error;
   }
 };
 
 export const UserProvider = ({ children }) => {
   const [token, setToken] = useState(null);
-  const [socket, setSocket] = useState(null);
   const [isEnabled, setIsEnabled] = useState(false);
   const [language, setLanguage] = useState("en");
   const navigation = useNavigation();
+
   const {
     data: user = {},
     isLoading,
@@ -50,58 +47,48 @@ export const UserProvider = ({ children }) => {
         Toast.show({
           type: "error",
           text1: "Unauthorized",
-          text2: "Your session has expired or account was deleted.",
+          text2: "Your session has expired or your account was deleted.",
         });
         logout();
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Error fetching user",
-          text2: error?.response?.data?.message || "Something went wrong",
-        });
       }
     },
   });
-  // Function to store token
-  const storeToken = async (token) => {
+
+  const storeToken = async (newToken) => {
     try {
-      await AsyncStorage.setItem("token", token);
-      setToken(token);
+      await AsyncStorage.setItem("token", newToken);
+      setToken(newToken);
     } catch (err) {
-      console.log(err);
+      console.log("Failed to store token:", err);
     }
   };
 
-  // Function to log out
   const logout = async () => {
     try {
       await AsyncStorage.removeItem("token");
-
       setToken(null);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "welcomeScreen" }],
-      });
-      console.log("logged out");
-
-      if (socket) socket.disconnect(); // Disconnect socket on logout
-    } catch (error) {
-      console.log(error);
+      const socket = getSocket();
+      if (socket?.connected) socket.disconnect();
+      navigation.navigate("welcomeScreen");
+    } catch (err) {
+      console.log("Logout error:", err);
     }
   };
 
-  // Fetch token from AsyncStorage on mount
+  // Fetch token on mount
   useEffect(() => {
-    const fetchToken = async () => {
+    const loadToken = async () => {
       const storedToken = await AsyncStorage.getItem("token");
       if (storedToken) setToken(storedToken);
     };
-    fetchToken();
+    loadToken();
   }, []);
 
-  // Initialize WebSocket when token is set
+  // Setup WebSocket connection when user ID is available
   useEffect(() => {
-    initiateSocketConnection(user._id); // Initialize connection
+    if (!token || !user?._id) return;
+
+    initiateSocketConnection(user._id);
     const socket = getSocket();
 
     const handleUserUpdated = () => {
@@ -109,26 +96,23 @@ export const UserProvider = ({ children }) => {
       Toast.show({
         type: "info",
         text1: "Profile Updated",
-        text2: "Your profile was changed on another device.",
+        text2: "Your profile was updated elsewhere.",
       });
     };
 
-    socket.on("userUpdated", handleUserUpdated);
+    socket?.on("userUpdated", handleUserUpdated);
 
     return () => {
-      socket.off("userUpdated", handleUserUpdated); // Remove only this listener
-      if (socket.connected) {
-        socket.disconnect(); // Disconnect only if connected
-      }
+      socket?.off("userUpdated", handleUserUpdated);
+      if (socket?.connected) socket.disconnect();
     };
-  }, [token, user._id, refetch]);
+  }, [token, user?._id]);
 
   return (
     <UserContext.Provider
       value={{
         storeToken,
         logout,
-
         token,
         language,
         setLanguage,
@@ -145,11 +129,10 @@ export const UserProvider = ({ children }) => {
   );
 };
 
-// Custom hook for accessing UserContext
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error("UserContext must be used within a UserProvider");
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 };
