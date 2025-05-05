@@ -104,13 +104,13 @@ exports.updateUser = async (req, res) => {
     if (name) user.name = name;
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (profilePicture) user.profilePicture = profilePicture;
-
+co
     await user.save();
 
     // Send WebSocket event after updating user data
     const io = getIO();
 
-    io.to(user._id.toString()).emit("userUpdated");
+    io.emit("userUpdated", user); // Emit the updated user data
 
     res.status(200).json({ message: "Profile updated successfully", user });
   } catch (err) {
