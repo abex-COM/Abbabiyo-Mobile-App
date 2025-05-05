@@ -21,6 +21,7 @@ import Toast from "react-native-toast-message";
 import { useUser } from "@/context/UserContext";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { getSocket } from "../utils/socket";
 
 dayjs.extend(relativeTime);
 const PostCard = ({
@@ -72,6 +73,14 @@ const PostCard = ({
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
+
+            // ✅ Emit socket event
+            const socket = getSocket(); // or use useSocketContext()
+            socket.emit("commentDeleted", {
+              commentId: comment._id,
+              postId: postId,
+            });
+
             Toast.show({
               type: "success",
               text1: "Success",
@@ -265,14 +274,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   commentAuthorAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 35,
+    height: 35,
+    borderRadius: 20,
   },
   content: {
     marginTop: 8,
     fontSize: 16,
-    marginLeft: 10,
+    marginLeft: 30,
   },
   imageContainer: {
     overflow: "hidden",
@@ -342,15 +351,14 @@ const styles = StyleSheet.create({
   avatarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 5,
   },
   profilePicture: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: "#226e18",
     padding: 2,
   },
   commentAuthor: {

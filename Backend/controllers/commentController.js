@@ -96,8 +96,8 @@ const deleteComment = async (req, res) => {
 
     const io = getIO();
     io.emit("commentDeleted", {
-      postId: comment.postId.toString(),
-      commentId: comment._id.toString(),
+      postId: comment.postId,
+      commentId: comment._id,
     });
 
     res.status(200).json({

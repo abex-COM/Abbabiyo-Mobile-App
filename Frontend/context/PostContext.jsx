@@ -1,21 +1,24 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useQueries, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
+import { getSocket } from "@/app/utils/socket";
+
 const PostsContext = createContext();
+
 export const PostsProvider = ({ children }) => {
-  const { token } = useUser();
+  const { token, user } = useUser();
   const queryClient = useQueryClient();
   const [commentLoadingMap, setCommentLoadingMap] = useState({});
 
+  // Fetch all posts
   const getAllPosts = async () => {
     try {
       const resp = await axios.get(`${baseUrl}/api/posts/getAllposts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       return resp.data?.posts || [];
     } catch (error) {
       Toast.show({
@@ -23,10 +26,21 @@ export const PostsProvider = ({ children }) => {
         text1: "Error",
         text2: "Failed to fetch posts.",
       });
-      console.log(error.message);
-      return []; // <- Ensure a defined return value
+      console.error(error.message);
+      return [];
     }
   };
+
+  // Fetch comments for all posts
+  const getCommentsForAllPosts = async () => {
+    const posts = postsQuery.data || [];
+    const allComments = await Promise.all(
+      posts.map((post) => getCommentsForPost(post._id))
+    );
+    return allComments;
+  };
+
+  // Fetch comments for a specific post
   const getCommentsForPost = async (postId) => {
     try {
       const resp = await axios.get(
@@ -45,46 +59,42 @@ export const PostsProvider = ({ children }) => {
     }
   };
 
-  const results = useQueries({
-    queries: [
-      {
-        queryKey: ["posts"],
-        queryFn: getAllPosts,
-        enabled: !!token, // Only run if token is ready
-        refetchOnWindowFocus: false,
-      },
-      {
-        queryKey: ["comments"],
-        queryFn: async () => {
-          if (!postsQuery.data) return [];
-          const comments = await Promise.all(
-            postsQuery.data.map((post) => getCommentsForPost(post._id))
-          );
-          return comments;
-        },
-        enabled: !!token, // Wait for posts to load first
-        refetchOnWindowFocus: false,
-      },
-    ],
+  // Posts query
+  const postsQuery = useQuery({
+    queryKey: ["posts"],
+    queryFn: getAllPosts,
+    enabled: !!token,
+    refetchOnWindowFocus: false,
   });
 
-  const [postsQuery, commentsQuery] = results;
+  // Comments query
+  const commentsQuery = useQuery({
+    queryKey: ["comments", postsQuery.data?.length || 0],
+    queryFn: getCommentsForAllPosts,
+    enabled: !!token && !!postsQuery.data,
+    refetchOnWindowFocus: false,
+  });
 
+  // Refetch both
   const refetchAll = async () => {
     await Promise.all([
       queryClient.invalidateQueries(["posts"]),
       queryClient.invalidateQueries(["comments"]),
     ]);
   };
+
+  // Extract data
   const postsData = postsQuery.data || [];
   const commentsData = commentsQuery.data || [];
-  const comments = commentsData.reduce((acc, { postId, comments }) => {
-    acc[postId] = comments;
-    return acc;
-  }, {});
+  const comments = Array.isArray(commentsData)
+    ? commentsData.reduce((acc, { postId, comments }) => {
+        acc[postId] = comments;
+        return acc;
+      }, {})
+    : {};
 
-  // Add this function inside your PostContext
-  const handleNewComment = async (postId, commentText) => {
+  // Post a new comment
+  const postComment = async (postId, commentText) => {
     if (!commentText.trim()) {
       Toast.show({
         type: "error",
@@ -101,21 +111,18 @@ export const PostsProvider = ({ children }) => {
         `${baseUrl}/api/comments/createComment`,
         { text: commentText, postId },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      await postsQuery.refetch();
-      await queryClient.refetchQueries(["comments"]);
+      await queryClient.invalidateQueries(["comments"]);
 
       Toast.show({
         type: "success",
         text1: "Comment Posted",
       });
     } catch (error) {
-      console.log("Error posting comment:", error);
+      console.error("Error posting comment:", error);
       Toast.show({
         type: "error",
         text1: "Error",
@@ -125,7 +132,6 @@ export const PostsProvider = ({ children }) => {
       setCommentLoadingMap((prev) => ({ ...prev, [postId]: false }));
     }
   };
-
   return (
     <PostsContext.Provider
       value={{
@@ -134,8 +140,9 @@ export const PostsProvider = ({ children }) => {
         postsQuery,
         commentsQuery,
         refetchAll,
-        handleNewComment,
+        postComment,
         commentLoadingMap,
+        getCommentsForAllPosts,
       }}
     >
       {children}
@@ -143,9 +150,11 @@ export const PostsProvider = ({ children }) => {
   );
 };
 
+// Custom hook
 export const usePosts = () => {
   const context = useContext(PostsContext);
-  if (context === undefined)
-    throw new Error("post Context used outside provider");
+  if (!context) {
+    throw new Error("usePosts must be used within a PostsProvider");
+  }
   return context;
 };

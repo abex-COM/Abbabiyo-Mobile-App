@@ -21,7 +21,7 @@ import { getSocket, initiateSocketConnection } from "../utils/socket";
 export default function PostDetailScreen({ route, navigation }) {
   const { post = {}, comments = [] } = route.params || {};
   const { user } = useUser();
-  const { handleNewComment } = usePosts();
+  const { postComment } = usePosts();
   const { isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode);
 
@@ -42,7 +42,7 @@ export default function PostDetailScreen({ route, navigation }) {
 
   const handleComment = () => {
     if (!commentText.trim()) return;
-    handleNewComment(post._id, commentText);
+    postComment(post._id, commentText);
     setCommentText("");
   };
 
@@ -71,19 +71,6 @@ export default function PostDetailScreen({ route, navigation }) {
       );
     }
   }, [post.image]);
-
-  // Listen for new comments in real-time
-  useEffect(() => {
-    if (!user._id) return;
-
-    initiateSocketConnection(user._id);
-    const socket = getSocket();
-    socket.on("newComment", () => navigation.goBack());
-
-    return () => {
-      socket.off("newComment");
-    };
-  }, [user, post._id]);
 
   return (
     <KeyboardAvoidingView

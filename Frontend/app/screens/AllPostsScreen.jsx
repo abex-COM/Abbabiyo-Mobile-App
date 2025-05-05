@@ -41,7 +41,7 @@ export default function ChatScreen() {
     comments,
     postsQuery,
     refetchAll,
-    handleNewComment,
+    postComment,
     commentLoadingMap,
   } = usePosts();
   const handleDeletePost = useDeletePost(token, refetchAll);
@@ -148,7 +148,6 @@ export default function ChatScreen() {
   // I set this because comment is net being fetched on the first time when comment mounts
   useEffect(() => {
     const refetch = async () => {
-      // if (!user?._id && posts.length === 0) return;
       try {
         await queryClient.refetchQueries(["comments"]);
       } catch (error) {
@@ -164,17 +163,20 @@ export default function ChatScreen() {
     initiateSocketConnection(user._id);
     const socket = getSocket();
 
-    const handleNewComment = ({ postId, comment }) => {
-      queryClient.setQueryData(["comments"], (oldCommentsData = []) => {
-        return oldCommentsData.map((entry) =>
-          entry.postId === postId
-            ? {
-                ...entry,
-                comments: [...entry.comments, comment],
-              }
-            : entry
-        );
-      });
+    const handleNewCommentSocket = ({ postId, comment }) => {
+      queryClient.setQueryData(
+        ["comments", postsQuery.data?.length || 0], // match your query key exactly
+        (oldCommentsData = []) => {
+          return oldCommentsData.map((entry) =>
+            entry.postId === postId
+              ? {
+                  ...entry,
+                  comments: [...entry.comments, comment], // add new comment
+                }
+              : entry
+          );
+        }
+      );
     };
 
     const handleNewPost = (newPost) => {
@@ -204,29 +206,17 @@ export default function ChatScreen() {
         );
       });
     });
-    socket.on("commentDeleted", ({ postId, commentId }) => {
-      queryClient.setQueryData(["comments"], (oldData = []) => {
-        return oldData.map((entry) =>
-          entry.postId === postId
-            ? {
-                ...entry,
-                comments: entry.comments.filter((c) => c._id !== commentId),
-              }
-            : entry
-        );
-      });
+    socket.on("commentDeleted", ({ commentId, postId }) => {
+      queryClient.invalidateQueries(["comments", postId]);
     });
 
     socket.on("connect", () => console.log("Connected to socket:", socket.id));
-    socket.on("newComment", handleNewComment);
+    socket.on("newComment", handleNewCommentSocket);
     socket.on("newPost", handleNewPost);
     socket.on("userUpdated", refetch);
     socket.on("newLike", handleNewLike);
-    socket.emit("authenticate", user._id);
-
     socket.on("disconnect", () => console.log("Disconnected from socket"));
     return () => {
-      socket.off("newComment", handleNewComment);
       socket.off("newPost", handleNewPost);
       socket.off("userUpdated", refetch);
       socket.off("newLike", handleNewLike);
@@ -269,7 +259,7 @@ export default function ChatScreen() {
               isLoading={commentLoadingMap[item._id] || false}
               comments={comments[item._id] || []}
               onCommentSubmit={(commentText) =>
-                handleNewComment(item._id, commentText)
+                postComment(item._id, commentText)
               }
             />
           )}

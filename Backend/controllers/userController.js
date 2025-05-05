@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
+const { getIO } = require("../socket/webSocket"); //import socket helper
 
 exports.signup = async (req, resp) => {
   try {
@@ -107,8 +108,9 @@ exports.updateUser = async (req, res) => {
     await user.save();
 
     // Send WebSocket event after updating user data
-    const io = req.app.get("socketio");
-    io.emit("userUpdated", user); // Emit the updated user data
+    const io = getIO();
+
+    io.to(user._id.toString()).emit("userUpdated");
 
     res.status(200).json({ message: "Profile updated successfully", user });
   } catch (err) {

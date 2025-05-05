@@ -69,7 +69,10 @@ export const UserProvider = ({ children }) => {
       setToken(null);
       const socket = getSocket();
       if (socket?.connected) socket.disconnect();
-      navigation.navigate("welcomeScreen");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "welcomeScreen" }], // replace with your actual route name
+      });
     } catch (err) {
       console.log("Logout error:", err);
     }
@@ -93,11 +96,6 @@ export const UserProvider = ({ children }) => {
 
     const handleUserUpdated = () => {
       refetch();
-      Toast.show({
-        type: "info",
-        text1: "Profile Updated",
-        text2: "Your profile was updated elsewhere.",
-      });
     };
 
     socket?.on("userUpdated", handleUserUpdated);
