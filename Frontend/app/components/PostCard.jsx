@@ -168,7 +168,7 @@ const PostCard = ({
               style={{
                 width: displayWidth,
                 height: displayHeight,
-                borderRadius: 14,
+                borderRadius: 10,
               }}
               resizeMode="cover"
             />
@@ -358,7 +358,6 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     marginRight: 8,
-    borderWidth: 1,
     padding: 2,
   },
   commentAuthor: {

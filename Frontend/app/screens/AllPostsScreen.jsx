@@ -236,6 +236,7 @@ export default function ChatScreen() {
     >
       <View style={[styles.content, { backgroundColor }]}>
         <FlatList
+          showsVerticalScrollIndicator={false}
           ref={flatlist}
           data={uniquePosts}
           keyExtractor={(item) => item._id}
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
   },
   flatlist: { gap: 16 },
   inputContainer: {
-    padding: 8,
+    // padding: 8,
     width: "100%",
   },
 });

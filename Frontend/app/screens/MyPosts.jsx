@@ -99,6 +99,7 @@ export default function MyPosts() {
         </Text>
       ) : (
         <FlatList
+          showsVerticalScrollIndicator={false}
           ref={flatlist}
           data={userPosts}
           renderItem={({ item }) => (
