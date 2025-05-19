@@ -24,6 +24,7 @@ import { useTheme } from "@/context/ThemeContext";
 import Colors from "../constants/Colors";
 import { getSocket, initiateSocketConnection } from "../utils/socket";
 import useFarmLocations from "../hooks/useFarmLocation";
+import { t } from "i18next";
 
 const HomeScreen = () => {
   const { user, token } = useUser();
@@ -165,7 +166,7 @@ const HomeScreen = () => {
           ) : (
             <>
               <Text style={[styles.sectionTitle, { color: textColor }]}>
-                Select Farm Location
+                {t("select_farm_location")}
               </Text>
 
               <View style={{ zIndex: 1000, marginBottom: 20, padding: 10 }}>

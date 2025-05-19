@@ -34,7 +34,7 @@ export default function ProfileScreen({ navigation }) {
       ) : (
         <View style={styles.profileConatiner}>
           <Image
-            style={[styles.image, { borderColor: themeColors.cardColor }]}
+            style={[styles.image]}
             source={
               user.profilePicture
                 ? { uri: user.profilePicture }
@@ -50,13 +50,13 @@ export default function ProfileScreen({ navigation }) {
             >
               {user?.name}
             </Text>
-            <Text style={{ color: themeColors.textColor }}>
+            <Text style={{ color: themeColors.textColor, marginLeft: 10 }}>
               {user?.phoneNumber}
             </Text>
-            <Text style={{ color: themeColors.textColor }}>
+            {/* <Text style={{ color: themeColors.textColor }}>
               Location: {user?.location?.woreda}, {user?.location?.zone},{" "}
               {user?.location?.region}
-            </Text>
+            </Text> */}
           </View>
         </View>
       )}
@@ -94,7 +94,7 @@ export default function ProfileScreen({ navigation }) {
             color={themeColors.textColor}
           />
           <Text style={[styles.listText, { color: themeColors.textColor }]}>
-            Manage Farm Locations
+            {t("manage_farm_locations")}
           </Text>
         </View>
       </Pressable>
@@ -126,7 +126,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   image: {
-    borderWidth: 1,
     width: 120,
     height: 120,
     borderRadius: 60,

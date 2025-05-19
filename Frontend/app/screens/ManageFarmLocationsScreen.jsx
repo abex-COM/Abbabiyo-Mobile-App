@@ -16,6 +16,7 @@ import { useUser } from "@/context/UserContext";
 import baseUrl from "@/baseUrl/baseUrl";
 import useFarmLocations from "../hooks/useFarmLocation";
 import { useTheme } from "@/context/ThemeContext"; // Add the theme context
+import { t } from "i18next";
 
 const ManageFarmLocationsScreen = () => {
   const { user, token } = useUser();
@@ -189,7 +190,7 @@ const ManageFarmLocationsScreen = () => {
         variant="headlineSmall"
         style={[styles.header, { color: textColor }]}
       >
-        Manage Farm Locations
+        {t("manage_farm_locations")}
       </Text>
 
       {!showForm && (
@@ -199,7 +200,7 @@ const ManageFarmLocationsScreen = () => {
           onPress={() => setShowForm(true)}
           style={styles.addFarmButton}
         >
-          + Add Farm Location
+          + {t("add_farm_location")}
         </Button>
       )}
 
@@ -226,7 +227,7 @@ const ManageFarmLocationsScreen = () => {
             {detectingLocation ? (
               <ActivityIndicator size={20} color="#1070ff" />
             ) : (
-              "Detect Current Location"
+              t("detect_location")
             )}
           </Button>
 
@@ -244,7 +245,7 @@ const ManageFarmLocationsScreen = () => {
             disabled={!newFarmName.trim() || !currentLat || !currentLon}
             style={{ marginTop: 10 }}
           >
-            {editingFarmId ? "Update Farm" : "Add Farm"}
+            {editingFarmId ? t("update-farm") : t("add-farm")}
           </Button>
 
           {editingFarmId && (
@@ -259,7 +260,7 @@ const ManageFarmLocationsScreen = () => {
         variant="titleMedium"
         style={[styles.subHeader, { color: textColor }]}
       >
-        Your Farms
+        {t("farm_locations")}
       </Text>
 
       {loading ? (
@@ -273,9 +274,9 @@ const ManageFarmLocationsScreen = () => {
           >
             <Card.Title
               title={String(farm.name)}
-              titleStyle={{ color: textColor }}
+              // titleStyle={{ color: textColor }}
               subtitleStyle={{ color: textColor }}
-              subtitle={`Lat: ${farm.lat?.toFixed(4)} | Lon: ${farm.lon?.toFixed(4)}`}
+              // subtitle={`Lat: ${farm.lat?.toFixed(4)} | Lon: ${farm.lon?.toFixed(4)}`}
               right={() => (
                 <View style={{ flexDirection: "row" }}>
                   <IconButton
@@ -295,7 +296,7 @@ const ManageFarmLocationsScreen = () => {
         ))
       ) : (
         <Text style={[styles.noFarms, { color: textColor }]}>
-          No farms added yet.
+          {t("no_farm_locations")}
         </Text>
       )}
     </ScrollView>
