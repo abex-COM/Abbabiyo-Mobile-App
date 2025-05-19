@@ -28,6 +28,8 @@
     "@tanstack/react-query": "^5.67.3",
     "axios": "^1.8.2",
     "dayjs": "^1.11.13",
+    "ethiopian-calendar-date-converter": "^2.1.4",
+    "ethiopian-date-converter": "^1.0.7",
     "expo": "~52.0.38",
     "expo-av": "~15.0.2",
     "expo-blur": "~14.0.3",

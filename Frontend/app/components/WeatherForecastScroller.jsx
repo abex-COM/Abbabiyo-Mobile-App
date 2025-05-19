@@ -1,7 +1,10 @@
-import { useTheme } from "@/context/ThemeContext";
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 import Colors from "../constants/Colors";
+import gregorianToEthiopian from "@/app/utils/dateCovertor"; // Ensure path is correct
+import { t, i18n } from "i18next";
+import { useLanguage } from "@/context/LanguageContexts";
 
 const getWeatherIcon = (code) => {
   const iconMap = {
@@ -39,40 +42,41 @@ const getWeatherIcon = (code) => {
 
 const getWeatherDescription = (code) => {
   const weatherMap = {
-    0: "Clear sky",
-    1: "Mainly clear",
-    2: "Partly cloudy",
-    3: "Overcast",
-    45: "Fog",
-    48: "Depositing rime fog",
-    51: "Light drizzle",
-    53: "Moderate drizzle",
-    55: "Dense drizzle",
-    56: "Light freezing drizzle",
-    57: "Dense freezing drizzle",
-    61: "Slight rain",
-    63: "Moderate rain",
-    65: "Heavy rain",
-    66: "Light freezing rain",
-    67: "Heavy freezing rain",
-    71: "Slight snow fall",
-    73: "Moderate snow fall",
-    75: "Heavy snow fall",
-    77: "Snow grains",
-    80: "Slight rain showers",
-    81: "Moderate rain showers",
-    82: "Violent rain showers",
-    85: "Slight snow showers",
-    86: "Heavy snow showers",
-    95: "Thunderstorm",
-    96: "Thunderstorm w/ slight hail",
-    99: "Thunderstorm w/ heavy hail",
+    0: t("clear_sky"),
+    1: t("mainly_clear"),
+    2: t("partly_cloudy"),
+    3: t("overcast"),
+    45: t("fog"),
+    48: t("rime_fog"),
+    51: t("light_drizzle"),
+    53: t("moderate_drizzle"),
+    55: t("dense_drizzle"),
+    56: t("light_freezing_drizzle"),
+    57: t("dense_freezing_drizzle"),
+    61: t("slight_rain"),
+    63: t("moderate_rain"),
+    65: t("heavy_rain"),
+    66: t("light_freezing_rain"),
+    67: t("heavy_freezing_rain"),
+    71: t("slight_snow"),
+    73: t("moderate_snow"),
+    75: t("heavy_snow"),
+    77: t("snow_grains"),
+    80: t("slight_rain_showers"),
+    81: t("moderate_rain_showers"),
+    82: t("violent_rain_showers"),
+    85: t("slight_snow_showers"),
+    86: t("heavy_snow_showers"),
+    95: t("thunderstorm"),
+    96: t("thunderstorm_light_hail"),
+    99: t("thunderstorm_heavy_hail"),
   };
-  return weatherMap[code] || "Unknown weather";
+  return weatherMap[code] || t("unknown_weather");
 };
 
 const WeatherForecastScroller = ({ forecast: data }) => {
-  const { isDarkMode } = useTheme(); // FIX typo here!
+  const { isDarkMode } = useTheme();
+  const { language } = useLanguage();
   const backgroundColor = isDarkMode ? "#394a61" : "#e9e9e9";
   const textColor = isDarkMode
     ? Colors.darkTheme.textColor
@@ -82,11 +86,13 @@ const WeatherForecastScroller = ({ forecast: data }) => {
     return (
       <View style={{ padding: 20 }}>
         <Text style={{ color: textColor, textAlign: "center" }}>
-          No forecast data available
+          {t("no_forecast_data")}
         </Text>
       </View>
     );
   }
+
+  const currentLang = language; // e.g., "en", "am", "om"
 
   return (
     <ScrollView
@@ -94,51 +100,66 @@ const WeatherForecastScroller = ({ forecast: data }) => {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollContainer}
     >
-      {data.time.map((date, index) => (
-        <View
-          key={index}
-          style={[styles.dayCard, { backgroundColor: backgroundColor }]} // Dynamic background color
-        >
-          <Text style={[styles.dateText, { color: textColor }]}>
-            {new Date(date).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}
-          </Text>
+      {data.time.map((dateStr, index) => {
+        const date = new Date(dateStr);
+        const ethDate = gregorianToEthiopian(
+          date.getFullYear(),
+          date.getMonth() + 1,
+          date.getDate()
+        );
 
-          <Text style={styles.weatherIcon}>
-            {getWeatherIcon(data.weathercode[index])}
-          </Text>
+        const ethMonthName = t(`ethiopian_months.${ethDate.ethMonth - 1}`);
 
-          <Text style={[styles.weatherDescription, { color: textColor }]}>
-            {getWeatherDescription(data.weathercode[index])}
-          </Text>
+        // Format date according to language
+        let formattedDate = "";
+        if (currentLang === "am" || currentLang === "om") {
+          // Month Day, Year
+          formattedDate = `${ethMonthName} ${ethDate.ethDay}, ${ethDate.ethYear}`;
+        } else {
+          // Day Month Year
+          formattedDate = `${ethDate.ethDay} ${ethMonthName} ${ethDate.ethYear}`;
+        }
 
-          <View style={styles.temperatures}>
-            <Text style={[styles.maxTemp, { color: textColor }]}>
-              {data.temperature_2m_max[index]?.toFixed(0)}°
+        return (
+          <View key={index} style={[styles.dayCard, { backgroundColor }]}>
+            <Text style={[styles.dateText, { color: textColor }]}>
+              {formattedDate}
             </Text>
-            <Text style={[styles.minTemp, { color: textColor }]}>
-              {data.temperature_2m_min[index]?.toFixed(0)}°
-            </Text>
-          </View>
 
-          <View style={styles.details}>
-            <View style={styles.detailContainer}>
-              <Text style={styles.emoji}>💧</Text>
-              <Text style={[styles.detailText, { color: textColor }]}>
-                {data.relative_humidity_2m_mean[index]} %
+            <Text style={styles.weatherIcon}>
+              {getWeatherIcon(data.weathercode[index])}
+            </Text>
+
+            <Text style={[styles.weatherDescription, { color: textColor }]}>
+              {getWeatherDescription(data.weathercode[index])}
+            </Text>
+
+            <View style={styles.temperatures}>
+              <Text style={[styles.maxTemp, { color: textColor }]}>
+                {data.temperature_2m_max[index]?.toFixed(0)}°
+              </Text>
+              <Text style={[styles.minTemp, { color: textColor }]}>
+                {data.temperature_2m_min[index]?.toFixed(0)}°
               </Text>
             </View>
-            <View style={styles.detailContainer}>
-              <Text style={styles.emoji}>🌧</Text>
-              <Text style={[styles.detailText, { color: textColor }]}>
-                {data.precipitation_sum[index]?.toFixed(1)} mm
-              </Text>
+
+            <View style={styles.details}>
+              <View style={styles.detailContainer}>
+                <Text style={styles.emoji}>💧</Text>
+                <Text style={[styles.detailText, { color: textColor }]}>
+                  {data.relative_humidity_2m_mean[index]} %
+                </Text>
+              </View>
+              <View style={styles.detailContainer}>
+                <Text style={styles.emoji}>🌧</Text>
+                <Text style={[styles.detailText, { color: textColor }]}>
+                  {data.precipitation_sum[index]?.toFixed(1)} mm
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </ScrollView>
   );
 };

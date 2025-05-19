@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const { getIO } = require("../socket/webSocket"); //import socket helper
+require("dotenv").config();
 
 exports.signup = async (req, resp) => {
   try {
@@ -104,7 +105,6 @@ exports.updateUser = async (req, res) => {
     if (name) user.name = name;
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (profilePicture) user.profilePicture = profilePicture;
-co
     await user.save();
 
     // Send WebSocket event after updating user data
