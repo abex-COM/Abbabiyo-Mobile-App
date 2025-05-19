@@ -86,6 +86,7 @@
   "detect_location": "Detect Location",
   "add_farm": "Add Farm",
   "update_farm": "Update Farm",
+  "Phone_number_must_start_with _+251_or_09": "Phone number must start with +251 or 09",
   "farm_locations": "Farm Locations",
   "add_farm_location": "Add Farm Location",
   "disease": "Disease",

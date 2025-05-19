@@ -7,6 +7,7 @@ const { getIO } = require("../socket/webSocket"); //import socket helper
 const createComment = async (req, res) => {
   try {
     const { postId, text } = req.body;
+
     const userId = req.user.id;
 
     if (!text || !postId) {
@@ -28,10 +29,15 @@ const createComment = async (req, res) => {
       text,
     });
 
-    const populatedComment = await Comment.findById(newComment._id).populate(
-      "author",
-      "name profilePicture"
-    );
+    const populatedComment = await Comment.findById(newComment._id)
+      .populate("author", "name profilePicture") // comment's author
+      .populate({
+        path: "postId", // populate the post
+        populate: {
+          path: "author", // then populate the post's author
+          select: "name profilePicture", // only select necessary fields
+        },
+      });
 
     const io = getIO();
 
@@ -40,7 +46,10 @@ const createComment = async (req, res) => {
       postId,
       comment: populatedComment,
     });
-
+    // req.io.to(postId).emit("commentForNotification", {
+    //   postId,
+    //   comment: populatedComment,
+    // });
     //  Send comment notification to post author if not the commenter
     res.status(201).json({
       success: true,

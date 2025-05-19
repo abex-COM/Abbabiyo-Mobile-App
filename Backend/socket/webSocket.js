@@ -16,6 +16,11 @@ const initializeSocket = (server) => {
       userSockets[userId] = socket;
       console.log(`🔐 User ${userId} authenticated`);
     });
+    // / Join a room based on postId (e.g., when viewing post)
+    socket.on("joinPost", (postId) => {
+      socket.join(postId);
+      console.log("joined room");
+    });
 
     socket.on("disconnect", () => {
       console.log("❌ User disconnected:", socket.id);

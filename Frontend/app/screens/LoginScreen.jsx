@@ -38,7 +38,7 @@ export default function LoginScreen({ navigation }) {
         );
 
         await storeToken(resp.data.token);
-        navigation.replace("bottomNavigator");
+        // navigation.replace("bottomNavigator");
 
         // Correct usage of Toast.show
         Toast.show({
@@ -78,7 +78,7 @@ export default function LoginScreen({ navigation }) {
         }
       }
     },
-    [storeToken, navigation]
+    [navigation]
   );
 
   return (

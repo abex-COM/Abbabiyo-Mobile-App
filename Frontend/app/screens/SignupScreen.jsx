@@ -102,12 +102,17 @@ export default function SignupScreen() {
           validationSchema={Yup.object({
             name: Yup.string()
               .required("Name is required")
+              .matches(/^[A-Za-z\s]+$/, "Name should contain only alphabets")
               .test("full-name", "Please enter your full name", (value) => {
                 return value && value.trim().split(" ").length >= 2;
               }),
+
             phoneNumber: Yup.string()
-              .matches(/^[0-9]{10}$/, "Phone number must be 10 digits") // Validating phone number format
-              .required("Phone number is required"),
+              .required("Phone number is required")
+              .matches(
+                /^09\d{8}$/,
+                "Phone number must start with 09 and be 10 digits long"
+              ),
             password: Yup.string()
               .min(6, "Password must be at least 6 characters")
               .required("Password is required"),

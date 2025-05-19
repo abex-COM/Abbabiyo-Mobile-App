@@ -3,7 +3,7 @@ const http = require("http");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-dotenv.config(); // Load environment variables
+dotenv.config();
 
 const userRoute = require("./routes/userRoute");
 const postRoute = require("./routes/postRoute");
@@ -11,7 +11,7 @@ const commentRoute = require("./routes/commentRoute");
 const geminiRoute = require("./routes/geminiRoute");
 const farmLocationRoute = require("./routes/farmLocationRoute");
 const recommendationRoute = require("./routes/recommendationRoute");
-const { initializeSocket } = require("./socket/webSocket"); // Import WebSocket setup
+const { initializeSocket } = require("./socket/webSocket");
 
 const app = express();
 const server = http.createServer(app);
@@ -23,15 +23,20 @@ const corsOptions = {
   optionSuccessStatus: 200,
 };
 app.use("/uploads", express.static("uploads"));
-
 app.use(cors(corsOptions));
-app.use(express.json()); // Parse JSON data
+app.use(express.json());
 
-// Initialize WebSocket
+// ✅ Initialize WebSocket
 const io = initializeSocket(server);
-app.set("socketio", io); // Attach socket instance to app for controllers
+app.set("socketio", io);
 
-// Routes
+// ✅ Attach socket to all requests BEFORE routes
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// ✅ Routes
 app.use("/api/users", userRoute);
 app.use("/api/comments", commentRoute);
 app.use("/api/posts", postRoute);
@@ -47,16 +52,16 @@ app.all("/*", (req, res) => {
   });
 });
 
-// Connect to MongoDB
+// MongoDB connection
 mongoose
   .connect(process.env.DB_URI)
   .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((err) => console.error(`Error connecting to DB: ${err.message}`));
 
+// Server listener
 const PORT = process.env.PORT || 6000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// Export app and server for testing & integration
 module.exports = { app, server };

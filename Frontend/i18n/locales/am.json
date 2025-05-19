@@ -83,6 +83,7 @@
   "add-farm": "የእርሻ ቦታ ይጨምሩ",
   "update-farm": "የእርሻ ቦታ አዘምን",
   "farm_locations": "የእርሻ ቦታ",
+  "Phone_number_must_start_with _+251_or_09":"የስልክ ቁጥር በ+251 ወይም 09 መጀመሪያ ይጀምር",
   "plant_disease_detector": "የእፅዋ በሽታ መርማሪ",
   "add_farm_location": "የእርሻ ቦታ ይጨምሩ",
   "detect_location": "የቦታ መለየት",

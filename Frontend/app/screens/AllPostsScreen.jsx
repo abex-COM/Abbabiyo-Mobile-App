@@ -32,6 +32,8 @@ export default function ChatScreen() {
   const [imageUri, setImageUri] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isPostLoading, setIsPostLoading] = useState(false);
+
+  const [postId, setPostId] = useState("");
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const flatlist = useRef(null);
@@ -43,6 +45,7 @@ export default function ChatScreen() {
     refetchAll,
     postComment,
     commentLoadingMap,
+    setNewCommentMap,
   } = usePosts();
   const handleDeletePost = useDeletePost(token, refetchAll);
 
@@ -57,7 +60,6 @@ export default function ChatScreen() {
       setRefreshing(false);
     }
   };
-
   const handlePickImage = async () => {
     try {
       const { granted } =
@@ -164,6 +166,12 @@ export default function ChatScreen() {
     const socket = getSocket();
 
     const handleNewCommentSocket = ({ postId, comment }) => {
+      setPostId(postId);
+      if (comment.author._id === user._id) return;
+      setNewCommentMap((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || 0) + 1,
+      }));
       queryClient.setQueryData(
         ["comments", postsQuery.data?.length || 0], // match your query key exactly
         (oldCommentsData = []) => {
@@ -225,7 +233,13 @@ export default function ChatScreen() {
       disconnectSocket();
     };
   }, [user?._id]);
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || !postId) return;
 
+    console.log("Joining post room:", postId);
+    socket.emit("joinPost", postId);
+  }, [postId]);
   const uniquePosts = Array.from(
     new Map(posts.map((post) => [post._id, post])).values()
   );

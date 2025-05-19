@@ -22,6 +22,7 @@ import { useUser } from "@/context/UserContext";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { getSocket } from "../utils/socket";
+import { usePosts } from "@/context/PostContext";
 
 dayjs.extend(relativeTime);
 const PostCard = ({
@@ -46,6 +47,7 @@ const PostCard = ({
   const [isTruncated, setIsTruncated] = useState(false);
   const { isDarkMode } = useTheme();
   const { token, user } = useUser();
+  const { setNewCommentMap } = usePosts();
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
@@ -95,6 +97,17 @@ const PostCard = ({
   };
 
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const handleCommentVisble = () => {
+    setIsCommentVisible((prev) => !prev);
+    if (!isCommentVisible) {
+      // only clear if there were new comments for this post
+      setNewCommentMap((prev) => {
+        const { [postId]: removed, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
   useEffect(() => {
     if (imageUri) {
       Image.getSize(
@@ -180,15 +193,24 @@ const PostCard = ({
             <TouchableOpacity
               style={[
                 styles.likesButton,
-                { backgroundColor: liked ? "#c3c4c5" : "#E5E7EB" },
+                { backgroundColor: liked ? "#2f80d0" : "#E5E7EB" },
               ]}
               onPress={onLike}
             >
-              <Text style={{ textAlign: "center", width: 80 }}>
-                {" "}
+              <Text
+                style={{
+                  textAlign: "center",
+                  width: 80,
+                  color: liked ? "white" : "black",
+                }}
+              >
                 Likes: {likes}
               </Text>
-              <MaterialCommunityIcons name="thumb-up" size={20} />
+              <MaterialCommunityIcons
+                name="thumb-up"
+                size={20}
+                color={liked ? "white" : "black"}
+              />
             </TouchableOpacity>
           </View>
 
@@ -198,7 +220,7 @@ const PostCard = ({
               isCommentVisible &&
                 comments.length && { backgroundColor: "#c7cacf" },
             ]}
-            onPress={() => setIsCommentVisible(!isCommentVisible)}
+            onPress={handleCommentVisble}
           >
             <Text style={{ width: 110, textAlign: "center" }}>
               Comments: {comments.length}

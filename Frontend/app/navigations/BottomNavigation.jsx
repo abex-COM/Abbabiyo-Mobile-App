@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ChatScreen from "../screens/AllPostsScreen";
@@ -12,6 +12,7 @@ import GeminiScreen from "@/app/screens/GeminiScreen";
 import { useTheme } from "@/context/ThemeContext";
 import { useNavigation } from "expo-router";
 import DiseaseDetector from "../screens/DiseaseDetectionScreen";
+import { usePosts } from "@/context/PostContext";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,15 +20,11 @@ export default function BottomNavigator() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const navigation = useNavigation();
-
+  const { newCommentMap } = usePosts();
   const tabBarBackgroundColor = isDarkMode ? "#1f2937" : "#009000";
   const tabBarActiveBackgroundColor = isDarkMode ? "#111227" : "#006400";
   const headerBackgroundColor = isDarkMode ? "#111827" : "#f3f4f6";
   const textColor = isDarkMode ? "#F9FAFB" : "#1f2937";
-  const [fontsLoaded] = useFonts({
-    Montserrat_900Black,
-  });
-
   return (
     <Tab.Navigator
       screenOptions={{
@@ -103,6 +100,11 @@ export default function BottomNavigator() {
           tabBarIcon: ({ color, size = 30 }) => (
             <MaterialCommunityIcons name="chat" size={size} color={color} />
           ),
+          tabBarBadge:
+            Object.values(newCommentMap).reduce(
+              (sum, count) => sum + count,
+              0
+            ) || null,
         }}
       />
       <Tab.Screen

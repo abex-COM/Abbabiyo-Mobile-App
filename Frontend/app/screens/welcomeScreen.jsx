@@ -19,7 +19,7 @@ export default function Welcome({ navigation }) {
 
   const { t } = useTranslation();
   const handleLogin = () => {
-    navigation.replace("loginScreen");
+    navigation.navigate("loginScreen");
   };
   useEffect(() => {
     if (token && user) {
