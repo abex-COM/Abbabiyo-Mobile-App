@@ -6,17 +6,20 @@ import {
   StyleSheet,
   RefreshControl,
 } from "react-native";
+
 import React, { useEffect, useRef, useState } from "react";
 import {
   initiateSocketConnection,
   getSocket,
   disconnectSocket,
 } from "@/app/utils/socket";
+import { Audio } from "expo-av";
 import { useQueryClient } from "@tanstack/react-query";
 import ChatInput from "../components/ChatInput";
 import PostCard from "../components/PostCard";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
+
 import ItemSepartor from "../components/ItemSepartor";
 import Toast from "react-native-toast-message";
 import { usePosts } from "@/context/PostContext";
@@ -27,17 +30,18 @@ import { useTranslation } from "react-i18next";
 import baseUrl from "@/baseUrl/baseUrl";
 import useDeletePost from "@/app/hooks/useDelete";
 import useLikePost from "../hooks/useLike";
+import usePushNotifications from "../hooks/usePushNotification";
 export default function ChatScreen() {
   const [message, setMessage] = useState("");
   const [imageUri, setImageUri] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isPostLoading, setIsPostLoading] = useState(false);
 
-  const [postId, setPostId] = useState("");
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const flatlist = useRef(null);
   const { token, user, refetch } = useUser();
+  const expoPushToken = usePushNotifications(); // 👈 call your hook
   const {
     posts,
     comments,
@@ -45,10 +49,9 @@ export default function ChatScreen() {
     refetchAll,
     postComment,
     commentLoadingMap,
-    setNewCommentMap,
+    setNewPostCount,
   } = usePosts();
   const handleDeletePost = useDeletePost(token, refetchAll);
-
   const { mutate: likePost } = useLikePost();
   const queryClient = useQueryClient();
   const backgroundColor = isDarkMode ? "#1F2937" : "#f3f4f6";
@@ -60,6 +63,7 @@ export default function ChatScreen() {
       setRefreshing(false);
     }
   };
+
   const handlePickImage = async () => {
     try {
       const { granted } =
@@ -147,6 +151,16 @@ export default function ChatScreen() {
   const handleLike = async (postId) => {
     likePost(postId);
   };
+  const playSucessSound = async () => {
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require("@/assets/sounds/message1.mp3")
+      );
+      await sound.playAsync();
+    } catch (e) {
+      console.warn("Could not play success sound", e);
+    }
+  };
   // I set this because comment is net being fetched on the first time when comment mounts
   useEffect(() => {
     const refetch = async () => {
@@ -166,12 +180,6 @@ export default function ChatScreen() {
     const socket = getSocket();
 
     const handleNewCommentSocket = ({ postId, comment }) => {
-      setPostId(postId);
-      if (comment.author._id === user._id) return;
-      setNewCommentMap((prev) => ({
-        ...prev,
-        [postId]: (prev[postId] || 0) + 1,
-      }));
       queryClient.setQueryData(
         ["comments", postsQuery.data?.length || 0], // match your query key exactly
         (oldCommentsData = []) => {
@@ -187,10 +195,13 @@ export default function ChatScreen() {
       );
     };
 
-    const handleNewPost = (newPost) => {
+    const handleNewPost = async (newPost) => {
       queryClient.setQueryData(["posts"], (oldPosts = []) => {
         return [newPost, ...oldPosts]; // Add new post to the top
       });
+      if (newPost.author._id === user._id) return;
+      setNewPostCount((prev) => prev + 1);
+      await playSucessSound();
     };
     const handleNewLike = ({ postId, likedBy }) => {
       queryClient.setQueryData(["posts"], (oldPosts = []) =>
@@ -233,13 +244,6 @@ export default function ChatScreen() {
       disconnectSocket();
     };
   }, [user?._id]);
-  useEffect(() => {
-    const socket = getSocket();
-    if (!socket || !postId) return;
-
-    console.log("Joining post room:", postId);
-    socket.emit("joinPost", postId);
-  }, [postId]);
   const uniquePosts = Array.from(
     new Map(posts.map((post) => [post._id, post])).values()
   );
@@ -308,6 +312,7 @@ export default function ChatScreen() {
     </KeyboardAvoidingView>
   );
 }
+// import { View, Text, Platform, Alert } from "react-native";
 
 const styles = StyleSheet.create({
   content: {

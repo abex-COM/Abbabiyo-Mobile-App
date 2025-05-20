@@ -47,7 +47,6 @@ const PostCard = ({
   const [isTruncated, setIsTruncated] = useState(false);
   const { isDarkMode } = useTheme();
   const { token, user } = useUser();
-  const { setNewCommentMap } = usePosts();
   // Dynamic color variables
   const textColor = isDarkMode ? Colors.darkTheme.textColor : "#4B5563";
   const contentColor = isDarkMode ? Colors.darkTheme.textColor : "#303a45";
@@ -99,13 +98,6 @@ const PostCard = ({
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const handleCommentVisble = () => {
     setIsCommentVisible((prev) => !prev);
-    if (!isCommentVisible) {
-      // only clear if there were new comments for this post
-      setNewCommentMap((prev) => {
-        const { [postId]: removed, ...rest } = prev;
-        return rest;
-      });
-    }
   };
 
   useEffect(() => {

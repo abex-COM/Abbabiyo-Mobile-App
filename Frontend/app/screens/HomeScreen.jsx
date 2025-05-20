@@ -152,13 +152,13 @@ const HomeScreen = () => {
               style={[styles.formContainer, { backgroundColor: cardColor }]}
             >
               <Text style={[styles.title, { color: textColor }]}>
-                Add Your First Farm Location
+                {t("add_your_first_farm_location")}
               </Text>
               <Text style={[styles.subtitle, { color: textColor }]}>
-                You need to add at least one farm location to proceed
+                {t("you_need_to_add_at_least_one_farm_location_to_proceed")}
               </Text>
               <Button
-                title="Go to Manage Farm Locations"
+                title={t("go_to_manage_farm_locations")}
                 onPress={() => navigation.navigate("ManageFarmLocations")}
                 color="#4CAF50"
               />

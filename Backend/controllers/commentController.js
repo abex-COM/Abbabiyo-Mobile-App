@@ -29,15 +29,10 @@ const createComment = async (req, res) => {
       text,
     });
 
-    const populatedComment = await Comment.findById(newComment._id)
-      .populate("author", "name profilePicture") // comment's author
-      .populate({
-        path: "postId", // populate the post
-        populate: {
-          path: "author", // then populate the post's author
-          select: "name profilePicture", // only select necessary fields
-        },
-      });
+    const populatedComment = await Comment.findById(newComment._id).populate(
+      "author",
+      "name profilePicture"
+    ); // comment's author
 
     const io = getIO();
 
@@ -46,11 +41,7 @@ const createComment = async (req, res) => {
       postId,
       comment: populatedComment,
     });
-    // req.io.to(postId).emit("commentForNotification", {
-    //   postId,
-    //   comment: populatedComment,
-    // });
-    //  Send comment notification to post author if not the commenter
+
     res.status(201).json({
       success: true,
       message: "Comment added!",

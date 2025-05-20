@@ -12,7 +12,7 @@ export const PostsProvider = ({ children }) => {
   const { token, user } = useUser();
   const queryClient = useQueryClient();
   const [commentLoadingMap, setCommentLoadingMap] = useState({});
-  const [newCommentMap, setNewCommentMap] = useState({}); // { [postId]: count }
+  const [newPostCount, setNewPostCount] = useState(0); // { [postId]: count }
 
   // Fetch all posts
   const getAllPosts = async () => {
@@ -144,8 +144,8 @@ export const PostsProvider = ({ children }) => {
         postComment,
         commentLoadingMap,
         getCommentsForAllPosts,
-        newCommentMap,
-        setNewCommentMap,
+        newPostCount,
+        setNewPostCount,
       }}
     >
       {children}
