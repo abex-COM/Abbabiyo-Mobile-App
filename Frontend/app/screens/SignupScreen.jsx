@@ -51,7 +51,7 @@ export default function SignupScreen() {
         formattedData
       );
       storeToken(resp.data.token);
-      navigation.replace("bottomNavigator");
+      navigation.replace("loginScreen");
       Toast.show({
         type: "success",
         text1: "Registered Successfully",

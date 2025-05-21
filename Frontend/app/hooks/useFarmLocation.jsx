@@ -9,11 +9,9 @@ const useFarmLocations = () => {
   const { user, token } = useUser();
   const [farmLocations, setFarmLocations] = useState([]);
   const [loading, setLoading] = useState(false);
-  const fetchFarmLocations = async () => {
-    if (!user?._id || !token) {
-      setFarmLocations([]);
-      return;
-    }
+
+  const fetchFarmLocations = async (controller) => {
+    if (!user?._id || !token) return;
 
     try {
       setLoading(true);
@@ -22,14 +20,19 @@ const useFarmLocations = () => {
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 15000,
+          signal: controller?.signal,
         }
       );
       setFarmLocations(res.data?.farmLocations || []);
     } catch (err) {
-      console.log(
-        "Failed to fetch farm locations:",
-        JSON.stringify(err, null, 2)
-      );
+      if (axios.isCancel(err)) {
+        console.log("Request canceled:", err.message);
+        return;
+      }
+
+      if (__DEV__) {
+        console.log("Failed to fetch farm locations:", err);
+      }
 
       const message =
         typeof err?.response?.data?.error === "string"
@@ -44,23 +47,27 @@ const useFarmLocations = () => {
           text1: message,
         });
       }
+
       setFarmLocations([]); // fallback to empty
     } finally {
       setLoading(false);
     }
   };
 
-
   useEffect(() => {
+    const controller = new AbortController();
+
     if (token && user?._id) {
-      fetchFarmLocations();
+      fetchFarmLocations(controller);
     }
-  }, [user, token]);
+
+    return () => controller.abort();
+  }, [token, user]);
 
   return {
     farmLocations,
     loading,
-    refetch: fetchFarmLocations,
+    refetch: () => fetchFarmLocations(),
     setFarmLocations,
   };
 };
