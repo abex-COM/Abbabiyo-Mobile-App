@@ -17,7 +17,6 @@ import Toast from "react-native-toast-message";
 import { Audio } from "expo-av";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContexts";
-import baseUrl from "@/baseUrl/baseUrl";
 
 export default function DiseaseDetector() {
   const [image, setImage] = useState(null);
@@ -110,9 +109,13 @@ export default function DiseaseDetector() {
     });
 
     try {
-      const res = await axios.post(`http://192.168.137.1:8000/predict`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post(
+        `http://192.168.148.196:8000/predict`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       setResult(res.data);
       setPrescribeData(null);
       setError("");
@@ -138,10 +141,13 @@ export default function DiseaseDetector() {
 
     try {
       setPrescribing(true);
-      const res = await axios.post("http://192.168.137.1:6000/api/recommendations/prescribe", {
-        detectedDisease: result.predicted_class,
-        language: language,
-      });
+      const res = await axios.post(
+        "http://192.168.148.196:6000/api/recommendations/prescribe",
+        {
+          detectedDisease: result.predicted_class,
+          language: language,
+        }
+      );
 
       setPrescribeData(res.data);
       await playSucessSound();
@@ -159,7 +165,9 @@ export default function DiseaseDetector() {
   return (
     <ScrollView style={[styles.container, theme.bg]}>
       <Text style={[styles.description, theme.text]}>
-        {t("abbabiyo_is_an_agricultural_assistant_for_Ethiopian_farmers_Upload_a_plant_image_to_detect_disease")}
+        {t(
+          "abbabiyo_is_an_agricultural_assistant_for_Ethiopian_farmers_Upload_a_plant_image_to_detect_disease"
+        )}
       </Text>
 
       <Text style={[styles.subtitle, theme.subtitle]}>
@@ -167,20 +175,32 @@ export default function DiseaseDetector() {
       </Text>
 
       <View style={{ gap: 10, marginHorizontal: 20 }}>
-        <TouchableOpacity 
-          style={[styles.uploadButton, theme.uploadButton]} 
+        <TouchableOpacity
+          style={[styles.uploadButton, theme.uploadButton]}
           onPress={pickImage}
         >
-          <Feather name="upload-cloud" size={20} color={isDarkMode ? "#4CAF50" : "green"} />
-          <Text style={[styles.uploadText, theme.uploadText]}>Upload from Gallery</Text>
+          <Feather
+            name="upload-cloud"
+            size={20}
+            color={isDarkMode ? "#4CAF50" : "green"}
+          />
+          <Text style={[styles.uploadText, theme.uploadText]}>
+            {t("upload_a_photo")}
+          </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.uploadButton, theme.uploadButton]} 
+        <TouchableOpacity
+          style={[styles.uploadButton, theme.uploadButton]}
           onPress={takePhoto}
         >
-          <Feather name="camera" size={20} color={isDarkMode ? "#4CAF50" : "green"} />
-          <Text style={[styles.uploadText, theme.uploadText]}>Take a Photo</Text>
+          <Feather
+            name="camera"
+            size={20}
+            color={isDarkMode ? "#4CAF50" : "green"}
+          />
+          <Text style={[styles.uploadText, theme.uploadText]}>
+            {t("take_a_photo")}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -200,11 +220,13 @@ export default function DiseaseDetector() {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.actionButtonText}>Predict</Text>
+          <Text style={styles.actionButtonText}>{t("predict_disease")}</Text>
         )}
       </TouchableOpacity>
 
-      <View style={{ marginTop: 16, alignItems: "center", marginHorizontal: 20 }}>
+      <View
+        style={{ marginTop: 16, alignItems: "center", marginHorizontal: 20 }}
+      >
         {error ? (
           <Text style={[styles.errorText, theme.errorText]}>
             <Feather name="alert-circle" size={16} color="red" /> {error}
@@ -212,21 +234,28 @@ export default function DiseaseDetector() {
         ) : result ? (
           <>
             <Text style={[styles.resultText, theme.resultText]}>
-              <Feather name="check-circle" size={16} color={isDarkMode ? "#4CAF50" : "green"} /> Prediction: {result.predicted_class}
+              <Feather
+                name="check-circle"
+                size={16}
+                color={isDarkMode ? "#4CAF50" : "green"}
+              />{" "}
+              Prediction: {result.predicted_class}
             </Text>
             <Text style={[styles.confidenceText, theme.text]}>
               Confidence: {result.confidence}%
             </Text>
 
             <TouchableOpacity
-              style={[styles.prescribeActionButton]} 
+              style={[styles.prescribeActionButton]}
               onPress={handlePrescribe}
               disabled={prescribing}
             >
               {prescribing ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.actionButtonText}>Prescribe & Get Suggestion</Text>
+                <Text style={styles.actionButtonText}>
+                  {t("get_prescription_and_suggetsions")}
+                </Text>
               )}
             </TouchableOpacity>
           </>
@@ -236,9 +265,13 @@ export default function DiseaseDetector() {
       {prescribeData && (
         <View style={{ marginHorizontal: 20, marginTop: 20 }}>
           <View style={styles.sectionHeader}>
-            <Feather name="file-text" size={20} color={isDarkMode ? "#bb86fc" : "#333"} />
+            <Feather
+              name="file-text"
+              size={20}
+              color={isDarkMode ? "#bb86fc" : "#333"}
+            />
             <Text style={[styles.sectionTitle, theme.sectionTitle]}>
-              Disease Info
+              {t("disease_information")}
             </Text>
           </View>
           <Text style={[styles.infoText, theme.text]}>
@@ -246,28 +279,44 @@ export default function DiseaseDetector() {
           </Text>
 
           <View style={styles.sectionHeader}>
-            <Feather name="package" size={20} color={isDarkMode ? "#bb86fc" : "#333"} />
+            <Feather
+              name="package"
+              size={20}
+              color={isDarkMode ? "#bb86fc" : "#333"}
+            />
             <Text style={[styles.sectionTitle, theme.sectionTitle]}>
-              Medication Suggestion
+              {t("suggested_medications")}
             </Text>
           </View>
           {prescribeData.recommendedMedications?.map((med, index) => (
-            <View key={index} style={[styles.suggestionCard, theme.suggestionCard]}>
+            <View
+              key={index}
+              style={[styles.suggestionCard, theme.suggestionCard]}
+            >
               <Text style={theme.text}>{med}</Text>
             </View>
           ))}
 
           <View style={styles.sectionHeader}>
-            <Feather name="user" size={20} color={isDarkMode ? "#bb86fc" : "#333"} />
+            <Feather
+              name="user"
+              size={20}
+              color={isDarkMode ? "#bb86fc" : "#333"}
+            />
             <Text style={[styles.sectionTitle, theme.sectionTitle]}>
-              Farmer Recommendation
+              {t("farmer_recommendations")}
             </Text>
           </View>
-          {prescribeData.farmerRecommendations?.map((rec, index) => (
-            <View key={index} style={[styles.suggestionCard, theme.suggestionCard]}>
-              <Text style={theme.text}>{rec}</Text>
-            </View>
-          ))}
+          <View style={{ marginBottom: 30 }}>
+            {prescribeData.farmerRecommendations?.map((rec, index) => (
+              <View
+                key={index}
+                style={[styles.suggestionCard, theme.suggestionCard]}
+              >
+                <Text style={theme.text}>{rec}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       )}
     </ScrollView>

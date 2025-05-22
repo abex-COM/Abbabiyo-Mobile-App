@@ -163,7 +163,7 @@ const prescribe = async (req, res) => {
 You are an expert agricultural advisor helping Ethiopian corn farmers.
 
 A disease has been detected in a corn plant: "${detectedDisease}".
-
+if detectedDisease says Corn___Healthy, your task is just only providing that the corn is healty
 Your task is to return the result as a JSON object with the following structure:
 {
   "disease": "<name of the disease>",
@@ -182,7 +182,10 @@ Respond in the specified language.`.trim();
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent([{ text: prompt }]);
     const parts = result?.response?.candidates?.[0]?.content?.parts;
-    const geminiResponse = parts?.map((p) => p.text).join("\n").trim();
+    const geminiResponse = parts
+      ?.map((p) => p.text)
+      .join("\n")
+      .trim();
 
     if (!geminiResponse) {
       throw new Error("Empty response from Gemini.");
@@ -205,5 +208,4 @@ Respond in the specified language.`.trim();
   }
 };
 
-
-module.exports = { getRecommendations, prescribe};
+module.exports = { getRecommendations, prescribe };
