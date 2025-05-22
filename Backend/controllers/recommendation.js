@@ -151,4 +151,59 @@ function getCurrentSeason() {
   return "Meher (harvest/post-rainy season)";
 }
 
-module.exports = { getRecommendations };
+const prescribe = async (req, res) => {
+  const { detectedDisease, language = "en" } = req.body;
+
+  if (!detectedDisease) {
+    return res.status(400).json({ error: "Detected disease is required." });
+  }
+
+  try {
+    let prompt = `
+You are an expert agricultural advisor helping Ethiopian corn farmers.
+
+A disease has been detected in a corn plant: "${detectedDisease}".
+
+Your task is to return the result as a JSON object with the following structure:
+{
+  "disease": "<name of the disease>",
+  "description": "<short description of the disease>",
+  "recommendedMedications": ["<medication 1>", "<medication 2>"],
+  "farmerRecommendations": ["<recommendation 1>", "<recommendation 2>", "..."]
+}
+
+Use simple, clear, and actionable language.
+Respond in the specified language.`.trim();
+
+    if (language === "om") prompt += "\nRespond only in Afan Oromo.";
+    else if (language === "am") prompt += "\nRespond only in Amharic.";
+    else prompt += "\nRespond only in English.";
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent([{ text: prompt }]);
+    const parts = result?.response?.candidates?.[0]?.content?.parts;
+    const geminiResponse = parts?.map((p) => p.text).join("\n").trim();
+
+    if (!geminiResponse) {
+      throw new Error("Empty response from Gemini.");
+    }
+
+    // Try to extract JSON from the text (Gemini might wrap it with text or markdown)
+    const jsonMatch = geminiResponse.match(/\{[\s\S]*?\}/);
+    if (!jsonMatch) {
+      throw new Error("Failed to parse JSON from Gemini response.");
+    }
+
+    const structuredResponse = JSON.parse(jsonMatch[0]);
+
+    res.status(200).json(structuredResponse);
+  } catch (error) {
+    console.error("Prescription error:", error);
+    res.status(500).json({
+      error: `Failed to generate disease prescription: ${error.message}`,
+    });
+  }
+};
+
+
+module.exports = { getRecommendations, prescribe};
